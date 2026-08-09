@@ -11,7 +11,6 @@ import {
   MAX_ADDRESS,
   MAX_CITY
 } from '../utils/addressValidation'
-import PargoPointPicker from '../components/PargoPointPicker'
 import {
   CreditCardIcon,
   WalletIcon,
@@ -58,12 +57,10 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false)
   const [processingPayment, setProcessingPayment] = useState(false)
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<'addpay' | 'wallet' | 'traderoot'>('wallet')
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'stripe'>('wallet')
   const [userBalance, setUserBalance] = useState(0)
-  const [activeProvider, setActiveProvider] = useState<'sapo' | 'shiplogic' | 'rtt' | 'pargo'>('sapo')
+  const [activeProvider, setActiveProvider] = useState<'usps' | 'ups' | 'freight'>('usps')
   const [shipmentRate, setShipmentRate] = useState<{ provider: string; rateId: any; total: number; serviceLevel?: string } | null>(null)
-  // Pargo (Click & Collect): the buyer-selected pickup point, when Pargo is the active courier.
-  const [pargoPoint, setPargoPoint] = useState<{ code: string; name?: string; address?: string; city?: string; postalCode?: string; province?: string; lat?: number; lng?: number } | null>(null)
   const [quoting, setQuoting] = useState(false)
   // Captured once when the item loads, so a later live-quote override can't flip it.
   // A product the seller offers free (shippingCost 0) stays free even under ShipLogic.
@@ -112,17 +109,16 @@ const Checkout = () => {
     axios.get('/api/shipping/active-provider')
       .then(r => {
         const p = r.data?.provider
-        setActiveProvider((p === 'shiplogic' || p === 'rtt' || p === 'pargo') ? p : 'sapo')
+        setActiveProvider((p === 'ups' || p === 'freight') ? p : 'usps')
       })
-      .catch(() => setActiveProvider('sapo'))
+      .catch(() => setActiveProvider('usps'))
   }, [isAuthenticated, location.state])
 
-  // ShipLogic: fetch a live delivery quote once the shipping address is complete,
-  // and use it as the shipping cost. SAPO keeps the seller-entered cost.
-  // Free-shipping products are never live-quoted — they stay $0 (seller/platform
-  // absorbs the courier fee, which is still charged when the shipment is created).
+  // Fetch a live carrier quote once the address is complete and use it as the
+  // shipping cost. Free-shipping listings are never live-quoted — they stay $0
+  // to the buyer, with the seller/platform absorbing the carrier fee.
   useEffect(() => {
-    if (activeProvider !== 'shiplogic' || !checkoutItem || freeShipping) return
+    if (!checkoutItem || freeShipping) return
     const { address, city, postalCode, province } = shippingInfo
     if (!address || !city || !postalCode) return
     let cancelled = false
@@ -187,19 +183,6 @@ const Checkout = () => {
       return false
     }
 
-    // Pargo (Click & Collect): only contact fields + a chosen pickup point are needed.
-    if (activeProvider === 'pargo') {
-      if (!shippingInfo.fullName || !shippingInfo.phone) {
-        toast.error('Please fill in your name and phone number')
-        return false
-      }
-      if (!pargoPoint || !pargoPoint.code) {
-        toast.error('Please choose a Pargo pickup point')
-        return false
-      }
-      return true
-    }
-
     const required = ['fullName', 'email', 'phone', 'address', 'suburb', 'city', 'province', 'postalCode']
     for (const field of required) {
       if (!shippingInfo[field as keyof ShippingInfo]) {
@@ -257,8 +240,6 @@ const Checkout = () => {
           shippingCost: shippingCost,
           totalAmount: totalAmount,
           shippingInfo,
-          // Pargo Click & Collect: the selected pickup point + delivery method
-          ...(activeProvider === 'pargo' && pargoPoint ? { deliveryMethod: 'pickup-point', pargoPoint } : {}),
           paymentMethod
         })
 
@@ -295,37 +276,14 @@ const Checkout = () => {
           throw new Error('Wallet payment failed')
         }
 
-      } else if (paymentMethod === 'addpay') {
-        // Initialize AddPay payment
-        const response = await axios.post('/api/payments/addpay/initialize', {
-          amount: totalAmount,
-          currency: 'USD',
-          customerDetails: {
-            email: shippingInfo.email,
-            name: shippingInfo.fullName,
-            phoneNumber: shippingInfo.phone
-          },
-          metadata: {
-            orderId,
-            productId: checkoutItem.productId,
-            productTitle: checkoutItem.title
-          }
-        })
-
-        if (response.data.success && response.data.data?.paymentUrl) {
-          window.location.href = response.data.data.paymentUrl
+      } else if (paymentMethod === 'stripe') {
+        // Stripe Checkout — hosted card entry + 3-D Secure. The amount is taken
+        // from the order server-side, not from anything we send here.
+        const response = await axios.post('/api/payments/stripe/create-session', { orderId })
+        if (response.data?.success && response.data.paymentUrl) {
+          window.location.href = response.data.paymentUrl
         } else {
-          toast.error('Failed to initialize AddPay payment')
-        }
-
-      } else if (paymentMethod === 'traderoot') {
-        // Traderoot card payment — single hosted page does card entry + 3-D Secure + settlement.
-        const { initializeTraderoot } = await import('../services/traderootService')
-        const initResult = await initializeTraderoot(orderId)
-        if (initResult.success && initResult.paymentUrl) {
-          window.location.href = initResult.paymentUrl
-        } else {
-          toast.error(initResult.error || 'Failed to start card payment')
+          toast.error(response.data?.error || 'Failed to start card payment')
         }
       }
 
@@ -437,22 +395,6 @@ const Checkout = () => {
                 />
               </div>
 
-              {activeProvider === 'pargo' && (
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <MapPinIcon className="inline h-4 w-4 mr-1" />
-                    Pargo pickup point *
-                  </label>
-                  <PargoPointPicker
-                    selected={pargoPoint}
-                    onSelect={setPargoPoint}
-                    address={[shippingInfo.city, shippingInfo.province].filter(Boolean).join(', ')}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Your parcel will be delivered to this Pargo point for you to collect.</p>
-                </div>
-              )}
-
-              {activeProvider !== 'pargo' && (<>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <MapPinIcon className="inline h-4 w-4 mr-1" />
@@ -551,7 +493,6 @@ const Checkout = () => {
                   disabled
                 />
               </div>
-              </>)}
             </div>
           </div>
 
@@ -600,59 +541,34 @@ const Checkout = () => {
                 </div>
               </label>
 
-              {/* AddPay Option */}
+              {/* Card Option (Stripe) */}
               <label className="relative flex flex-col sm:flex-row items-start p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
                 <input
                   type="radio"
                   name="paymentMethod"
-                  value="addpay"
-                  checked={paymentMethod === 'addpay'}
+                  value="stripe"
+                  checked={paymentMethod === 'stripe'}
                   onChange={(e) => setPaymentMethod(e.target.value as any)}
                   className="mt-1"
                 />
                 <div className="ml-0 sm:ml-3 mt-2 sm:mt-0 flex-1 w-full">
                   <div className="font-medium text-gray-900">
-                    <CreditCardIcon className="inline h-5 w-5 mr-2 text-blue-600" />
-                    AddPay
+                    <CreditCardIcon className="inline h-5 w-5 mr-2 text-secondary-600" />
+                    Credit or debit card
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Visa, Mastercard, Amex — secured by 3-D Secure
+                    Secure checkout powered by Stripe
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">Visa</span>
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">Mastercard</span>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">3D Secure</span>
-                  </div>
-                </div>
-              </label>
-
-              {/* Traderoot Card Payment Option */}
-              <label className="relative flex flex-col sm:flex-row items-start p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="traderoot"
-                  checked={paymentMethod === 'traderoot'}
-                  onChange={(e) => setPaymentMethod(e.target.value as any)}
-                  className="mt-1"
-                />
-                <div className="ml-0 sm:ml-3 mt-2 sm:mt-0 flex-1 w-full">
-                  <div className="font-medium text-gray-900">
-                    <CreditCardIcon className="inline h-5 w-5 mr-2 text-indigo-600" />
-                    Traderoot
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Enter your card on Traderoot's secure 3D Secure page
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">Visa</span>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">Mastercard</span>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">3D Secure</span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">Amex</span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">Discover</span>
                   </div>
 
-                  {paymentMethod === 'traderoot' && (
+                  {paymentMethod === 'stripe' && (
                     <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded-md mt-3">
-                      You'll be securely redirected to Traderoot to enter your card and complete 3D Secure.
+                      You'll be redirected to Stripe's secure page to enter your card details.
                     </p>
                   )}
                 </div>

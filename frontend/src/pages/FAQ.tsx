@@ -89,7 +89,7 @@ const faqData: FAQSection[] = [
       },
       {
         question: 'How does the VeriSpine Wallet work?',
-        answer: 'The VeriSpine Wallet is a digital balance stored in your account. You can add funds via AddPay or Traderoot and use your wallet balance to pay for purchases instantly. Sellers also receive their sale proceeds into their wallet after platform fees are deducted. Your wallet balance is displayed on your dashboard and in the navigation bar.'
+        answer: 'The VeriSpine Wallet is a digital balance stored in your account. You can add funds by card and use your wallet balance to pay for purchases instantly. Sellers also receive their sale proceeds into their wallet after platform fees are deducted. Your wallet balance is displayed on your dashboard and in the navigation bar.'
       },
       {
         question: 'How do I top up my wallet?',
@@ -97,7 +97,7 @@ const faqData: FAQSection[] = [
       },
       {
         question: 'Is my payment secure?',
-        answer: 'Yes. All payments are processed through trusted, PCI-compliant payment providers (AddPay and Traderoot). VeriSpine does not store your card details. Card payments are protected with 3D Secure verification for added security.'
+        answer: 'Yes. All payments are processed through trusted, PCI-compliant provider (Stripe). VeriSpine never sees or stores your card details. Card payments are protected with 3-D Secure verification for added security.'
       }
     ]
   },

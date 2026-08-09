@@ -3,7 +3,7 @@ const { admin, db } = require('../config/firebase');
 /**
  * Idempotently credit a wallet top-up to the user's balance.
  *
- * Used by both top-up providers (AddPay verify, Traderoot charge) so crediting
+ * Used by the Stripe top-up webhook so crediting
  * logic lives in one place. Runs in a transaction and is safe to call more than
  * once — a top-up already marked 'completed' is a no-op.
  *

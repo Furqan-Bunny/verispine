@@ -28,35 +28,21 @@ const PaymentSuccess = () => {
       }
       
       try {
-        // Verify payment based on method
-        let verificationData: any = {
-          paymentMethod: paymentMethod || 'addpay'
+        // Wallet payments settle inline; card payments settle via the Stripe
+        // webhook. Either way the server is the source of truth — we only ask
+        // it to confirm, and never trust anything in the query string.
+        const verificationData: any = { paymentMethod: paymentMethod || 'stripe' }
+
+        if (paymentMethod === 'stripe') {
+          // Nudge the server to re-check Stripe in case the webhook is still in
+          // flight; it is idempotent, so a duplicate call is harmless.
+          try {
+            await axios.post('/api/payments/stripe/verify', { orderId })
+          } catch (err) {
+            console.error('Stripe verify error:', err)
+          }
         }
 
-        if (paymentMethod === 'addpay') {
-          const addpayTxId = searchParams.get('transactionId') || transactionId
-          if (addpayTxId) {
-            // Verify the AddPay transaction status first
-            try {
-              const statusCheck = await axios.get(`/api/payments/addpay/status/${addpayTxId}`)
-              if (statusCheck.data.status !== 'COMPLETE' && statusCheck.data.status !== 'COMPLETED') {
-                toast.error('Payment was not completed. Please try again.')
-                setVerifying(false)
-                return
-              }
-            } catch (err) {
-              console.error('AddPay status check error:', err)
-            }
-            verificationData.transactionId = addpayTxId
-          }
-        } else if (paymentMethod === 'wallet') {
-          // Wallet payments are already verified
-          verificationData.walletPayment = true
-        } else if (paymentMethod === 'traderoot') {
-          // Traderoot charge is completed server-side before reaching this page
-          verificationData.paymentMethod = 'traderoot'
-        }
-        
         const response = await axios.post(`/api/payments/verification/verify/${orderId}`, verificationData)
         
         if (response.data.success) {

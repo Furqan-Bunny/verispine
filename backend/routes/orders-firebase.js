@@ -469,129 +469,34 @@ router.put('/:orderId/status', authMiddleware, async (req, res) => {
   }
 });
 
-// Process payment for order
+// Start payment for an existing order.
+// Delegates to Stripe Checkout — the single settlement path. The old AddPay
+// variants of this endpoint were removed: they charged order.amount (excluding
+// shipping) and skipped the post-payment pipeline (stock, affiliate, shipment,
+// emails), so orders paid through them stalled at "processing".
 router.post('/:orderId/pay', authMiddleware, async (req, res) => {
   try {
     const { orderId } = req.params;
-    const userId = req.user.uid;
-    
     const orderDoc = await db.collection('orders').doc(orderId).get();
-    
-    if (!orderDoc.exists) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    
+    if (!orderDoc.exists) return res.status(404).json({ error: 'Order not found' });
+
     const order = orderDoc.data();
-    
-    // Check if user is buyer
-    if (order.buyerId !== userId) {
-      return res.status(403).json({ error: 'Only buyer can pay for order' });
+    if (order.buyerId !== req.user.uid) {
+      return res.status(403).json({ error: 'Only the buyer can pay for this order' });
     }
-    
-    // Check if already paid
-    if (order.paymentStatus === 'completed') {
+    if (order.paymentStatus === 'completed' || order.paymentStatus === 'paid') {
       return res.status(400).json({ error: 'Order already paid' });
     }
-    
-    // Get user details
-    const userDoc = await db.collection('users').doc(userId).get();
-    const user = userDoc.data();
-    
-    // Initialize payment with AddPay
-    const addpayService = require('../services/addpay');
-    const result = await addpayService.initializePayment({
-      amount: order.amount,
-      email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      phone: user.phone || '',
-      description: `Payment for order #${orderId}`,
-      orderId,
-      productId: order.productId,
-      userId
-    });
 
-    if (!result.success) {
-      return res.status(500).json({ error: result.error || 'Failed to initialize payment' });
-    }
-
-    // Update order with payment reference
-    await orderDoc.ref.update({
-      paymentReference: result.data.reference,
-      addpayTransactionId: result.data.transactionId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.json({
+    return res.json({
       success: true,
-      data: {
-        paymentUrl: result.data.paymentUrl,
-        reference: result.data.reference
-      }
+      paymentMethod: 'stripe',
+      endpoint: '/api/payments/stripe/create-session',
+      message: 'POST { orderId } to /api/payments/stripe/create-session to obtain the checkout URL'
     });
   } catch (error) {
-    console.error('Error processing payment:', error);
-    res.status(500).json({ error: 'Failed to process payment' });
-  }
-});
-
-// Verify payment and update order
-router.post('/:orderId/verify-payment', authMiddleware, async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { reference } = req.body;
-    
-    if (!reference) {
-      return res.status(400).json({ error: 'Payment reference required' });
-    }
-    
-    const orderDoc = await db.collection('orders').doc(orderId).get();
-    
-    if (!orderDoc.exists) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    
-    const order = orderDoc.data();
-
-    // Verify user is the buyer
-    if (order.buyerId !== req.user.uid) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Verify payment with AddPay
-    const addpayService = require('../services/addpay');
-    const paymentStatus = await addpayService.verifyTransaction(reference);
-
-    if (paymentStatus.success && (paymentStatus.data.status === 'COMPLETE' || paymentStatus.data.status === 'COMPLETED')) {
-      // Update order
-      await orderDoc.ref.update({
-        paymentStatus: 'completed',
-        status: 'processing',
-        paymentCompletedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      // Update buyer's total spent
-      const buyerDoc = await db.collection('users').doc(order.buyerId).get();
-      await buyerDoc.ref.update({
-        totalSpent: admin.firestore.FieldValue.increment(order.amount),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      res.json({
-        success: true,
-        message: 'Payment verified successfully'
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: 'Payment verification failed'
-      });
-    }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    res.status(500).json({ error: 'Failed to verify payment' });
+    console.error('Error starting payment:', error);
+    res.status(500).json({ error: 'Failed to start payment' });
   }
 });
 

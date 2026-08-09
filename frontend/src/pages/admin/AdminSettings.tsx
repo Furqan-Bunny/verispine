@@ -299,8 +299,7 @@ const AdminSettings = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Gateways</h3>
             <div className="space-y-3">
               {[
-                { name: 'AddPay', status: 'active', fee: '2.9%' },
-                { name: 'Traderoot', status: 'active', fee: '2.9%' },
+                { name: 'Stripe', status: 'active', fee: '2.9% + 30¢' },
                 { name: 'Bank Transfer', status: 'active', fee: '0%' }
               ].map((gateway) => (
                 <div key={gateway.name} className="p-3 border border-gray-200 rounded-lg">

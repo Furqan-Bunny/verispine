@@ -136,7 +136,7 @@ const Home = () => {
           >
             <ShieldCheckIcon className="h-12 w-12 text-primary-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Secure Payments</h3>
-            <p className="text-gray-600">AddPay & Traderoot integration</p>
+            <p className="text-gray-600">Stripe-secured card payments</p>
           </motion.div>
 
           <motion.div

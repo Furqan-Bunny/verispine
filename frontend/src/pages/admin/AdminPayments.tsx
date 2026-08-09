@@ -494,8 +494,7 @@ const AdminPayments = () => {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Gateways</option>
-                <option value="addpay">AddPay</option>
-                <option value="traderoot">Traderoot</option>
+                <option value="stripe">Card (Stripe)</option>
                 <option value="wallet">Wallet</option>
               </select>
             )}

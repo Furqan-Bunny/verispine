@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const Help = () => {
   const topics = [
     { title: 'Buying & bidding', body: 'Browse listings, place a bid or buy now, then pay securely at checkout.', to: '/products', cta: 'Browse products' },
-    { title: 'Payments', body: 'Pay by Wallet, AddPay, or card (3-D Secure). Card details are entered on the provider’s secure page.', to: '/wallet', cta: 'Go to Wallet' },
+    { title: 'Payments', body: 'Pay by Wallet or card (Stripe, 3-D Secure). Card details are entered on the provider’s secure page.', to: '/wallet', cta: 'Go to Wallet' },
     { title: 'Orders & delivery', body: 'Track your orders and delivery status from your Orders page.', to: '/orders', cta: 'My orders' },
     { title: 'Selling', body: 'Apply to become a seller (KYC required), then list and manage your products.', to: '/become-seller', cta: 'Become a seller' },
   ]

@@ -4,7 +4,7 @@ const { admin } = require('../config/firebase');
  * Finalize a product's stock/status after a payment has been confirmed.
  *
  * Centralizes the "mark product after purchase" step that every payment handler
- * (wallet, verification, addpay, payfast, firebase, traderoot) performs, so the
+ * (wallet, stripe, verification) performs, so the
  * two product types behave consistently:
  *
  *  - auction / buy_now / auction_win (single-item): product is marked 'sold'.

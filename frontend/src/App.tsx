@@ -65,7 +65,6 @@ import SellerDashboard from './pages/seller/SellerDashboard'
 import SellerSales from './pages/seller/SellerSales'
 import SellerPayouts from './pages/seller/SellerPayouts'
 import SellerStorefront from './pages/SellerStorefront'
-import TraderootCallback from './pages/TraderootCallback'
 
 function App() {
   const { initAuth, isLoading, isAuthenticated } = useAuthStore()
@@ -132,7 +131,6 @@ function App() {
         <Route path="help" element={<Help />} />
         <Route path="payment/success" element={<PaymentSuccess />} />
         <Route path="payment/cancel" element={<PaymentCancel />} />
-        <Route path="payment/traderoot-callback" element={<TraderootCallback />} />
         <Route path="seller/:slugOrUserId" element={<SellerStorefront />} />
         
         {/* Protected Routes */}

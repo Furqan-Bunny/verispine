@@ -13,11 +13,7 @@ import {
 import { useAuthStore } from '../store/authStore'
 import { Link, useSearchParams } from 'react-router-dom'
 import axios from '../config/axios'
-import paymentService from '../services/payment'
-import { initTraderootTopup } from '../services/traderootService'
 import toast from 'react-hot-toast'
-
-type TopupProvider = 'addpay' | 'traderoot'
 
 interface WalletTransaction {
   id: string
@@ -41,7 +37,6 @@ const Wallet = () => {
   const [loading, setLoading] = useState(true)
   const [showAddFundsModal, setShowAddFundsModal] = useState(false)
   const [amount, setAmount] = useState('')
-  const [provider, setProvider] = useState<TopupProvider>('addpay')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -77,7 +72,7 @@ const Wallet = () => {
 
   const verifyTopup = async (topupId: string) => {
     try {
-      const res = await paymentService.verifyTopup(topupId)
+      const res = (await axios.post('/api/payments/wallet/verify-topup', { topupId })).data
       if (res.success && res.status === 'completed') {
         toast.success('Wallet top-up successful!')
         await refreshBalance()
@@ -111,30 +106,21 @@ const Wallet = () => {
 
     setSubmitting(true)
     try {
-      const response = await paymentService.addFundsToWallet(parsedAmount, provider)
-
-      if (provider === 'addpay') {
-        if (response.success && response.paymentUrl) {
-          window.location.href = response.paymentUrl
-          return
-        }
-        toast.error('Failed to initialize payment')
+      // Create the pending top-up, then hand off to Stripe Checkout. The wallet
+      // is credited by the Stripe webhook, not by this call.
+      const created = (await axios.post('/api/payments/wallet/add-funds', { amount: parsedAmount })).data
+      if (!created?.success || !created.topupId) {
+        toast.error(created?.message || 'Failed to start top-up')
         setSubmitting(false)
         return
       }
 
-      // Traderoot: single hosted page (card + 3-D Secure + settle) keyed on the returned topupId
-      if (!response.success || !response.topupId) {
-        toast.error('Failed to initialize payment')
-        setSubmitting(false)
+      const session = (await axios.post('/api/payments/stripe/topup/create-session', { topupId: created.topupId })).data
+      if (session?.success && session.paymentUrl) {
+        window.location.href = session.paymentUrl
         return
       }
-      const init = await initTraderootTopup(response.topupId)
-      if (init.success && init.paymentUrl) {
-        window.location.href = init.paymentUrl
-        return
-      }
-      toast.error(init.error || 'Failed to initialize payment')
+      toast.error(session?.error || 'Failed to start payment')
       setSubmitting(false)
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.response?.data?.error || 'Failed to add funds')
@@ -304,27 +290,6 @@ const Wallet = () => {
             </div>
 
             <div className="p-6">
-              {/* Payment provider */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pay with</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['addpay', 'traderoot'] as TopupProvider[]).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setProvider(p)}
-                      className={`py-2 px-3 rounded-lg border text-sm font-semibold transition ${
-                        provider === p
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-300 text-gray-700 hover:border-primary-300'
-                      }`}
-                    >
-                      {p === 'addpay' ? 'AddPay' : 'Traderoot (saved card)'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Amount presets */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Quick select</label>
@@ -376,7 +341,7 @@ const Wallet = () => {
                   disabled={submitting || !amount || parseFloat(amount) < 10}
                   className="flex-1 px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {submitting ? 'Processing...' : `Pay with ${provider === 'addpay' ? 'AddPay' : 'Traderoot'}`}
+                  {submitting ? 'Processing...' : 'Continue to payment'}
                 </button>
               </div>
             </div>

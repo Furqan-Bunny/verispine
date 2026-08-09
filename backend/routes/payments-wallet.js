@@ -5,8 +5,7 @@ const { admin, db, auth, storage } = require('../config/firebase');
 const { processAffiliateCommission } = require('../utils/affiliateCommission');
 const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
 const { creditWalletTopup } = require('../utils/walletTopup');
-const addpayService = require('../services/addpay');
-const sapoShippingService = require('../services/shippingService'); // provider facade (SAPO/ShipLogic)
+const shippingService = require('../services/shippingService');
 const emailService = require('../services/resendEmailService');
 
 const frontendBaseUrl = () => {
@@ -15,83 +14,44 @@ const frontendBaseUrl = () => {
   return url;
 };
 
-// Add funds to wallet. Supports two card providers:
-//   - 'addpay'   : single redirect to AddPay's hosted page, then verify on return.
-//   - 'traderoot': returns the topupId; the client drives the Traderoot tokenized
-//                  flow via /api/payments/traderoot/topup/* and the callback page.
-// The wallet itself stays the source of truth; crediting is idempotent via creditWalletTopup.
+// Create a pending wallet top-up. Payment itself is handled by Stripe —
+// the client takes the returned topupId to /api/payments/stripe/topup/create-session.
+// The wallet stays the source of truth; crediting is idempotent via creditWalletTopup.
 router.post('/add-funds', authMiddleware, async (req, res) => {
   try {
-    const { amount, provider } = req.body;
+    const { amount } = req.body;
     const userId = req.user.uid;
 
     if (!amount || parseFloat(amount) < 10) {
       return res.status(400).json({ success: false, message: 'Minimum top-up amount is $10' });
     }
 
-    const prov = provider === 'traderoot' ? 'traderoot' : 'addpay';
-
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    const userData = userDoc.data();
 
-    // Create the top-up record (pending until the provider confirms).
     const topupRef = db.collection('walletTopups').doc();
-    const topupId = topupRef.id;
     await topupRef.set({
-      id: topupId,
+      id: topupRef.id,
       userId,
       amount: parseFloat(amount),
-      provider: prov,
+      provider: 'stripe',
       status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    if (prov === 'traderoot') {
-      // Client continues with the Traderoot tokenized flow using this topupId.
-      return res.json({ success: true, provider: 'traderoot', topupId });
-    }
-
-    // AddPay: create a hosted transaction and return its payment URL.
-    const frontendUrl = frontendBaseUrl();
-    const firstName = (userData.firstName || (userData.name ? userData.name.split(' ')[0] : '') || 'Customer').trim();
-    const lastName = (userData.lastName || (userData.name && userData.name.split(' ').length > 1 ? userData.name.split(' ').slice(1).join(' ') : '')).trim();
-
-    const result = await addpayService.initializePayment({
-      amount: parseFloat(amount),
-      email: userData.email,
-      firstName,
-      lastName,
-      phone: userData.phone || userData.phoneNumber,
-      description: 'VeriSpine Wallet Top-up',
-      returnUrl: `${frontendUrl}/wallet?topup=verify&topup_id=${topupId}`,
-      cancelUrl: `${frontendUrl}/wallet?topup=cancelled`
-    });
-
-    if (!result.success) {
-      await topupRef.update({ status: 'failed', error: result.error || 'init failed', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-      return res.status(502).json({ success: false, message: result.error || 'Failed to initialize top-up payment' });
-    }
-
-    await topupRef.update({
-      addpayTransactionId: result.data.transactionId,
-      addpayReference: result.data.reference,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    return res.json({ success: true, provider: 'addpay', paymentUrl: result.data.paymentUrl, topupId });
+    return res.json({ success: true, provider: 'stripe', topupId: topupRef.id });
   } catch (error) {
     console.error('Add funds error:', error);
-    res.status(500).json({ success: false, message: 'Failed to initialize top-up payment' });
+    res.status(500).json({ success: false, message: 'Failed to start top-up' });
   }
 });
 
-// Verify a top-up and credit the wallet (idempotent). Called when the user returns
-// from the provider. For AddPay we confirm the transaction with AddPay; for Traderoot
-// the charge endpoint already credited, so we just report status.
+// Report top-up status. Crediting happens in the Stripe webhook
+// (/api/payments/stripe/webhook), which is the authoritative path; this is the
+// browser-return check the wallet page polls after redirect.
 router.post('/verify-topup', authMiddleware, async (req, res) => {
   try {
     const { topupId } = req.body;
@@ -102,23 +62,6 @@ router.post('/verify-topup', authMiddleware, async (req, res) => {
     const topup = topupDoc.data();
     if (topup.userId !== req.user.uid) return res.status(403).json({ success: false, message: 'Unauthorized' });
 
-    if (topup.status === 'completed') {
-      return res.json({ success: true, status: 'completed' });
-    }
-
-    if (topup.provider === 'addpay') {
-      if (!topup.addpayTransactionId) {
-        return res.json({ success: false, status: 'pending' });
-      }
-      const verification = await addpayService.verifyTransaction(topup.addpayTransactionId);
-      if (verification.success && verification.data.status === 'COMPLETE') {
-        await creditWalletTopup(topupId);
-        return res.json({ success: true, status: 'completed' });
-      }
-      return res.json({ success: false, status: (verification.data && verification.data.status) || 'pending' });
-    }
-
-    // Traderoot: crediting happens in the charge endpoint.
     return res.json({ success: topup.status === 'completed', status: topup.status });
   } catch (error) {
     console.error('Verify top-up error:', error);
@@ -331,7 +274,7 @@ router.post('/', authMiddleware, async (req, res) => {
       console.log('Order data for SAPO:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
 
       // Create shipment with SAPO
-      const shipmentResult = await sapoShippingService.createShipmentForOrder(updatedOrder);
+      const shipmentResult = await shippingService.createShipmentForOrder(updatedOrder);
       console.log('SAPO shipment created:', shipmentResult.trackingNumber);
 
       // Update order with tracking info and main status

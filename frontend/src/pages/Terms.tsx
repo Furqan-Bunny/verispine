@@ -200,26 +200,18 @@ const Terms = () => {
                 </ul>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">AddPay</p>
+                <p className="font-semibold text-gray-900 mb-2">Card (Stripe)</p>
                 <ul className="text-sm space-y-1">
-                  <li>Visa and Mastercard</li>
-                  <li>3D Secure verification</li>
-                  <li>Secure card-not-present payments</li>
-                </ul>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">Traderoot</p>
-                <ul className="text-sm space-y-1">
-                  <li>Visa and Mastercard</li>
-                  <li>3D Secure verification</li>
-                  <li>Securely tokenized saved cards</li>
+                  <li>Visa, Mastercard, Amex and Discover</li>
+                  <li>3-D Secure verification</li>
+                  <li>Card details are never stored by VeriSpine</li>
                 </ul>
               </div>
             </div>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">6.4 VeriSpine Wallet</p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
-              <li>Users may add funds to their Wallet via AddPay or Traderoot (minimum top-up: $10.00).</li>
+              <li>Users may add funds to their Wallet via card payment (minimum top-up: $10.00).</li>
               <li>Wallet funds can be used to pay for purchases instantly.</li>
               <li>Wallet balances are displayed in your account dashboard and on the navigation bar.</li>
               <li>Sellers receive sale proceeds into their Wallet balance after deduction of platform fees.</li>
@@ -438,7 +430,7 @@ const Terms = () => {
             <p className="font-semibold text-gray-800 mt-4 mb-3">14.4 Third Parties With Whom We Share Personal Data</p>
             <p>To deliver the services described in Section 14.3, VeriSpine shares limited personal data with the following categories of third-party operators, each of which is contractually bound to process the data only on VeriSpine's behalf and in accordance with POPIA:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li><strong>Payment gateways:</strong> AddPay and Traderoot - to authorise card payments, process refunds, and confirm transaction outcomes</li>
+              <li><strong>Payment gateway:</strong> Stripe - to authorise card payments, process refunds, and confirm transaction outcomes</li>
               <li><strong>Shipping providers:</strong> reliable third-party couriers (and their delivery partners) - to register parcels, generate tracking numbers, and update delivery status</li>
               <li><strong>Email and notification providers:</strong> Resend - to deliver transactional emails on VeriSpine's behalf</li>
               <li><strong>Cloud infrastructure:</strong> Google Cloud / Firebase - to securely host the Platform, authenticate Users, and store records</li>

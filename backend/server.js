@@ -172,6 +172,11 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
+// Stripe webhook signature verification needs the UNPARSED body, so this raw
+// mount must stay ahead of express.json(). If it is moved below, every webhook
+// will fail verification and no payment will ever settle.
+app.use('/api/payments/stripe/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Stricter rate limiter for auth endpoints
@@ -209,8 +214,8 @@ if (!db) {
 // Import routes with error handling
 console.log('Loading routes...');
 let authRoutes, userRoutes, productRoutes, affiliateRoutes, bidRoutes;
-let orderRoutes, categoryRoutes, walletRoutes, addpayRoutes;
-let paymentVerificationRoutes, adminRoutes, withdrawalRoutes, paymentsFirebaseRoutes, reviewRoutes, auctionRegistrationRoutes, kycRoutes, notificationRoutes, questionRoutes, sellerApplicationRoutes, sellerRoutes, publicSellersRoutes, adminSellersRoutes, adminAffiliatesRoutes;
+let orderRoutes, categoryRoutes, walletRoutes, stripeRoutes;
+let paymentVerificationRoutes, adminRoutes, withdrawalRoutes, reviewRoutes, auctionRegistrationRoutes, kycRoutes, notificationRoutes, questionRoutes, sellerApplicationRoutes, sellerRoutes, publicSellersRoutes, adminSellersRoutes, adminAffiliatesRoutes;
 
 try {
   authRoutes = require('./routes/auth');
@@ -229,16 +234,14 @@ try {
   console.log('✓ categories routes loaded');
   walletRoutes = require('./routes/payments-wallet');
   console.log('✓ wallet routes loaded');
-  addpayRoutes = require('./routes/payments-addpay');
-  console.log('✓ addpay routes loaded');
+  stripeRoutes = require('./routes/payments-stripe');
+  console.log('✓ stripe routes loaded');
   paymentVerificationRoutes = require('./routes/payments-verification');
   console.log('✓ payment verification routes loaded');
   adminRoutes = require('./routes/admin-firebase');
   console.log('✓ admin routes loaded');
   withdrawalRoutes = require('./routes/withdrawals-firebase');
   console.log('✓ withdrawal routes loaded');
-  paymentsFirebaseRoutes = require('./routes/payments-firebase');
-  console.log('✓ payments firebase routes loaded');
   reviewRoutes = require('./routes/reviews');
   console.log('✓ reviews routes loaded');
   auctionRegistrationRoutes = require('./routes/auction-registration');
@@ -273,10 +276,8 @@ app.use('/api/affiliate', affiliateRoutes);
 app.use('/api/bids', bidRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/payments', paymentsFirebaseRoutes); // Use new Firebase payments
 app.use('/api/payments/wallet', walletRoutes);
-app.use('/api/payments/addpay', addpayRoutes);
-app.use('/api/payments/traderoot', require('./routes/payments-traderoot'));
+app.use('/api/payments/stripe', stripeRoutes);
 app.use('/api/payments/verification', paymentVerificationRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/admin/sellers', adminSellersRoutes);

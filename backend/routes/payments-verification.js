@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
-const addpayService = require('../services/addpay');
-const sapoShippingService = require('../services/shippingService'); // provider facade (SAPO/ShipLogic)
+const shippingService = require('../services/shippingService');
 const emailService = require('../services/resendEmailService');
 const { processAffiliateCommission } = require('../utils/affiliateCommission');
 const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
@@ -65,38 +64,18 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
         }
         break;
         
-      case 'addpay':
-        // Verify with AddPay
-        if (!transactionId) {
-          return res.status(400).json({ error: 'Transaction ID required for AddPay verification' });
-        }
-
-        const addpayVerification = await addpayService.verifyTransaction(transactionId);
-
-        if (addpayVerification.success && (addpayVerification.data.status === 'COMPLETE' || addpayVerification.data.status === 'COMPLETED')) {
-          paymentVerified = true;
-          paymentDetails = {
-            transactionId: addpayVerification.data.transactionId,
-            amount: addpayVerification.data.amount,
-            currency: addpayVerification.data.currency,
-            reference: addpayVerification.data.reference
-          };
-        }
-        break;
-        
-
-      case 'traderoot': {
-        // Traderoot charge is done server-side; check if payment record exists
-        const traderootSnapshot = await db.collection('payments')
+      case 'stripe': {
+        // Stripe settles via its webhook; a completed payment row is the proof.
+        const stripeSnapshot = await db.collection('payments')
           .where('orderId', '==', orderId)
-          .where('method', '==', 'traderoot')
+          .where('method', '==', 'stripe')
           .where('status', '==', 'completed')
           .limit(1)
           .get();
 
-        if (!traderootSnapshot.empty) {
+        if (!stripeSnapshot.empty) {
           paymentVerified = true;
-          paymentDetails = traderootSnapshot.docs[0].data();
+          paymentDetails = stripeSnapshot.docs[0].data();
         }
         break;
       }
@@ -229,7 +208,7 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
       console.log('Order data for SAPO:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
 
       // Create shipment with SAPO
-      const shipmentResult = await sapoShippingService.createShipmentForOrder(updatedOrder);
+      const shipmentResult = await shippingService.createShipmentForOrder(updatedOrder);
       console.log('SAPO shipment created (verification):', shipmentResult.trackingNumber);
 
       // Update order with tracking info and main status
@@ -343,48 +322,6 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error fetching payment status:', error);
     res.status(500).json({ error: 'Failed to fetch payment status' });
-  }
-});
-
-// AddPay webhook handler
-router.post('/webhook/addpay', async (req, res) => {
-  try {
-    const data = req.body;
-    console.log('AddPay verification webhook received:', JSON.stringify(data));
-
-    const transactionId = data.id || data.transaction_id;
-    const reference = data.reference;
-
-    // Verify the transaction server-side
-    if (transactionId) {
-      const verification = await addpayService.verifyTransaction(transactionId);
-
-      if (verification.success && (verification.data.status === 'COMPLETE' || verification.data.status === 'COMPLETED')) {
-        // Find order by reference or meta
-        const meta = verification.data.meta;
-        if (meta && meta.orderId) {
-          const orderRef = db.collection('orders').doc(meta.orderId);
-          const orderDoc = await orderRef.get();
-
-          if (orderDoc.exists) {
-            await orderRef.update({
-              paymentStatus: 'completed',
-              paymentMethod: 'addpay',
-              addpayTransactionId: transactionId,
-              addpayReference: reference,
-              paidAt: admin.firestore.FieldValue.serverTimestamp(),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-          }
-        }
-      }
-    }
-
-    res.status(200).json({ status: 'success' });
-
-  } catch (error) {
-    console.error('AddPay webhook error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
   }
 });
 
