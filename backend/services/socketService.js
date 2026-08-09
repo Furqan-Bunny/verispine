@@ -14,18 +14,14 @@ class SocketService {
       return;
     }
     
+    // Same allowlist the REST API uses. Keeping these in sync matters: an origin
+    // allowed for REST but not for websockets loses live bidding without any
+    // visible error, which is exactly what happened in the codebase this came from.
+    const { buildAllowedOrigins } = require('../config/corsOrigins');
+
     this.io = socketIO(server, {
       cors: {
-        origin: [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://localhost:3002",
-          "http://localhost:3010",
-          "http://localhost:5173",
-          "https://quicksell-80aad.web.app",
-          "https://quicksell-80aad--verispine-5ar9e0y8.web.app",
-          "https://quicksell-80aad.firebaseapp.com"
-        ],
+        origin: buildAllowedOrigins(),
         methods: ["GET", "POST"],
         credentials: true
       }

@@ -499,6 +499,25 @@ const ProductDetail = () => {
     description: product.title
   })) || []
 
+  // Equipment provenance rows, built only from fields the seller actually filled
+  // in. complianceNotes is excluded here — it is long-form and gets its own
+  // callout rather than a two-column cell.
+  const CONDITION_GRADE_LABELS: Record<string, string> = {
+    'new': 'New',
+    'refurbished': 'Refurbished',
+    'used-working': 'Used, Working',
+    'for-parts': 'For Parts / Not Working',
+  }
+
+  const equipmentRows = [
+    { label: 'Manufacturer', value: product.manufacturer },
+    { label: 'Model Number', value: product.modelNumber },
+    { label: 'Year', value: product.yearManufactured },
+    { label: 'Condition Grade', value: CONDITION_GRADE_LABELS[product.conditionGrade] },
+    { label: 'Serial Number', value: product.serialNumber },
+  ].filter((row): row is { label: string; value: string } => Boolean(row.value))
+    .map(row => ({ label: row.label, value: String(row.value) }))
+
   const isScheduled = product.status === 'scheduled'
   const scheduledStartTime = product.scheduledStartTime
     ? new Date(product.scheduledStartTime?._seconds ? product.scheduledStartTime._seconds * 1000 : product.scheduledStartTime)
@@ -870,6 +889,38 @@ const ProductDetail = () => {
               {activeTab === 'description' && (
                 <div className="prose max-w-none">
                   <p className="text-gray-600">{product.description}</p>
+
+                  {/* Equipment provenance. Rendered above the free-form spec table
+                      because for used medical equipment these are the deciding
+                      facts, not supporting detail. Hidden entirely when the seller
+                      supplied none — an empty "Equipment Details" panel reads as
+                      missing information rather than as an inapplicable section. */}
+                  {equipmentRows.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Equipment Details</h3>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {equipmentRows.map(({ label, value }) => (
+                            <div key={label}>
+                              <dt className="font-medium text-gray-600 text-sm">{label}:</dt>
+                              <dd className="text-gray-900 font-medium">{value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                      {product.complianceNotes && (
+                        <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                          <p className="text-sm font-medium text-amber-900 mb-1">
+                            Compliance &amp; Certification
+                          </p>
+                          <p className="text-sm text-amber-800 whitespace-pre-line">
+                            {product.complianceNotes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {product.specifications && Object.keys(product.specifications).length > 0 && (
                     <div className="mt-6">
                       <h3 className="font-semibold text-gray-900 mb-4">Specifications</h3>

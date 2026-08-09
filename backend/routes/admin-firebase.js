@@ -4,6 +4,7 @@ const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
 const { deleteUserFully } = require('../utils/adminDelete');
+const { withSignedDocuments } = require('./kyc');
 
 // Normalize a category slug (lowercase, hyphenated, alphanumeric only).
 const slugifyCategory = (value) =>
@@ -1068,12 +1069,14 @@ router.get('/kyc/:userId', authMiddleware, adminMiddleware, async (req, res) => 
         kycReviewedAt: userData.kycReviewedAt,
         kycReviewedBy: userData.kycReviewedBy,
         kycRejectionReason: userData.kycRejectionReason,
-        kycDocuments: {
+        // Signed on the way out: the stored values are private Storage paths,
+        // so the reviewer gets a URL that works for 15 minutes and then dies.
+        kycDocuments: await withSignedDocuments({
           idType: userData.kycDocuments.idType,
           idNumber: userData.kycDocuments.idNumber,
           idDocument: userData.kycDocuments.idDocument,
           selfie: userData.kycDocuments.selfie
-        }
+        })
       }
     });
   } catch (error) {

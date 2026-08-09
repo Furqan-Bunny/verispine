@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom'
 
-// Privacy Policy — POPIA-aligned. Plain-language summary of how VeriSpine handles personal
-// information. This should be reviewed by the business/legal before launch.
+// Privacy Policy — plain-language summary of how VeriSpine handles personal information.
+//
+// This text was adapted from a South African deployment and describes practices,
+// not legal obligations under any specific US statute. US privacy law is
+// state-by-state (CCPA/CPRA, VCDPA, and others), and selling used medical
+// devices carries its own regime. This MUST be reviewed by a US attorney before
+// launch — do not treat it as compliant as written.
 const Privacy = () => {
   const lastUpdated = '22 June 2026'
 
@@ -13,7 +18,7 @@ const Privacy = () => {
       <div className="space-y-6 text-gray-700 leading-relaxed">
         <p>
           VeriSpine ("we", "us") respects your privacy and is committed to protecting your personal
-          information in line with the Protection of Personal Information Act, 2013 (POPIA). This policy
+          information in line with applicable United States federal and state privacy law. This policy
           explains what we collect, why, and your rights.
         </p>
 
@@ -64,7 +69,7 @@ const Privacy = () => {
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">6. Your rights</h2>
           <p>
-            Under POPIA you may request access to, correction of, or deletion of your personal
+            Under applicable privacy law you may request access to, correction of, or deletion of your personal
             information, and you may object to certain processing. To exercise these rights, contact us at{' '}
             <a href="mailto:info@verispinejointcenters.com" className="text-primary-600 hover:underline">info@verispinejointcenters.com</a>.
           </p>

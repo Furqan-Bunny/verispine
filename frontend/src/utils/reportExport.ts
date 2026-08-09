@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
+import { formatCurrency } from '../config/locale'
 
 interface AnalyticsData {
   dailyRevenue: Record<string, number>
@@ -37,8 +38,8 @@ const reportTypeLabels: Record<string, string> = {
   revenue: 'Revenue'
 }
 
-function formatRand(amount: number): string {
-  return 'R ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+function formatMoney(amount: number): string {
+  return formatCurrency(amount)
 }
 
 function todayStr(): string {
@@ -59,7 +60,7 @@ export function exportReportPDF(
 
   // Header
   doc.setFontSize(20)
-  doc.setTextColor(249, 115, 22) // orange-500
+  doc.setTextColor(11, 42, 69) // VeriSpine navy
   doc.text('VeriSpine', 14, y)
   y += 10
 
@@ -91,13 +92,13 @@ export function exportReportPDF(
         startY: y,
         head: [['Metric', 'Value']],
         body: [
-          ['Total Revenue', formatRand(stats?.totalRevenue || 0)],
+          ['Total Revenue', formatMoney(stats?.totalRevenue || 0)],
           ['Total Orders', String(stats?.totalOrders || 0)],
-          ['Average Order Value', formatRand(stats?.averageOrderValue || 0)],
+          ['Average Order Value', formatMoney(stats?.averageOrderValue || 0)],
           ['Success Rate', `${(stats?.successRate || 0).toFixed(1)}%`]
         ],
         theme: 'grid',
-        headStyles: { fillColor: [249, 115, 22] },
+        headStyles: { fillColor: [11, 42, 69] },
         margin: { left: 14, right: 14 }
       })
       y = (doc as any).lastAutoTable.finalY + 10
@@ -111,14 +112,14 @@ export function exportReportPDF(
 
         const dailyRows = Object.entries(analytics.dailyRevenue)
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, revenue]) => [date, formatRand(revenue)])
+          .map(([date, revenue]) => [date, formatMoney(revenue)])
 
         autoTable(doc, {
           startY: y,
           head: [['Date', 'Revenue']],
           body: dailyRows,
           theme: 'striped',
-          headStyles: { fillColor: [249, 115, 22] },
+          headStyles: { fillColor: [11, 42, 69] },
           margin: { left: 14, right: 14 }
         })
         y = (doc as any).lastAutoTable.finalY + 10
@@ -135,7 +136,7 @@ export function exportReportPDF(
           p.title,
           String(p.views || 0),
           p.status || 'unknown',
-          formatRand(p.currentPrice || p.startingPrice || 0)
+          formatMoney(p.currentPrice || p.startingPrice || 0)
         ])
 
         autoTable(doc, {
@@ -143,7 +144,7 @@ export function exportReportPDF(
           head: [['Product', 'Views', 'Status', 'Price']],
           body: productRows,
           theme: 'striped',
-          headStyles: { fillColor: [249, 115, 22] },
+          headStyles: { fillColor: [11, 42, 69] },
           margin: { left: 14, right: 14 }
         })
       }
@@ -178,8 +179,8 @@ export function exportReportPDF(
           ['Active', String(productStats?.active || 0)],
           ['Ended', String(productStats?.ended || 0)],
           ['Sold', String(productStats?.sold || 0)],
-          ['Average Price', formatRand(productStats?.avgPrice || 0)],
-          ['Total Value', formatRand(productStats?.totalValue || 0)]
+          ['Average Price', formatMoney(productStats?.avgPrice || 0)],
+          ['Total Value', formatMoney(productStats?.totalValue || 0)]
         ],
         theme: 'grid',
         headStyles: { fillColor: [139, 92, 246] },
@@ -199,7 +200,7 @@ export function exportReportPDF(
           String(p.views || 0),
           p.category || 'Uncategorized',
           p.status || 'unknown',
-          formatRand(p.currentPrice || p.startingPrice || 0)
+          formatMoney(p.currentPrice || p.startingPrice || 0)
         ])
 
         autoTable(doc, {
@@ -219,13 +220,13 @@ export function exportReportPDF(
         startY: y,
         head: [['Metric', 'Value']],
         body: [
-          ['Total Revenue', formatRand(stats?.totalRevenue || 0)],
-          ['Platform Fees', formatRand(stats?.platformFees || 0)],
-          ['Net Revenue', formatRand((stats?.totalRevenue || 0) - (stats?.platformFees || 0))],
-          ['Average Order Value', formatRand(stats?.averageOrderValue || 0)]
+          ['Total Revenue', formatMoney(stats?.totalRevenue || 0)],
+          ['Platform Fees', formatMoney(stats?.platformFees || 0)],
+          ['Net Revenue', formatMoney((stats?.totalRevenue || 0) - (stats?.platformFees || 0))],
+          ['Average Order Value', formatMoney(stats?.averageOrderValue || 0)]
         ],
         theme: 'grid',
-        headStyles: { fillColor: [249, 115, 22] },
+        headStyles: { fillColor: [11, 42, 69] },
         margin: { left: 14, right: 14 }
       })
       y = (doc as any).lastAutoTable.finalY + 10
@@ -239,14 +240,14 @@ export function exportReportPDF(
 
         const dailyRows = Object.entries(analytics.dailyRevenue)
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, revenue]) => [date, formatRand(revenue)])
+          .map(([date, revenue]) => [date, formatMoney(revenue)])
 
         autoTable(doc, {
           startY: y,
           head: [['Date', 'Revenue']],
           body: dailyRows,
           theme: 'striped',
-          headStyles: { fillColor: [249, 115, 22] },
+          headStyles: { fillColor: [11, 42, 69] },
           margin: { left: 14, right: 14 }
         })
         y = (doc as any).lastAutoTable.finalY + 10
@@ -269,7 +270,7 @@ export function exportReportPDF(
           head: [['Method', 'Count']],
           body: methodRows,
           theme: 'striped',
-          headStyles: { fillColor: [249, 115, 22] },
+          headStyles: { fillColor: [11, 42, 69] },
           margin: { left: 14, right: 14 }
         })
       }

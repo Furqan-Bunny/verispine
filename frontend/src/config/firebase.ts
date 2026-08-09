@@ -1,23 +1,39 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
+/**
+ * Firebase web config, read from the environment.
+ *
+ * These values are not secret — they ship in the bundle either way — but keeping
+ * them out of the source means the repo is not tied to one project. The old
+ * codebase hardcoded them, which is how a staging build ended up pointed at
+ * production. Access control lives in firestore.rules and storage.rules.
+ */
 const firebaseConfig = {
-  apiKey: "AIzaSyA9THl_SNKyazeQAEBV_PQUE10y9PqvGR4",
-  authDomain: "quicksell-80aad.firebaseapp.com",
-  projectId: "quicksell-80aad",
-  storageBucket: "quicksell-80aad.firebasestorage.app",
-  messagingSenderId: "268405827471",
-  appId: "1:268405827471:web:60468bf66f1f1100670dfa"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Fail loudly at startup rather than with an opaque Firebase error on first use.
+const missing = Object.entries(firebaseConfig)
+  .filter(([, v]) => !v)
+  .map(([k]) => k);
+
+if (missing.length) {
+  throw new Error(
+    `Firebase config is incomplete — missing: ${missing.join(', ')}. ` +
+    `Set the matching VITE_FIREBASE_* variables in frontend/.env`
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);

@@ -49,7 +49,7 @@ const Profile = () => {
     address: user?.address?.street || '',
     city: user?.address?.city || '',
     postalCode: user?.address?.postalCode || '',
-    country: user?.address?.country || 'South Africa'
+    country: user?.address?.country || 'United States'
   })
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -79,7 +79,7 @@ const Profile = () => {
         address: user.address?.street || '',
         city: user.address?.city || '',
         postalCode: user.address?.postalCode || '',
-        country: user.address?.country || 'South Africa'
+        country: user.address?.country || 'United States'
       })
       
       // Also update notifications if they exist
@@ -758,14 +758,14 @@ const Profile = () => {
                   <div className="flex justify-between items-center py-2 border-b">
                     <div>
                       <p className="text-sm font-medium">Chrome on Windows</p>
-                      <p className="text-xs text-gray-500">Cape Town, South Africa</p>
+                      <p className="text-xs text-gray-500">Atlanta, Georgia</p>
                     </div>
                     <p className="text-xs text-gray-500">2 hours ago</p>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
                     <div>
                       <p className="text-sm font-medium">Safari on iPhone</p>
-                      <p className="text-xs text-gray-500">Johannesburg, South Africa</p>
+                      <p className="text-xs text-gray-500">Marietta, Georgia</p>
                     </div>
                     <p className="text-xs text-gray-500">1 day ago</p>
                   </div>

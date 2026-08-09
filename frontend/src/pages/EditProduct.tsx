@@ -63,6 +63,12 @@ const EditProduct = () => {
     description: '',
     categoryId: '',
     condition: 'new',
+    manufacturer: '',
+    modelNumber: '',
+    yearManufactured: '',
+    conditionGrade: '',
+    serialNumber: '',
+    complianceNotes: '',
     startingPrice: '',
     buyNowPrice: '',
     reservePrice: '',
@@ -137,6 +143,12 @@ const EditProduct = () => {
           description: product.description || '',
           categoryId: product.categoryId || '',
           condition: product.condition || 'new',
+          manufacturer: product.manufacturer || '',
+          modelNumber: product.modelNumber || '',
+          yearManufactured: product.yearManufactured?.toString() || '',
+          conditionGrade: product.conditionGrade || '',
+          serialNumber: product.serialNumber || '',
+          complianceNotes: product.complianceNotes || '',
           startingPrice: product.startingPrice?.toString() || '',
           buyNowPrice: product.buyNowPrice?.toString() || '',
           reservePrice: product.reservePrice?.toString() || '',
@@ -252,6 +264,14 @@ const EditProduct = () => {
         description: formData.description,
         categoryId: formData.categoryId,
         condition: formData.condition,
+        // Always sent, including when blank: an emptied field must clear the
+        // stored value, and the backend normalizes '' to null.
+        manufacturer: formData.manufacturer,
+        modelNumber: formData.modelNumber,
+        yearManufactured: formData.yearManufactured,
+        conditionGrade: formData.conditionGrade,
+        serialNumber: formData.serialNumber,
+        complianceNotes: formData.complianceNotes,
         images: formData.images,
         shippingOptions: formData.shippingOptions,
         tags: formData.tags,
@@ -395,6 +415,55 @@ const EditProduct = () => {
                   <option value="fair">Fair</option>
                   <option value="poor">Poor</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Equipment provenance — mirrors the Create form so a listing can be
+                completed after the fact rather than only at creation. */}
+            <div className="mt-6 border border-gray-200 rounded-lg p-5 bg-gray-50">
+              <h3 className="font-semibold text-gray-900 mb-4">Equipment Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
+                  <input type="text" name="manufacturer" value={formData.manufacturer}
+                    onChange={handleInputChange} placeholder="e.g. GE Healthcare" className="input-field" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Model Number</label>
+                  <input type="text" name="modelNumber" value={formData.modelNumber}
+                    onChange={handleInputChange} placeholder="e.g. OEC 9900 Elite" className="input-field" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year Manufactured</label>
+                  <input type="number" name="yearManufactured" value={formData.yearManufactured}
+                    onChange={handleInputChange} min={1950} max={new Date().getFullYear() + 1}
+                    placeholder="e.g. 2018" className="input-field" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
+                  <input type="text" name="serialNumber" value={formData.serialNumber}
+                    onChange={handleInputChange} placeholder="Optional" className="input-field" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition Grade</label>
+                  <select name="conditionGrade" value={formData.conditionGrade}
+                    onChange={handleInputChange} className="input-field">
+                    <option value="">Not specified</option>
+                    <option value="new">New — unused, in original packaging</option>
+                    <option value="refurbished">Refurbished — professionally restored and tested</option>
+                    <option value="used-working">Used, Working — functional, normal wear</option>
+                    <option value="for-parts">For Parts / Not Working — not for clinical use</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Compliance &amp; Certification Notes
+                  </label>
+                  <textarea name="complianceNotes" value={formData.complianceNotes}
+                    onChange={handleInputChange} rows={3}
+                    placeholder="Service history, calibration records, FDA/registration status, or any restrictions on resale or clinical use."
+                    className="input-field" />
+                </div>
               </div>
             </div>
           </div>

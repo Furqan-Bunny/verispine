@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom'
 import { useEffect } from 'react'
 
+// Terms of Service.
+//
+// Adapted from a South African deployment: statute references were converted to
+// their nearest US equivalents, but that is a translation, not legal advice. Two
+// things in particular are NOT covered here and must be addressed before launch:
+// state-by-state consumer and privacy law, and the regulatory regime around
+// reselling used and refurbished medical devices (FDA, plus state licensing).
+// A US attorney must review this text — see SETUP.md, "Before go-live".
 const Terms = () => {
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -36,27 +44,24 @@ const Terms = () => {
               <li><strong>"Seller"</strong> means a User who lists an item for auction or sale.</li>
               <li><strong>"Auction"</strong> means the online bidding process conducted on the Platform.</li>
               <li><strong>"Item"</strong> means any goods or services listed on VeriSpine.</li>
-              <li><strong>"Wallet"</strong> means the digital balance held in a User's VeriSpine account, denominated in South African Rand (USD).</li>
+              <li><strong>"Wallet"</strong> means the digital balance held in a User's VeriSpine account, denominated in United States Dollars (USD).</li>
               <li><strong>"KYC"</strong> means Know Your Customer identity verification.</li>
-              <li><strong>"CPA"</strong> means the Consumer Protection Act 68 of 2008.</li>
-              <li><strong>"ECTA"</strong> means the Electronic Communications and Transactions Act 25 of 2002.</li>
-              <li><strong>"POPIA"</strong> means the Protection of Personal Information Act 4 of 2013.</li>
             </ul>
           </section>
 
           {/* 2. LEGAL STATUS */}
           <section>
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">2. Legal Status and Application</h2>
-            <p>2.1 These Terms constitute a legally binding electronic agreement in terms of ECTA.</p>
+            <p>2.1 These Terms constitute a legally binding electronic agreement under the federal E-SIGN Act and applicable state law.</p>
             <p>2.2 These Terms apply to all Users, including private individuals and businesses.</p>
-            <p>2.3 Nothing in these Terms limits any non-excludable consumer rights under the CPA.</p>
+            <p>2.3 Nothing in these Terms limits any consumer rights that cannot be waived under applicable federal or state law.</p>
           </section>
 
           {/* 3. ELIGIBILITY AND REGISTRATION */}
           <section>
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">3. Eligibility and Registration</h2>
             <p className="font-semibold text-gray-800 mb-3">3.1 Eligibility</p>
-            <p>Users must be at least 18 years old and legally competent to enter into binding agreements under South African law.</p>
+            <p>Users must be at least 18 years old and legally competent to enter into binding agreements under applicable United States law.</p>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">3.2 Registration Process</p>
             <p>To use certain features of the Platform (including bidding, buying, selling, and accessing your Wallet), you must create an account. The registration process is as follows:</p>
@@ -91,7 +96,7 @@ const Terms = () => {
               Users may optionally complete Know Your Customer (KYC) verification to enhance account trust and access certain features. KYC requires:
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>A valid identity document (South African ID, Passport, or Driver's Licence)</li>
+              <li>A valid identity document (State ID, Passport, or Driver's License)</li>
               <li>A clear selfie photograph</li>
               <li>Documents must be under 5MB in size (image or PDF format)</li>
             </ul>
@@ -189,7 +194,7 @@ const Terms = () => {
             </div>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">6.3 Accepted Payment Methods</p>
-            <p>VeriSpine supports the following payment methods, all denominated in South African Rand (USD):</p>
+            <p>VeriSpine supports the following payment methods, all denominated in United States Dollars (USD):</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="font-semibold text-gray-900 mb-2">VeriSpine Wallet</p>
@@ -231,7 +236,7 @@ const Terms = () => {
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">7. Delivery and Shipping</h2>
 
             <p className="font-semibold text-gray-800 mb-3">7.1 Shipping Providers</p>
-            <p>VeriSpine uses reliable third-party couriers for domestic deliveries within South Africa. The courier handling your order is shown in your order details once a shipment is created.</p>
+            <p>VeriSpine uses reliable third-party couriers for domestic deliveries within the United States. The courier handling your order is shown in your order details once a shipment is created.</p>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">7.2 How Shipping Works</p>
             <div className="bg-amber-50 rounded-lg p-5 my-4">
@@ -310,8 +315,8 @@ const Terms = () => {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">8. Returns and Refunds Policy</h2>
 
-            <p className="font-semibold text-gray-800 mb-3">8.1 Cooling-Off Period (CPA Compliance)</p>
-            <p>Where applicable under the Consumer Protection Act:</p>
+            <p className="font-semibold text-gray-800 mb-3">8.1 Cancellation Window</p>
+            <p>Where a right of cancellation applies under federal or state law:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Buyers may cancel a transaction within <strong>7 days</strong> after delivery for distance sales.</li>
               <li>The item must be returned in the same condition as received by the Buyer.</li>
@@ -359,7 +364,7 @@ const Terms = () => {
             <ul className="list-disc pl-6 space-y-2 mt-2">
               <li>They are the lawful owner or authorised seller of the item</li>
               <li>Items are accurately described, including condition, specifications, and images</li>
-              <li>Items comply with South African law and all applicable regulations</li>
+              <li>Items comply with United States federal and state law and all applicable regulations</li>
               <li>Items are not counterfeit, stolen, or illegal</li>
               <li>Shipping pickup information (address, city, province, postal code) is accurate</li>
             </ul>
@@ -401,13 +406,13 @@ const Terms = () => {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">14. Privacy and Data Protection</h2>
 
-            <p>14.1 Personal data is processed in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA).</p>
+            <p>14.1 Personal data is processed in accordance with applicable United States federal and state privacy law.</p>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">14.2 Personal Data We Collect</p>
             <p>To operate the Platform, VeriSpine collects the following categories of personal data:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li><strong>Registration data:</strong> first name, last name, username, email address, password (stored as a one-way hash), and optional phone number</li>
-              <li><strong>Identity verification (KYC) data:</strong> identity document (South African ID, Passport, or Driver's Licence), ID number, and a selfie photograph - submitted voluntarily by the User to enable verified status</li>
+              <li><strong>Identity verification (KYC) data:</strong> identity document (State ID, Passport, or Driver's License), ID number, and a selfie photograph - submitted voluntarily by the User to enable verified status</li>
               <li><strong>Transaction data:</strong> orders placed, bids submitted, payments made, items sold, and Wallet activity</li>
               <li><strong>Shipping data:</strong> full name, delivery address, contact phone number, and email address (collected at checkout)</li>
               <li><strong>Seller / business data:</strong> business name, contact email, bank details (account holder, bank name, account number, branch code) where the User registers as a Seller</li>
@@ -424,11 +429,11 @@ const Terms = () => {
               <li><strong>Fulfilling delivery:</strong> generating shipping labels and tracking numbers, and arranging the physical delivery of items to the address you provide</li>
               <li><strong>Fraud prevention and platform safety:</strong> detecting suspicious activity such as shill bidding, multiple-account abuse, payment fraud, and other prohibited conduct described in Section 12</li>
               <li><strong>Communications:</strong> sending you transactional emails (order confirmations, payment reminders, shipping updates, withdrawal status) and, where permitted, marketing communications that you can opt out of at any time</li>
-              <li><strong>Legal compliance and dispute resolution:</strong> maintaining records required by South African law, responding to lawful requests from regulators or courts, and resolving disputes between Users</li>
+              <li><strong>Legal compliance and dispute resolution:</strong> maintaining records required by applicable law, responding to lawful requests from regulators or courts, and resolving disputes between Users</li>
             </ul>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">14.4 Third Parties With Whom We Share Personal Data</p>
-            <p>To deliver the services described in Section 14.3, VeriSpine shares limited personal data with the following categories of third-party operators, each of which is contractually bound to process the data only on VeriSpine's behalf and in accordance with POPIA:</p>
+            <p>To deliver the services described in Section 14.3, VeriSpine shares limited personal data with the following categories of third-party operators, each of which is contractually bound to process the data only on VeriSpine's behalf and in accordance with applicable privacy law:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li><strong>Payment gateway:</strong> Stripe - to authorise card payments, process refunds, and confirm transaction outcomes</li>
               <li><strong>Shipping providers:</strong> reliable third-party couriers (and their delivery partners) - to register parcels, generate tracking numbers, and update delivery status</li>
@@ -446,14 +451,14 @@ const Terms = () => {
               <li>Access to KYC documents is restricted to authorised administrators on a need-to-know basis</li>
             </ul>
 
-            <p className="font-semibold text-gray-800 mt-4 mb-3">14.6 Your Rights Under POPIA</p>
+            <p className="font-semibold text-gray-800 mt-4 mb-3">14.6 Your Privacy Rights</p>
             <p>Subject to applicable law, you have the right to:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Request access to the personal data VeriSpine holds about you</li>
               <li>Request correction of inaccurate or incomplete data</li>
               <li>Request deletion of your personal data, subject to retention requirements for completed transactions and legal obligations</li>
               <li>Object to the processing of your data for direct marketing purposes</li>
-              <li>Lodge a complaint with the South African Information Regulator (<a href="https://inforegulator.org.za" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">inforegulator.org.za</a>) if you believe your rights have been infringed</li>
+              <li>Lodge a complaint with the <a href="https://reportfraud.ftc.gov" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">Federal Trade Commission</a>, or with your state Attorney General, if you believe your rights have been infringed</li>
             </ul>
             <p className="mt-2">To exercise any of these rights, contact <a href="mailto:info@verispinejointcenters.com" className="text-primary-600 hover:underline">info@verispinejointcenters.com</a>. We will respond within a reasonable period, typically within 30 days.</p>
 
@@ -499,8 +504,8 @@ const Terms = () => {
           {/* 18. GOVERNING LAW */}
           <section>
             <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">18. Governing Law and Jurisdiction</h2>
-            <p>18.1 These Terms are governed by the laws of the Republic of South Africa.</p>
-            <p>18.2 The South African courts shall have exclusive jurisdiction over any disputes arising from these Terms.</p>
+            <p>18.1 These Terms are governed by the laws of the State of Georgia and applicable United States federal law.</p>
+            <p>18.2 The state and federal courts located in the State of Georgia shall have exclusive jurisdiction over any disputes arising from these Terms.</p>
           </section>
 
           {/* 19. DISPUTE RESOLUTION */}

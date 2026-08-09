@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { carrierLabel, carrierTrackingUrl } from './carriers'
+import { formatCurrency } from '../config/locale'
 
 /**
  * Generate a PDF receipt/details document for a single order.
@@ -16,10 +17,7 @@ export function exportOrderPDF(order: any) {
   const left = 14
   let y = 20
 
-  const formatRand = (amount: any): string => {
-    const n = Number(amount || 0)
-    return 'R ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
+  const formatMoney = (amount: any): string => formatCurrency(Number(amount || 0))
 
   const formatDate = (d: any): string => {
     if (!d) return ''
@@ -43,7 +41,7 @@ export function exportOrderPDF(order: any) {
   const recipientCity = ship.city || ''
   const recipientRegion = ship.province || ship.state || ''
   const recipientPostcode = ship.postalCode || ship.zipCode || ''
-  const recipientCountry = ship.country || 'South Africa'
+  const recipientCountry = ship.country || 'United States'
   const recipientPhone = ship.phone || ship.phoneNumber || ''
   const recipientEmail = ship.email || order.buyerEmail || ''
 
@@ -57,7 +55,7 @@ export function exportOrderPDF(order: any) {
 
   // ─── Header ─────────────────────────────────────────────────────────────
   doc.setFontSize(20)
-  doc.setTextColor(234, 88, 12) // primary-600 orange
+  doc.setTextColor(11, 42, 69) // VeriSpine navy
   doc.text('VeriSpine', left, y)
 
   doc.setFontSize(10)
@@ -92,7 +90,7 @@ export function exportOrderPDF(order: any) {
       String(order.paymentMethod || '').toUpperCase()
     ]],
     theme: 'grid',
-    headStyles: { fillColor: [234, 88, 12] },
+    headStyles: { fillColor: [11, 42, 69] },
     margin: { left, right: left }
   })
   y = (doc as any).lastAutoTable.finalY + 8
@@ -109,9 +107,9 @@ export function exportOrderPDF(order: any) {
       ['Title', String(order.productTitle || '')],
       ['Type', String(order.type || '')],
       ['Quantity', String(order.quantity ?? 1)],
-      ['Item Price', formatRand(order.amount ?? order.productPrice)],
-      ['Shipping Cost', formatRand(order.shippingCost)],
-      ['Total Paid', formatRand(order.totalAmount ?? (Number(order.amount || 0) + Number(order.shippingCost || 0)))]
+      ['Item Price', formatMoney(order.amount ?? order.productPrice)],
+      ['Shipping Cost', formatMoney(order.shippingCost)],
+      ['Total Paid', formatMoney(order.totalAmount ?? (Number(order.amount || 0) + Number(order.shippingCost || 0)))]
     ],
     theme: 'plain',
     columnStyles: {
