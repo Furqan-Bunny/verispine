@@ -69,6 +69,45 @@ const uploadToStorage = async (base64Data, folder, fileName) => {
  */
 const SIGNED_URL_TTL_MS = 15 * 60 * 1000;
 
+/**
+ * Emulator equivalent of a signed URL.
+ *
+ * Signing needs a service-account private key, which the emulator setup
+ * deliberately does not have — so against the emulators signing always fails and
+ * KYC review is untestable locally. That is how this path would reach production
+ * unexercised. The Storage emulator serves objects directly, so point at that
+ * instead; it is local-only and never reachable from a deployed environment.
+ */
+const emulatorUrlFor = async (objectPath) => {
+  const host = process.env.FIREBASE_STORAGE_EMULATOR_HOST;
+  if (!host) return null;
+
+  try {
+    const bucket = admin.storage().bucket();
+    const file = bucket.file(objectPath);
+
+    /**
+     * A download token, not a plain ?alt=media link.
+     *
+     * storage.rules deny all client reads of kyc/** — correctly — and the
+     * emulator enforces those rules on its REST endpoint, so a plain link 403s.
+     * A download token bypasses rules the same way a signed URL does in
+     * production, which is what makes this a faithful local stand-in.
+     */
+    const [meta] = await file.getMetadata();
+    let token = meta.metadata && meta.metadata.firebaseStorageDownloadTokens;
+    if (!token) {
+      token = `local-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      await file.setMetadata({ metadata: { firebaseStorageDownloadTokens: token } });
+    }
+
+    return `http://${host}/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`;
+  } catch (e) {
+    console.error('Emulator KYC URL failed:', e.message);
+    return null;
+  }
+};
+
 const signedUrlFor = async (pathOrUrl) => {
   if (!pathOrUrl) return null;
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // legacy public URL
@@ -81,10 +120,18 @@ const signedUrlFor = async (pathOrUrl) => {
     });
     return url;
   } catch (error) {
-    // A failure here must not break the review screen — the reviewer sees the
-    // record without the image rather than an error page.
+    const local = await emulatorUrlFor(pathOrUrl);
+    if (local) return local;
+
+    /**
+     * In production this means the service account cannot sign — usually a key
+     * without a private key (ADC/Workload Identity) or a missing
+     * iam.serviceAccounts.signBlob permission. Returning null silently would
+     * show the reviewer an empty box and no reason, so the caller gets an
+     * explicit marker it can render as an error instead.
+     */
     console.error('Failed to sign KYC document URL:', error.message);
-    return null;
+    return { error: 'unavailable', reason: error.message };
   }
 };
 

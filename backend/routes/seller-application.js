@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { admin, db } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
+const { POSTAL_CODE_RE } = require('../utils/locale');
 
 const SELLER_APP_STATUS = {
   NOT_SUBMITTED: 'NOT_SUBMITTED',
@@ -35,8 +36,11 @@ function validateApplication(body) {
   if (!street || !city || !province || !postalCode || !country) {
     return 'address must include street, city, province, postalCode, country';
   }
-  if (!/^\d{4}$/.test(String(postalCode).trim())) {
-    return 'address.postalCode must be 4 digits';
+  // US ZIP, not the 4-digit South African postal code this was written against.
+  // With the old rule no real US address could pass, so seller onboarding was
+  // closed to everyone.
+  if (!POSTAL_CODE_RE.test(String(postalCode).trim())) {
+    return 'address.postalCode must be a 5-digit ZIP code (ZIP+4 accepted)';
   }
   if (termsAccepted !== true) {
     return 'You must accept the seller terms to submit';
