@@ -7,7 +7,8 @@ const emailService = require('../services/resendEmailService');
 const { processAffiliateCommission } = require('../utils/affiliateCommission');
 const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
 const { creditWalletTopup } = require('../utils/walletTopup');
-const { PLATFORM_FEE_RATE } = require('../utils/sellerPayout');
+const { PLATFORM_FEE_RATE, sellerNetFor } = require('../utils/sellerPayout');
+const { subtractMoney } = require('../utils/money');
 const { CURRENCY } = require('../utils/locale');
 
 /**
@@ -81,8 +82,10 @@ async function completePayment(orderId, paymentData) {
     // Buyer is charged item + shipping; the platform fee is taken on the item
     // price only, so the platform absorbs no shipping and the seller none of it.
     const chargeAmount = Number(order.totalAmount || order.amount);
-    const platformFee = Number(order.amount) * PLATFORM_FEE_RATE;
-    const sellerAmount = Number(order.amount) - platformFee;
+    // Same helper the delivery-time release uses, so the amount held and the
+    // amount released are identical to the cent.
+    const sellerAmount = sellerNetFor(order.amount);
+    const platformFee = subtractMoney(order.amount, sellerAmount);
 
     transaction.update(db.collection('users').doc(order.sellerId), {
       pendingBalance: admin.firestore.FieldValue.increment(sellerAmount),
@@ -157,7 +160,8 @@ async function runPostPaymentPipeline(orderId, paymentData) {
     await db.collection('orders').doc(orderId).update({
       status: 'shipped',
       trackingNumber: shipment.trackingNumber,
-      carrier: shipment.carrier,
+      // See payments-wallet.js: order-side readers use shippingCarrier.
+      shippingCarrier: shipment.carrier,
       shippingStatus: 'shipped',
       shippedAt: admin.firestore.FieldValue.serverTimestamp(),
     });

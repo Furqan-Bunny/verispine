@@ -1,11 +1,45 @@
 const admin = require('firebase-admin');
-const dotenv = require('dotenv');
 
-dotenv.config();
+// Must precede any process.env read — see config/env.js for why bare
+// dotenv.config() was not enough.
+require('./env');
+
+/**
+ * True when the Firebase emulator suite is running for this process.
+ *
+ * The Admin SDK routes to the emulators purely off these env vars, and it does
+ * not verify credentials when they are set — so a service-account key is neither
+ * needed nor wanted locally.
+ */
+const usingEmulators = () =>
+  !!(process.env.FIRESTORE_EMULATOR_HOST || process.env.FIREBASE_AUTH_EMULATOR_HOST);
 
 // Initialize Firebase Admin SDK
 const initializeFirebase = () => {
   try {
+    /**
+     * Emulator path.
+     *
+     * Without this, local development required a real production service
+     * account, which meant every developer either had production write access or
+     * could not run the backend at all. With the emulators there is nothing to
+     * authenticate against, so we initialise with a project id alone.
+     */
+    if (usingEmulators()) {
+      const projectId = process.env.FIREBASE_PROJECT_ID || 'verispine-local';
+      admin.initializeApp({
+        projectId,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`,
+      });
+
+      console.log('Firebase Admin SDK initialized against EMULATORS');
+      console.log('  Project ID:', projectId);
+      console.log('  Firestore :', process.env.FIRESTORE_EMULATOR_HOST || '(not set)');
+      console.log('  Auth      :', process.env.FIREBASE_AUTH_EMULATOR_HOST || '(not set)');
+      console.log('  Storage   :', process.env.FIREBASE_STORAGE_EMULATOR_HOST || '(not set)');
+      return admin;
+    }
+
     let serviceAccount;
 
     // Check if we have a single FIREBASE_SERVICE_ACCOUNT JSON string
@@ -79,5 +113,6 @@ module.exports = {
   admin: firebaseAdmin,
   db,
   auth,
-  storage
+  storage,
+  usingEmulators
 };
