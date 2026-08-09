@@ -80,7 +80,8 @@ interface AuthState {
   isAuthenticated: boolean
   
   login: (email: string, password: string) => Promise<void>
-  register: (data: any) => Promise<void>
+  // Resolves without a session — the caller sends the user to verify their email.
+  register: (data: any) => Promise<{ email: string; requiresVerification: true }>
   logout: () => void
   initAuth: () => void
   updateUser: (user: User) => void
@@ -374,21 +375,29 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAffiliate: user.isAffiliate
       }
 
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(formattedUser))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
-      // Initialize notification service with user ID
-      notificationService.setUser(formattedUser.id)
+      /**
+       * Do NOT establish a session yet.
+       *
+       * Registration used to set isAuthenticated with emailVerified still false,
+       * so a new user could simply navigate away from the OTP screen and browse,
+       * bid and check out on an address they had not proved they own — the same
+       * hole that was closed on the login path. Both OTP endpoints
+       * (/verify-email, /resend-verification) are unauthenticated and take the
+       * address in the body, so the verification screen needs no token.
+       *
+       * The account exists; the user signs in normally once verified.
+       */
+      await firebaseAuth.logout().catch(() => {})
 
       set({
-        user: formattedUser,
-        token,
-        isAuthenticated: true,
+        user: null,
+        token: null,
+        isAuthenticated: false,
         isLoading: false
       })
 
-      toast.success('Registration successful! Please verify your email.')
+      toast.success('Account created. Enter the code we emailed you to finish signing up.')
+      return { email: formattedUser.email, requiresVerification: true }
     } catch (error: any) {
       set({ isLoading: false })
       const errorMessage = getFirebaseErrorMessage(error)

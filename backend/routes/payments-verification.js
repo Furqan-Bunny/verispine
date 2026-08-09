@@ -7,6 +7,8 @@ const emailService = require('../services/resendEmailService');
 const { processAffiliateCommission } = require('../utils/affiliateCommission');
 const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
 const crypto = require('crypto');
+const { sellerNetFor } = require('../utils/sellerPayout');
+const { subtractMoney } = require('../utils/money');
 
 // Verify payment and update order status
 router.post('/verify/:orderId', authMiddleware, async (req, res) => {
@@ -128,8 +130,10 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
         // If it's not a wallet payment, transfer funds to seller
         // (Wallet payments already handle this in the payment transaction)
         if (paymentMethod !== 'wallet' && seller && sellerRef) {
-          const platformFee = order.amount * 0.10; // 10% platform fee (unified)
-          const sellerAmount = order.amount - platformFee;
+          // Same helper the delivery-time release uses, so the amount held and
+          // the amount released are identical to the cent.
+          const sellerAmount = sellerNetFor(order.amount);
+          const platformFee = subtractMoney(order.amount, sellerAmount);
 
           // Update seller's pending balance (not actual balance until withdrawal)
           transaction.update(sellerRef, {
@@ -215,7 +219,8 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
       await db.collection('orders').doc(orderId).update({
         status: 'shipped',
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'USPS',
+        // See payments-wallet.js: order-side readers use shippingCarrier.
+        shippingCarrier: shipmentResult.carrier || 'USPS',
         shippingStatus: 'shipped',
         shippedAt: admin.firestore.FieldValue.serverTimestamp(),
         shippingError: admin.firestore.FieldValue.delete(),

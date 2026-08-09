@@ -16,9 +16,12 @@ console.log('Current directory:', process.cwd());
 console.log('PORT env:', process.env.PORT);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
+// Load backend/.env before anything reads process.env. Path-anchored, so it
+// works regardless of the directory the process was started from.
+require('./config/env');
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const http = require('http');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -36,8 +39,7 @@ try {
   console.error('Firebase load error:', error.message);
 }
 
-dotenv.config();
-console.log('dotenv loaded');
+console.log('env loaded');
 
 const app = express();
 const server = http.createServer(app);

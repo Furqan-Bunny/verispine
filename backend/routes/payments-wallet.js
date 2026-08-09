@@ -7,6 +7,8 @@ const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
 const { creditWalletTopup } = require('../utils/walletTopup');
 const shippingService = require('../services/shippingService');
 const emailService = require('../services/resendEmailService');
+const { sellerNetFor } = require('../utils/sellerPayout');
+const { subtractMoney } = require('../utils/money');
 
 const frontendBaseUrl = () => {
   let url = (process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
@@ -194,7 +196,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
       // Update user balance
       transaction.update(userRef, {
-        balance: currentBalance - Number(amount),
+        balance: subtractMoney(currentBalance, amount),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
@@ -224,8 +226,10 @@ router.post('/', authMiddleware, async (req, res) => {
         // Transfer funds to seller (minus platform fee)
         if (sellerRef && sellerDoc && sellerDoc.exists && sellerData) {
           // Fee is charged on the item price only (platform keeps shipping). 10% unified rate.
-          const platformFee = Number(orderData.amount) * 0.10;
-          const sellerAmount = Number(orderData.amount) - platformFee;
+          // Same helper the delivery-time release uses, so the amount held and
+          // the amount released are identical to the cent.
+          const sellerAmount = sellerNetFor(orderData.amount);
+          const platformFee = subtractMoney(orderData.amount, sellerAmount);
 
           // Hold the seller's net in pendingBalance — released to balance only on delivery.
           transaction.update(sellerRef, {
@@ -251,7 +255,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
       return {
         paymentId,
-        newBalance: currentBalance - Number(amount),
+        newBalance: subtractMoney(currentBalance, amount),
         orderAmount: Number(amount)
       };
     });
@@ -281,7 +285,11 @@ router.post('/', authMiddleware, async (req, res) => {
       await db.collection('orders').doc(orderId).update({
         status: 'shipped',
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'USPS',
+        // Written as shippingCarrier — the field every order-side reader uses.
+        // The payment paths used to write plain `carrier` while the shipping
+        // route wrote `shippingCarrier`, so an order paid at checkout showed no
+        // carrier on the order page, the invoice, or the PDF export.
+        shippingCarrier: shipmentResult.carrier || 'USPS',
         shippingStatus: 'shipped',
         shippedAt: admin.firestore.FieldValue.serverTimestamp()
       });

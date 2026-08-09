@@ -517,7 +517,12 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       const pickupCheck = validatePickupAddress({
         address: shippingDataPreview.pickupAddress,
         city: shippingDataPreview.pickupCity,
-        suburb: shippingDataPreview.pickupSuburb,
+        // The state was never mapped here, while the validator requires it — so
+        // this check rejected EVERY listing with "Pickup state is required" and
+        // no field the seller could fill would satisfy it. Nothing could be
+        // listed at all. (`suburb` used to be passed instead; it is a South
+        // African address field the US validator doesn't have.)
+        province: shippingDataPreview.pickupProvince || shippingDataPreview.pickupState,
         postalCode: shippingDataPreview.pickupPostalCode
       });
       if (!pickupCheck.valid) {
@@ -554,7 +559,32 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
     const isScheduled = !isSale && scheduledStartTime && new Date(scheduledStartTime) > new Date();
     let productStatus = 'active';
     const durationDays = isSale ? null : (parseInt(duration) || 7);
-    let calculatedEndDate = isSale ? null : new Date(endDate);
+
+    /**
+     * End date for an auction.
+     *
+     * `duration` is an accepted input but was ignored here — only an explicit
+     * `endDate` was read. A caller that sent duration alone (which the API
+     * otherwise implies is enough) produced `new Date(undefined)`, and that
+     * Invalid Date reached Firestore, which threw and surfaced as a generic
+     * "Failed to create product" 500 with nothing pointing at the cause.
+     * Derive from duration when endDate is absent, and reject a bad one plainly.
+     */
+    let calculatedEndDate = null;
+    if (!isSale) {
+      calculatedEndDate = endDate ? new Date(endDate) : null;
+
+      if (!calculatedEndDate || isNaN(calculatedEndDate.getTime())) {
+        if (endDate) {
+          return res.status(400).json({ error: 'endDate is not a valid date', field: 'endDate' });
+        }
+        calculatedEndDate = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+      }
+
+      if (!isScheduled && calculatedEndDate <= new Date()) {
+        return res.status(400).json({ error: 'Auction end date must be in the future', field: 'endDate' });
+      }
+    }
 
     if (isScheduled) {
       productStatus = 'scheduled';

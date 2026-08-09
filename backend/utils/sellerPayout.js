@@ -1,8 +1,20 @@
 const { admin, db } = require('../config/firebase');
+const { round2 } = require('./money');
 
 // Unified platform fee. Seller receives (1 - PLATFORM_FEE_RATE) of the item price.
 // Kept here so settlement (hold) and delivery (release) always agree on the amount.
 const PLATFORM_FEE_RATE = 0.10; // 10%
+
+/**
+ * The seller's share of an order, rounded to cents.
+ *
+ * Both the hold at payment and the release at delivery must use THIS — if one
+ * rounds and the other does not, the release moves a slightly different figure
+ * than was held and pendingBalance never returns cleanly to zero.
+ */
+function sellerNetFor(amount) {
+  return round2(Number(amount) * (1 - PLATFORM_FEE_RATE));
+}
 
 /**
  * Release a seller's held funds (pendingBalance -> balance) when an order is delivered.
@@ -34,7 +46,7 @@ async function releaseSellerFundsOnDelivery(orderId) {
       return { released: false, reason: 'not_paid' };
     }
 
-    const sellerNet = Number(order.amount) * (1 - PLATFORM_FEE_RATE);
+    const sellerNet = sellerNetFor(order.amount);
     const sellerRef = db.collection('users').doc(order.sellerId);
     tx.update(sellerRef, {
       pendingBalance: admin.firestore.FieldValue.increment(-sellerNet),
@@ -49,4 +61,4 @@ async function releaseSellerFundsOnDelivery(orderId) {
   });
 }
 
-module.exports = { releaseSellerFundsOnDelivery, PLATFORM_FEE_RATE };
+module.exports = { releaseSellerFundsOnDelivery, sellerNetFor, PLATFORM_FEE_RATE };

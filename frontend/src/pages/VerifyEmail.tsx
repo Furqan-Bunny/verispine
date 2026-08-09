@@ -52,14 +52,25 @@ const VerifyEmail = () => {
     return () => clearInterval(timer)
   }, [resendCooldown])
 
-  // Auto-redirect after verification
+  /**
+   * Auto-redirect after verification.
+   *
+   * Someone arriving straight from registration has no session — signing in is
+   * gated on a verified address — so send them to login with the address
+   * pre-filled. A user who was already signed in (verifying later from their
+   * account) goes to the dashboard as before.
+   */
   useEffect(() => {
     if (!verified) return
     const timer = setTimeout(() => {
-      navigate('/dashboard', { replace: true })
+      if (user) {
+        navigate('/dashboard', { replace: true })
+      } else {
+        navigate('/login', { replace: true, state: { email } })
+      }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [verified, navigate])
+  }, [verified, navigate, user, email])
 
   const focusInput = useCallback((index: number) => {
     inputRefs.current[index]?.focus()

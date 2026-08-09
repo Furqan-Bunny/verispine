@@ -3,6 +3,28 @@ const router = express.Router();
 const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
+const { hasSufficientFunds, formatMoney, addMoney, subtractMoney } = require('../utils/money');
+
+/**
+ * Move `amount` from heldBalance back to spendable balance, inside a transaction.
+ *
+ * Written as absolute rounded values rather than FieldValue.increment(), for the
+ * same reason the request path is: increment is evaluated server-side and cannot
+ * be rounded, so repeated hold/release cycles accumulate float residue and can
+ * leave a balance at -7.1e-15, which renders as "-0.00".
+ *
+ * Must be called with a snapshot the transaction itself read.
+ */
+async function releaseHeldFunds(transaction, userRef, snapshot, amount, timestamp) {
+  const data = snapshot.data() || {};
+  transaction.update(userRef, {
+    balance: addMoney(data.balance || 0, amount),
+    // Clamped at zero: a hold that was already partially unwound should not push
+    // heldBalance negative and make the seller look owed money they are not.
+    heldBalance: Math.max(0, subtractMoney(data.heldBalance || 0, amount)),
+    updatedAt: timestamp
+  });
+}
 
 /**
  * A seller has THREE money fields, and they mean different things:
@@ -45,10 +67,13 @@ router.post('/request', authMiddleware, async (req, res) => {
     
     const userData = userDoc.data();
     
-    // Check user balance
-    if (userData.balance < amount) {
-      return res.status(400).json({ 
-        error: `Insufficient balance. Available: $${userData.balance}` 
+    // Check user balance. Compared with a half-cent tolerance and reported
+    // rounded — a raw float comparison told a seller whose balance displays as
+    // "$61.10" that only "$61.099999999999994" was available, so they could not
+    // withdraw the amount the UI had just shown them.
+    if (!hasSufficientFunds(userData.balance, amount)) {
+      return res.status(400).json({
+        error: `Insufficient balance. Available: $${formatMoney(userData.balance)}`
       });
     }
     
@@ -107,7 +132,6 @@ router.post('/request', authMiddleware, async (req, res) => {
     };
 
     // Use a transaction to ensure consistency.
-    const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
     try {
       await db.runTransaction(async (transaction) => {
         // Re-read the balance INSIDE the transaction. The check above ran against
@@ -115,8 +139,10 @@ router.post('/request', authMiddleware, async (req, res) => {
         // withdraw more than the seller has, driving `balance` negative.
         const freshUser = await transaction.get(userDoc.ref);
         const freshBalance = Number(freshUser.data().balance || 0);
-        if (freshBalance < amount) {
-          const e = new Error(`Insufficient balance. Available: $${freshBalance.toFixed(2)}`);
+        const freshHeld = Number(freshUser.data().heldBalance || 0);
+
+        if (!hasSufficientFunds(freshBalance, amount)) {
+          const e = new Error(`Insufficient balance. Available: $${formatMoney(freshBalance)}`);
           e.httpStatus = 400;
           throw e;
         }
@@ -124,10 +150,18 @@ router.post('/request', authMiddleware, async (req, res) => {
         const withdrawalRef = db.collection('withdrawals').doc();
         transaction.set(withdrawalRef, withdrawalData);
 
-        // Move the funds out of spendable and into held.
+        /**
+         * Move the funds out of spendable and into held.
+         *
+         * Written as absolute rounded values rather than FieldValue.increment().
+         * Increment is evaluated server-side and cannot be rounded, so draining a
+         * balance of 61.099999999999994 by 61.10 left -7.1e-15 behind — a
+         * negative balance that displays as "-0.00". Safe to write absolutely
+         * here because the transaction already holds a fresh read of both fields.
+         */
         transaction.update(userDoc.ref, {
-          balance: incrementFn(-amount),
-          heldBalance: incrementFn(amount),
+          balance: subtractMoney(freshBalance, amount),
+          heldBalance: addMoney(freshHeld, amount),
           updatedAt: timestamp
         });
 
@@ -330,7 +364,9 @@ router.post('/admin/approve/:withdrawalId', authMiddleware, adminMiddleware, asy
     const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
 
     await db.runTransaction(async (transaction) => {
-      // Update withdrawal
+      // Read before write, so heldBalance can be written as an absolute value.
+      const freshUser = await transaction.get(userDoc.ref);
+
       transaction.update(withdrawalDoc.ref, {
         status: 'approved',
         approvedBy: adminId,
@@ -340,9 +376,11 @@ router.post('/admin/approve/:withdrawalId', authMiddleware, adminMiddleware, asy
         updatedAt: timestamp
       });
 
-      // Update user's held balance (remove from held since it's approved)
+      // Drop the hold — the money has left the platform, so unlike reject and
+      // cancel it does NOT go back to spendable balance. Clamped at zero so a
+      // rounding residue can't leave heldBalance slightly negative.
       transaction.update(userDoc.ref, {
-        heldBalance: incrementFn(-withdrawal.amount),
+        heldBalance: Math.max(0, subtractMoney(freshUser.data().heldBalance || 0, withdrawal.amount)),
         updatedAt: timestamp
       });
 
@@ -409,7 +447,9 @@ router.post('/admin/reject/:withdrawalId', authMiddleware, adminMiddleware, asyn
     const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
 
     await db.runTransaction(async (transaction) => {
-      // Update withdrawal
+      // Read before write, so the refund can be written as an absolute value.
+      const freshUser = await transaction.get(userDoc.ref);
+
       transaction.update(withdrawalDoc.ref, {
         status: 'rejected',
         rejectedBy: adminId,
@@ -418,12 +458,8 @@ router.post('/admin/reject/:withdrawalId', authMiddleware, adminMiddleware, asyn
         updatedAt: timestamp
       });
 
-      // Refund the amount back to user's available balance
-      transaction.update(userDoc.ref, {
-        balance: incrementFn(withdrawal.amount),
-        heldBalance: incrementFn(-withdrawal.amount),
-        updatedAt: timestamp
-      });
+      // Refund the amount back to the user's available balance
+      await releaseHeldFunds(transaction, userDoc.ref, freshUser, withdrawal.amount, timestamp);
     });
     
     // Send email notification
@@ -474,7 +510,10 @@ router.delete('/:withdrawalId', authMiddleware, async (req, res) => {
     const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
 
     await db.runTransaction(async (transaction) => {
-      // Update withdrawal
+      // Read before write, so the refund can be written as an absolute value.
+      const userRef = db.collection('users').doc(userId);
+      const freshUser = await transaction.get(userRef);
+
       transaction.update(withdrawalDoc.ref, {
         status: 'cancelled',
         cancelledAt: timestamp,
@@ -482,12 +521,7 @@ router.delete('/:withdrawalId', authMiddleware, async (req, res) => {
       });
 
       // Refund to available balance
-      const userRef = db.collection('users').doc(userId);
-      transaction.update(userRef, {
-        balance: incrementFn(withdrawal.amount),
-        heldBalance: incrementFn(-withdrawal.amount),
-        updatedAt: timestamp
-      });
+      await releaseHeldFunds(transaction, userRef, freshUser, withdrawal.amount, timestamp);
     });
     
     // Verify the cancellation
