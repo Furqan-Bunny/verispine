@@ -177,14 +177,31 @@ the first listing goes up rather than after.
 
 ---
 
-## Verification checklist
+## Verification
+
+Already verified in this repo, with no Firebase or Stripe credentials present:
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | 0 errors |
+| `npm run build` | clean production bundle |
+| All backend modules load | 47 / 47 |
+| Server boots, `/api/health` responds | 200 |
+| CORS rejects an unlisted origin | 403 (not 500) |
+| Stripe webhook route is mounted ahead of `express.json()` | raw body reaches the handler |
+| USPS / UPS / Freight each implement all 8 provider methods | pass |
+| Freight routing: 900 lbs → freight, 130" → freight, 3 lbs → parcel | pass |
+| Status mapping: "Return to Sender" is not read as "Delivered" | pass |
+| Equipment fields reject bad grades and impossible years | pass |
+
+Re-run any of it with:
 
 ```bash
-cd frontend && npm run build          # zero TS errors, clean bundle
-cd backend  && node -e "require('./server.js')"   # boots, all routes load
+cd frontend && npx tsc --noEmit && npm run build
+cd backend  && node start.js          # then curl /api/health
 ```
 
-Then, on the live project:
+Then, on the live project, the parts that need real credentials:
 
 1. Register → email OTP → KYC → seller application → admin approve
 2. Create one auction listing and one fixed-price listing

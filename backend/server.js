@@ -156,8 +156,15 @@ app.use(cors({
     // app, health checks). CORS is not the control for those.
     if (!origin) return callback(null, true);
     if (isAllowedOrigin(origin)) return callback(null, true);
+
     console.warn('CORS rejected origin:', origin);
-    return callback(new Error('Not allowed by CORS'));
+    // Resolve without the CORS headers rather than throwing. Throwing here lands
+    // in the error handler as a 500, which reads as "the server is broken" in
+    // logs and monitoring when the request was simply not allowed. The browser
+    // blocks the response either way — the absent header is what enforces it.
+    const denied = new Error('Not allowed by CORS');
+    denied.status = 403;
+    return callback(denied);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
