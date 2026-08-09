@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const { userUtils } = require('../utils/firestore');
 const { firebaseAuthMiddleware } = require('../middleware/firebaseAuth');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const emailService = require('../services/resendEmailService');
 
 // Register
@@ -40,12 +41,24 @@ router.post('/register', [
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        await userUtils.update(existingUser.id, {
-          otp,
-          otpExpiresAt,
-          otpAttempts: 0,
-          lastOtpSentAt: new Date()
-        });
+        const updates = { otp, otpExpiresAt, otpAttempts: 0, lastOtpSentAt: new Date() };
+
+        /**
+         * Store the password hash on this branch too.
+         *
+         * The web client creates the Firestore user document itself through the
+         * Firebase SDK, so registration always lands HERE rather than in the
+         * create path below — and this branch only ever wrote the OTP. The
+         * result was that no web-registered account had a `password` field at
+         * all, and PUT /users/password, which verifies against that hash, told
+         * every single user "password change is unavailable for this account".
+         * The feature was dead for 100% of real users.
+         */
+        if (password && !existingUser.password) {
+          updates.password = await bcrypt.hash(password, 10);
+        }
+
+        await userUtils.update(existingUser.id, updates);
 
         // Send OTP email
         try {
@@ -464,7 +477,6 @@ router.post('/reset-password', [
     }
 
     // Hash new password and update user
-    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await userUtils.update(user.id, {
