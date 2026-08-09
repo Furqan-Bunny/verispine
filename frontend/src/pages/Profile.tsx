@@ -990,7 +990,7 @@ const Profile = () => {
                   <textarea rows={3} maxLength={1000}
                     value={businessForm.shippingPolicy}
                     onChange={(e) => setBusinessForm(f => ({ ...f, shippingPolicy: e.target.value }))}
-                    placeholder="e.g. Ships within 2 business days via SAPO…"
+                    placeholder="e.g. Ships within 2 business days via USPS…"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 </div>
               </div>

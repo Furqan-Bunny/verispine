@@ -36,7 +36,7 @@ async function main() {
   console.log('\n--- Shipping info (recipient) ---');
   console.log(JSON.stringify(order.shippingInfo || {}, null, 2));
 
-  console.log('\n--- Pickup (sender / SAPO origin) ---');
+  console.log('\n--- Pickup (ship-from origin) ---');
   console.log('  pickup:           ', JSON.stringify(order.pickup || null, null, 2));
   console.log('  pickupLocation:   ', order.pickupLocation || '(none)');
   console.log('  productLocation:  ', order.productLocation || '(none)');

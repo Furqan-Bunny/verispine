@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Retry SAPO shipment creation for orders that are paid but stuck without a tracking number.
+ * Retry shipment creation for orders that are paid but stuck without a tracking number.
  *
  * What "stuck" means here:
  *   - paymentStatus is 'paid' or 'completed' (i.e., buyer's money has cleared)
@@ -8,7 +8,7 @@
  *   - trackingNumber is missing
  *
  * For each stuck order this script:
- *   1. Calls sapoShippingService.createShipmentForOrder(order)
+ *   1. Calls the shipping facade's createShipmentForOrder(order)
  *   2. On success: updates the order to status='shipped' with trackingNumber + carrier + shippedAt
  *   3. On success: sends the buyer the order confirmation/invoice email and the seller the sale notification
  *   4. On failure: persists shippingError + shippingErrorAt so you can see why and rerun safely
@@ -16,7 +16,7 @@
  * Safe to run repeatedly — already-shipped orders are skipped.
  *
  * Usage:
- *   DRY RUN (no writes, no SAPO calls):   node scripts/retryStuckShipments.js --dry-run
+ *   DRY RUN (no writes, no carrier calls): node scripts/retryStuckShipments.js --dry-run
  *   LIVE:                                  node scripts/retryStuckShipments.js
  *   Single order:                          node scripts/retryStuckShipments.js --order=<orderId>
  */
@@ -25,7 +25,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', 'backend', '.env') });
 
 const { admin, db } = require('../backend/config/firebase');
-const sapoShippingService = require('../backend/services/sapoShippingService');
+const shippingService = require('../backend/services/shippingService');
 const emailService = require('../backend/services/resendEmailService');
 
 const args = process.argv.slice(2);
@@ -81,19 +81,19 @@ async function retryShipment(orderDoc) {
   console.log(`  Prior error:    ${order.shippingError || '(none)'}`);
 
   if (isDryRun) {
-    console.log(`  [DRY RUN] Would attempt SAPO shipment creation.`);
+    console.log(`  [DRY RUN] Would attempt shipment creation.`);
     return { orderId, action: 'would-retry' };
   }
 
   let shippingInfo = null;
   try {
-    const shipmentResult = await sapoShippingService.createShipmentForOrder(order);
-    console.log(`  ✅ SAPO tracking: ${shipmentResult.trackingNumber}`);
+    const shipmentResult = await shippingService.createShipmentForOrder(order);
+    console.log(`  ✅ Tracking: ${shipmentResult.trackingNumber}`);
 
     await orderRef.update({
       status: 'shipped',
       trackingNumber: shipmentResult.trackingNumber,
-      carrier: 'SAPO',
+      carrier: shipmentResult.carrier || 'USPS',
       shippingStatus: 'shipped',
       shippedAt: admin.firestore.FieldValue.serverTimestamp(),
       shippingError: admin.firestore.FieldValue.delete(),
@@ -102,11 +102,11 @@ async function retryShipment(orderDoc) {
 
     shippingInfo = {
       trackingNumber: shipmentResult.trackingNumber,
-      carrier: 'SAPO',
+      carrier: shipmentResult.carrier || 'USPS',
       status: 'shipped'
     };
   } catch (shippingError) {
-    console.error(`  ❌ SAPO shipment failed: ${shippingError.message}`);
+    console.error(`  ❌ Shipment failed: ${shippingError.message}`);
     try {
       await orderRef.update({
         shippingError: shippingError.message,

@@ -631,7 +631,7 @@ const EditProduct = () => {
         {/* Parcel dimensions (optional, for courier rates) */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Parcel Dimensions (in)</h2>
-          <p className="text-sm text-gray-500 mb-3">Optional. Used for courier rate accuracy (ShipLogic). Leave blank to use a default size based on weight.</p>
+          <p className="text-sm text-gray-500 mb-3">Optional. Used for carrier rate accuracy. Leave blank to use a default size based on weight.</p>
           <div className="grid grid-cols-3 gap-3">
             {(['length', 'width', 'height'] as const).map((dim) => (
               <input

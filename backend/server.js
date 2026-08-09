@@ -114,7 +114,11 @@ app.use(helmet({
         "https://*.firebaseio.com",
         "https://*.firebaseapp.com",
         "https://*.firebase.app",
-        "wss://*.firebaseio.com"
+        "wss://*.firebaseio.com",
+        // Stripe.js posts telemetry and tokenization requests to these hosts;
+        // without them Stripe Checkout fails to initialise.
+        "https://api.stripe.com",
+        "https://maps.googleapis.com"
       ],
       imgSrc: [
         "'self'",
@@ -127,12 +131,12 @@ app.use(helmet({
         "https://ui-avatars.com",
         "https://via.placeholder.com"
       ],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      // https://*.pargo.co.za lets the Pargo pickup-point map (map.pargo.co.za) load in the
-      // checkout iframe — without it the "Select a Pargo pickup point" modal is blank (CSP-blocked).
-      frameSrc: ["'self'", "https://*.firebaseapp.com", "https://*.pargo.co.za"]
+      // Stripe renders card fields and 3D Secure challenges inside iframes on these
+      // hosts — omit them and the payment step is a blank box.
+      frameSrc: ["'self'", "https://*.firebaseapp.com", "https://js.stripe.com", "https://hooks.stripe.com"]
     }
   },
   crossOriginEmbedderPolicy: false

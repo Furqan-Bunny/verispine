@@ -156,16 +156,16 @@ router.post('/', authMiddleware, async (req, res) => {
       sellerName: seller ? (`${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.name || 'Unknown') : 'Unknown',
       sellerEmail: seller?.email || '',
       sellerPhone: seller?.phone || seller?.phoneNumber || '',
-      // Product location for SAPO pickup (seller enters this when creating product)
+      // Product location for carrier pickup (seller enters this when creating product)
       pickupLocation: product.shipping?.location || product.location || '',
-      // Structured pickup address for SAPO sender
+      // Structured pickup address for the ship-from block
       pickup: product.shipping?.pickupAddress ? {
         address: product.shipping.pickupAddress,
         city: product.shipping.pickupCity,
         province: product.shipping.pickupProvince,
         postalCode: product.shipping.pickupPostalCode
       } : null,
-      // Seller contact info for SAPO sender
+      // Seller contact info for the ship-from block
       seller: seller ? {
         name: seller.businessName || seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'VeriSpine Seller',
         firstName: seller.firstName || '',
@@ -176,7 +176,7 @@ router.post('/', authMiddleware, async (req, res) => {
       type, // 'buy_now', 'auction_win', or 'sale'
       // Fixed-price sale fields (units bought + unit price); ignored for auction orders
       ...(type === 'sale' ? { quantity: saleQuantity, unitPrice: saleUnitPrice } : {}),
-      // Live courier rate selected at checkout (ShipLogic), reused at shipment creation
+      // Live carrier rate selected at checkout, reused at shipment creation
       ...(shipmentRate && shipmentRate.provider ? { shipmentRate } : {}),
       // Local pickup: buyer collects from the seller
       ...(isLocalPickup ? { deliveryMethod: 'local-pickup' } : {}),

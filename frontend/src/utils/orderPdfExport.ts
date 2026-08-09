@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { carrierLabel, carrierTrackingUrl } from './carriers'
 
 /**
  * Generate a PDF receipt/details document for a single order.
@@ -190,11 +191,10 @@ export function exportOrderPDF(order: any) {
     autoTable(doc, {
       startY: y,
       body: [
-        ['Carrier', String(order.carrier || 'SAPO')],
+        ['Carrier', carrierLabel(order.shippingCarrier || order.carrier)],
         ['Tracking #', String(order.trackingNumber)],
-        ['Track at', String(order.carrier) === 'ShipLogic'
-          ? `Track via ${order.carrier} (ref ${order.trackingNumber})`
-          : `https://tracking.postoffice.co.za/?id=${order.trackingNumber}`],
+        ['Track at', carrierTrackingUrl(order.shippingCarrier || order.carrier, String(order.trackingNumber))
+          || `Tracking updates are shown on your order page (ref ${order.trackingNumber})`],
         ['Shipped At', formatDate(order.shippedAt)],
         ['Delivered At', formatDate(order.deliveredAt)]
       ],

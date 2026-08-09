@@ -78,7 +78,7 @@ const SellerSales = () => {
     try {
       const response = await axios.post('/api/shipping/create-shipment', { orderId })
       if (response.data?.success) {
-        toast.success('Shipment created with SAPO')
+        toast.success('Shipment created')
         loadSales()
       }
     } catch (error: any) {

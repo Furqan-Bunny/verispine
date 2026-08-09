@@ -776,8 +776,9 @@ router.get('/shipping/settings', authMiddleware, adminMiddleware, async (req, re
     }
     const doc = await db.collection('settings').doc('shipping').get();
     const data = doc.exists ? doc.data() : {};
-    const rawProvider = String(data.activeProvider || 'sapo').toLowerCase();
-    const activeProvider = (rawProvider === 'shiplogic' || rawProvider === 'rtt' || rawProvider === 'pargo') ? rawProvider : 'sapo';
+    const { isValidProvider, DEFAULT_PROVIDER } = require('../utils/shippingSettings');
+    const rawProvider = String(data.activeProvider || '').toLowerCase();
+    const activeProvider = isValidProvider(rawProvider) ? rawProvider : DEFAULT_PROVIDER;
     res.json({ success: true, data: { ...data, activeProvider } });
   } catch (error) {
     console.error('Error fetching shipping settings:', error);
@@ -785,7 +786,7 @@ router.get('/shipping/settings', authMiddleware, adminMiddleware, async (req, re
   }
 });
 
-// Update shipping settings (e.g. activeProvider: 'sapo' | 'shiplogic')
+// Update shipping settings (e.g. activeProvider: 'usps' | 'ups' | 'freight')
 router.post('/shipping/settings', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     if (!db) {
@@ -800,8 +801,9 @@ router.post('/shipping/settings', authMiddleware, adminMiddleware, async (req, r
     };
     // Normalize the provider toggle if present
     if (settings.activeProvider !== undefined) {
+      const { isValidProvider, DEFAULT_PROVIDER } = require('../utils/shippingSettings');
       const p = String(settings.activeProvider).toLowerCase();
-      settings.activeProvider = (p === 'shiplogic' || p === 'rtt' || p === 'pargo') ? p : 'sapo';
+      settings.activeProvider = isValidProvider(p) ? p : DEFAULT_PROVIDER;
     }
 
     await db.collection('settings').doc('shipping').set(settings, { merge: true });

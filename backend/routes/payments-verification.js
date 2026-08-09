@@ -198,24 +198,24 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
       console.error('Affiliate commission error (verification):', commissionError);
     }
 
-    // 2. Create SAPO shipment after successful payment
-    console.log('=== STARTING SAPO SHIPMENT CREATION (verification) ===');
+    // 2. Create the shipment after successful payment
+    console.log('=== STARTING SHIPMENT CREATION (verification) ===');
     let shippingInfo = null;
     try {
       // Fetch fresh order data with shipping info
       const updatedOrderDoc = await db.collection('orders').doc(orderId).get();
       const updatedOrder = { id: orderId, ...updatedOrderDoc.data() };
-      console.log('Order data for SAPO:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
+      console.log('Order shipping data:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
 
-      // Create shipment with SAPO
+      // Create the shipment with the active carrier
       const shipmentResult = await shippingService.createShipmentForOrder(updatedOrder);
-      console.log('SAPO shipment created (verification):', shipmentResult.trackingNumber);
+      console.log('Shipment created (verification):', shipmentResult.trackingNumber);
 
       // Update order with tracking info and main status
       await db.collection('orders').doc(orderId).update({
         status: 'shipped',
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'SAPO',
+        carrier: shipmentResult.carrier || 'USPS',
         shippingStatus: 'shipped',
         shippedAt: admin.firestore.FieldValue.serverTimestamp(),
         shippingError: admin.firestore.FieldValue.delete(),
@@ -224,11 +224,11 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
 
       shippingInfo = {
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'SAPO',
+        carrier: shipmentResult.carrier || 'USPS',
         status: 'shipped'
       };
     } catch (shippingError) {
-      console.error('SAPO shipment error (verification):', shippingError.message);
+      console.error('Shipment error (verification):', shippingError.message);
       // Persist error so admin/sweeper can retry. Order stays at 'processing'.
       try {
         await db.collection('orders').doc(orderId).update({

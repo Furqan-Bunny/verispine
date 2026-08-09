@@ -63,7 +63,7 @@ const Checkout = () => {
   const [shipmentRate, setShipmentRate] = useState<{ provider: string; rateId: any; total: number; serviceLevel?: string } | null>(null)
   const [quoting, setQuoting] = useState(false)
   // Captured once when the item loads, so a later live-quote override can't flip it.
-  // A product the seller offers free (shippingCost 0) stays free even under ShipLogic.
+  // A product the seller offers free (shippingCost 0) stays free even with a live carrier quote.
   const [freeShipping, setFreeShipping] = useState(false)
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     fullName: '',
@@ -192,9 +192,9 @@ const Checkout = () => {
     }
 
     // Address validation (mirrors backend/utils/addressValidation.js)
-    const sapoCheck = validateBuyerShippingInfo(shippingInfo)
-    if (!sapoCheck.valid && sapoCheck.errors) {
-      const firstError = Object.values(sapoCheck.errors)[0]
+    const addressCheck = validateBuyerShippingInfo(shippingInfo)
+    if (!addressCheck.valid && addressCheck.errors) {
+      const firstError = Object.values(addressCheck.errors)[0]
       toast.error(firstError)
       return false
     }
@@ -235,7 +235,7 @@ const Checkout = () => {
           amount: checkoutItem.price,
           // Units for fixed-price 'sale' orders (defaults to 1 server-side otherwise)
           ...(checkoutItem.type === 'sale' ? { quantity: checkoutItem.quantity || 1 } : {}),
-          // Carry the live ShipLogic rate so the shipment reuses it
+          // Carry the live carrier rate so the shipment reuses it
           ...(shipmentRate ? { shipmentRate } : {}),
           shippingCost: shippingCost,
           totalAmount: totalAmount,

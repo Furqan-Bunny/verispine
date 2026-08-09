@@ -105,7 +105,7 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showTrackingModal, setShowTrackingModal] = useState(false)
   const [trackingNumber, setTrackingNumber] = useState('')
-  const [shippingCarrier, setShippingCarrier] = useState('SAPO')
+  const [shippingCarrier, setShippingCarrier] = useState('USPS')
   const [adminNotes, setAdminNotes] = useState('')
   const [dateRange, setDateRange] = useState<DateRange>({
     startDate: '',
@@ -274,15 +274,15 @@ const AdminOrders = () => {
         status: newStatus
       })
       if (response.data.success) {
-        // Backend returns extra fields (trackingNumber, carrier, sapoAction) on a successful
-        // 'shipped' transition because the endpoint also calls SAPO and registers the parcel.
+        // Backend returns extra fields (trackingNumber, carrier, carrierAction) on a successful
+        // 'shipped' transition because the endpoint also books the shipment with the carrier.
         const data = response.data.data || {}
         const trackingNumber = data.trackingNumber
         const carrier = data.carrier
-        const sapoAction = data.sapoAction
+        const carrierAction = data.carrierAction
 
-        if (sapoAction === 'created' && trackingNumber) {
-          toast.success(`Order shipped — SAPO tracking: ${trackingNumber}`)
+        if (carrierAction === 'created' && trackingNumber) {
+          toast.success(`Order shipped — ${carrier || 'carrier'} tracking: ${trackingNumber}`)
         } else {
           toast.success(`Order status updated to ${newStatus}`)
         }
@@ -358,7 +358,7 @@ const AdminOrders = () => {
     }
   }
 
-  // Track shipment via SAPO
+  // Track shipment via the carrier that shipped it
   const handleTrackShipment = async (trackingNumber: string) => {
     try {
       const response = await axios.get(`/api/shipping/track/${trackingNumber}`)
@@ -1293,14 +1293,13 @@ const AdminOrders = () => {
                   onChange={(e) => setShippingCarrier(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="Standard Shipping">Standard Shipping</option>
-                  <option value="DHL">DHL</option>
-                  <option value="FedEx">FedEx</option>
+                  {/* USPS/UPS/Freight match the platform's own providers, so tracking
+                      links resolve. The rest are for manually-arranged shipments. */}
+                  <option value="USPS">USPS</option>
                   <option value="UPS">UPS</option>
-                  <option value="PostNet">PostNet</option>
-                  <option value="Aramex">Aramex</option>
-                  <option value="Courier Guy">The Courier Guy</option>
-                  <option value="Dawn Wing">Dawn Wing</option>
+                  <option value="Freight">Freight (LTL)</option>
+                  <option value="FedEx">FedEx</option>
+                  <option value="DHL">DHL</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -1311,7 +1310,7 @@ const AdminOrders = () => {
                 onClick={() => {
                   setShowTrackingModal(false)
                   setTrackingNumber('')
-                  setShippingCarrier('SAPO')
+                  setShippingCarrier('USPS')
                 }}
                 className="btn-outline flex-1"
                 disabled={updateLoading === selectedOrder.orderId}

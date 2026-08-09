@@ -198,7 +198,7 @@ router.post('/', authMiddleware, async (req, res) => {
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      // Update order status — 'processing' until SAPO shipment confirms 'shipped'
+      // Update order status — 'processing' until the shipment confirms 'shipped'
       transaction.update(orderRef, {
         status: 'processing',
         paymentStatus: 'paid',
@@ -264,35 +264,35 @@ router.post('/', authMiddleware, async (req, res) => {
       // Don't fail the payment if commission processing fails
     }
 
-    // Create SAPO shipment after successful payment
-    console.log('=== STARTING SAPO SHIPMENT CREATION (WALLET) ===');
+    // Create the shipment after successful payment
+    console.log('=== STARTING SHIPMENT CREATION (WALLET) ===');
     let shippingInfo = null;
     try {
       // Fetch fresh order data with shipping info
       const updatedOrderDoc = await db.collection('orders').doc(orderId).get();
       const updatedOrder = { id: orderId, ...updatedOrderDoc.data() };
-      console.log('Order data for SAPO:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
+      console.log('Order shipping data:', updatedOrder.shippingInfo ? 'Has shipping info' : 'No shipping info');
 
-      // Create shipment with SAPO
+      // Create the shipment with the active carrier
       const shipmentResult = await shippingService.createShipmentForOrder(updatedOrder);
-      console.log('SAPO shipment created:', shipmentResult.trackingNumber);
+      console.log('Shipment created:', shipmentResult.trackingNumber);
 
       // Update order with tracking info and main status
       await db.collection('orders').doc(orderId).update({
         status: 'shipped',
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'SAPO',
+        carrier: shipmentResult.carrier || 'USPS',
         shippingStatus: 'shipped',
         shippedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
       shippingInfo = {
         trackingNumber: shipmentResult.trackingNumber,
-        carrier: shipmentResult.carrier || 'SAPO',
+        carrier: shipmentResult.carrier || 'USPS',
         status: 'shipped'
       };
     } catch (shippingError) {
-      console.error('Error creating SAPO shipment:', shippingError.message);
+      console.error('Error creating shipment:', shippingError.message);
       // Don't fail the payment if shipping creation fails
     }
 

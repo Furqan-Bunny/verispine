@@ -52,7 +52,7 @@ async function ensureOfficialSeller() {
         bannerUrl: null,
         contactEmail: 'info@verispinejointcenters.com',
         returnPolicy: 'Returns handled per VeriSpine platform terms.',
-        shippingPolicy: 'Ships via SAPO from VeriSpine hubs.',
+        shippingPolicy: 'Ships from VeriSpine facilities via USPS, UPS or freight.',
         verifiedSeller: true,
         memberSinceAsSeller: ts,
         totalSales: 0,

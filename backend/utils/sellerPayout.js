@@ -12,7 +12,7 @@ const PLATFORM_FEE_RATE = 0.10; // 10%
  * single place that moves them.
  *
  * Idempotent and safe to call from multiple delivered transitions (admin status update,
- * SAPO mark-delivered, ShipLogic webhook):
+ * admin mark-delivered, carrier webhook):
  *  - only acts on orders settled under the held-funds model (`fundsHeld === true`)
  *  - skips if already released (`sellerFundsReleased === true`)
  *  - never acts on legacy/old-model orders (no `fundsHeld`), so they can't be double-paid
