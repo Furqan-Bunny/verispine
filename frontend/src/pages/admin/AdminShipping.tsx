@@ -506,7 +506,11 @@ const AdminShipping: React.FC = () => {
         onClear={sel.clear}
         label="shipment"
       />
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* overflow-x-auto, matching the other admin tables. This wrapper used to be
+          overflow-hidden, which CLIPS a min-w-full table instead of letting it
+          scroll — on a narrow screen the right-hand columns (status, tracking,
+          actions) were cut off and unreachable rather than scrollable. */}
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
