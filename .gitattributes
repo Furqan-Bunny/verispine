@@ -1,0 +1,15 @@
+# Normalize line endings — avoids CRLF/LF churn between Windows dev and Linux CI/Railway
+* text=auto eol=lf
+
+# Binary assets: never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary

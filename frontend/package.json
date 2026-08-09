@@ -1,0 +1,49 @@
+{
+  "name": "quicksell-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --mode production",
+    "type-check": "tsc",
+    "preview": "vite preview",
+    "seed": "vite-node src/scripts/seedFirebase.ts",
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "hosting:serve": "firebase serve --only hosting"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "@vitejs/plugin-react": "^4.0.4",
+    "autoprefixer": "^10.4.15",
+    "axios": "^1.5.0",
+    "date-fns": "^2.30.0",
+    "firebase": "^10.14.1",
+    "framer-motion": "^10.16.4",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^0.544.0",
+    "postcss": "^8.4.29",
+    "react": "^18.2.0",
+    "react-countdown": "^2.3.5",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.46.1",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^4.11.0",
+    "react-image-gallery": "^1.3.0",
+    "react-query": "^3.39.3",
+    "react-router-dom": "^6.16.0",
+    "recharts": "^2.8.0",
+    "socket.io-client": "^4.5.3",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.4.9",
+    "xlsx": "^0.18.5",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.23",
+    "@types/react-dom": "^18.2.8",
+    "@types/react-image-gallery": "^1.2.4",
+    "typescript": "^5.2.2"
+  }
+}

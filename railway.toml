@@ -1,0 +1,19 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm run railway-build"
+
+[deploy]
+startCommand = "npm run railway-start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+region = "us-west1"
+
+[[services]]
+name = "web"
+type = "web"
+
+[services.web]
+port = 5000
+healthcheckPath = "/api/health"

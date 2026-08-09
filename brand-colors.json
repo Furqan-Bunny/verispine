@@ -1,0 +1,100 @@
+{
+  "brandName": "Quicksell",
+  "logo": {
+    "primary": {
+      "icon": "#ea580c",
+      "text": "linear-gradient(90deg, #ea580c 0%, #0284c7 100%)",
+      "description": "For light backgrounds"
+    },
+    "secondary": {
+      "icon": "#fb923c",
+      "text": "#ffffff",
+      "description": "For dark backgrounds"
+    },
+    "monochrome": {
+      "light": "#ffffff",
+      "dark": "#111827"
+    }
+  },
+  "colors": {
+    "primary": {
+      "50": "#fff7ed",
+      "100": "#ffedd5",
+      "200": "#fed7aa",
+      "300": "#fdba74",
+      "400": "#fb923c",
+      "500": "#f97316",
+      "600": "#ea580c",
+      "700": "#c2410c",
+      "800": "#9a3412",
+      "900": "#7c2d12",
+      "950": "#431407",
+      "main": "#ea580c",
+      "name": "Orange"
+    },
+    "secondary": {
+      "50": "#f0f9ff",
+      "100": "#e0f2fe",
+      "200": "#bae6fd",
+      "300": "#7dd3fc",
+      "400": "#38bdf8",
+      "500": "#0ea5e9",
+      "600": "#0284c7",
+      "700": "#0369a1",
+      "800": "#075985",
+      "900": "#0c4a6e",
+      "950": "#082f49",
+      "main": "#0284c7",
+      "name": "Blue"
+    },
+    "neutral": {
+      "50": "#f9fafb",
+      "100": "#f3f4f6",
+      "200": "#e5e7eb",
+      "300": "#d1d5db",
+      "400": "#9ca3af",
+      "500": "#6b7280",
+      "600": "#4b5563",
+      "700": "#374151",
+      "800": "#1f2937",
+      "900": "#111827",
+      "white": "#ffffff",
+      "black": "#000000"
+    },
+    "status": {
+      "success": "#22c55e",
+      "error": "#ef4444",
+      "warning": "#f59e0b",
+      "info": "#3b82f6"
+    }
+  },
+  "gradients": {
+    "primary": "linear-gradient(90deg, #ea580c 0%, #0284c7 100%)",
+    "primaryVertical": "linear-gradient(180deg, #ea580c 0%, #0284c7 100%)",
+    "primaryDiagonal": "linear-gradient(135deg, #ea580c 0%, #0284c7 100%)",
+    "orange": "linear-gradient(135deg, #f97316 0%, #c2410c 100%)",
+    "blue": "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)"
+  },
+  "rgb": {
+    "primary": {
+      "600": "rgb(234, 88, 12)",
+      "500": "rgb(249, 115, 22)",
+      "400": "rgb(251, 146, 60)"
+    },
+    "secondary": {
+      "600": "rgb(2, 132, 199)",
+      "500": "rgb(14, 165, 233)"
+    }
+  },
+  "usage": {
+    "logo": ["#ea580c", "#0284c7"],
+    "buttons": ["#ea580c", "#0284c7"],
+    "links": "#0284c7",
+    "headings": "#111827",
+    "bodyText": "#4b5563",
+    "background": "#ffffff",
+    "backgroundAlt": "#f9fafb",
+    "borders": "#e5e7eb",
+    "shadows": "rgba(0, 0, 0, 0.1)"
+  }
+}

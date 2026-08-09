@@ -1,0 +1,25 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm install --production=false"]
+
+[phases.build]
+cmds = [
+  "echo 'Build timestamp: $(date)'",
+  "echo 'Removing ALL old builds...'",
+  "rm -rf frontend/dist frontend/node_modules frontend/.vite",
+  "rm -rf node_modules/.cache",
+  "cd frontend && npm cache clean --force",
+  "cd frontend && npm install --production=false",
+  "cd frontend && echo 'Building frontend in PRODUCTION mode...'",
+  "cd frontend && NODE_ENV=production npm run build",
+  "echo 'Build complete. Checking output...'",
+  "cd frontend && ls -la dist/assets/",
+  "cd frontend && echo 'Checking for localhost references...'",
+  "cd frontend && grep -c 'localhost:5000' dist/assets/*.js || echo 'CLEAN: No localhost found'",
+  "cd ../backend && npm install"
+]
+
+[start]
+cmd = "npm start"

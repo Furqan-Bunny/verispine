@@ -1,0 +1,45 @@
+{
+  "service": "CTC",
+  "hubs": [
+    8000,
+    2000,
+    9300,
+    4000,
+    5200,
+    6000,
+    1200,
+    700,
+    8300,
+    2940,
+    3200,
+    6532
+  ],
+  "sameHubRate": 2.12,
+  "crossHubRate": 5.3,
+  "min": {
+    "LOCAL": 47.7,
+    "MAIN": 68.9,
+    "D OUTL": 106.0,
+    "F OUTL": 116.6
+  },
+  "outlyingSurcharge": {
+    "D OUTL": 4.24,
+    "F OUTL": 4.66
+  },
+  "minKg": 5,
+  "docFee": 7.42,
+  "volFactor": 4000,
+  "highRiskCharge": 90.1,
+  "fuelPct": 0.474,
+  "vat": 0.15,
+  "sanral": {
+    "A": 0,
+    "B": 0.0733,
+    "C": 0.0818,
+    "D": 0.0903,
+    "E": 0.0999,
+    "F": 0.0425,
+    "G": 0,
+    "H": 0
+  }
+}
