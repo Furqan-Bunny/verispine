@@ -369,7 +369,7 @@ const AdminSellerDetailPage = () => {
                         <td className="px-4 py-2">{p.title}</td>
                         <td className="px-4 py-2"><StatusPill text={p.status || '—'} tone={statusTone(p.status)} /></td>
                         <td className="px-4 py-2">{formatCurrency(p.currentPrice || p.startingPrice)}</td>
-                        <td className="px-4 py-2">{p.bidsCount || p.totalBids || 0}</td>
+                        <td className="px-4 py-2">{p.totalBids || 0}</td>
                         <td className="px-4 py-2">{p.views || 0}</td>
                         <td className="px-4 py-2">{toDateStr(p.createdAt)}</td>
                         <td className="px-4 py-2 text-right">

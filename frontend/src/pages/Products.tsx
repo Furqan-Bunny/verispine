@@ -128,7 +128,7 @@ const Products = () => {
               startDate: p.startDate?._seconds 
                 ? new Date(p.startDate._seconds * 1000) 
                 : (p.startDate ? new Date(p.startDate) : new Date()),
-              bids: p.totalBids || p.bidsCount || 0,
+              bids: p.totalBids || 0,
               currentPrice: p.currentPrice || p.price || 0,
               images: Array.isArray(p.images) ? p.images : [p.images].filter(Boolean),
               seller: {

@@ -22,113 +22,6 @@ import { formatPrice, getPaymentTimeRemaining } from '../utils/formatters'
 import { carrierLabel, carrierTrackingUrl } from '../utils/carriers'
 import toast from 'react-hot-toast'
 
-// Mock order data (kept for reference)
-const mockOrder = {
-  id: 'ORD001',
-  orderNumber: 'QS202412001',
-  status: 'shipped',
-  createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  
-  product: {
-    id: 'prod1',
-    title: 'iPhone 14 Pro Max 256GB',
-    image: 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=500',
-    description: 'Excellent condition smartphone'
-  },
-  
-  buyer: {
-    id: 'user1',
-    username: 'john_doe',
-    email: 'john@example.com',
-    phone: '+27 82 123 4567'
-  },
-  
-  seller: {
-    id: 'seller1',
-    username: 'techstore',
-    email: 'seller@example.com',
-    phone: '+27 83 234 5678',
-    rating: 4.8,
-    totalSales: 156
-  },
-  
-  amount: {
-    subtotal: 15000,
-    shipping: 150,
-    tax: 1200,
-    fees: 450,
-    total: 16800
-  },
-  
-  payment: {
-    method: 'card',
-    status: 'completed',
-    transactionId: 'TXN123456789',
-    paidAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  
-  shipping: {
-    address: {
-      street: '123 Main Street',
-      city: 'Cape Town',
-      state: 'Western Cape',
-      country: 'United States',
-      zipCode: '8001'
-    },
-    method: 'Express Delivery',
-    carrier: 'DHL',
-    trackingNumber: 'DHL123456789',
-    estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'in-transit'
-  },
-  
-  timeline: [
-    {
-      status: 'Order Placed',
-      description: 'Order was successfully placed',
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: CheckCircleIcon,
-      completed: true
-    },
-    {
-      status: 'Payment Confirmed',
-      description: 'Payment was successfully processed',
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: CreditCardIcon,
-      completed: true
-    },
-    {
-      status: 'Order Processed',
-      description: 'Seller has confirmed the order',
-      timestamp: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: CheckCircleIcon,
-      completed: true
-    },
-    {
-      status: 'Shipping',
-      description: 'Package is being shipped',
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: TruckIcon,
-      completed: true
-    },
-    {
-      status: 'Out for Delivery',
-      description: 'Package is out for delivery',
-      timestamp: null,
-      icon: TruckIcon,
-      completed: false
-    },
-    {
-      status: 'Delivered',
-      description: 'Package delivered successfully',
-      timestamp: null,
-      icon: CheckCircleIcon,
-      completed: false
-    }
-  ]
-}
-
 const OrderDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -754,26 +647,39 @@ const OrderDetail = () => {
             </div>
           </div>
 
-          {/* Seller Information - Phase 1: Admin is the seller */}
+          {/* Seller Information.
+              This panel used to be hardcoded to "VeriSpine Platform / all products
+              are sold directly by VeriSpine", left over from a single-seller phase.
+              On a marketplace that is simply false — it told every buyer the wrong
+              seller and gave them no way to reach the actual one. */}
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Seller Information</h2>
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-medium text-gray-900">VeriSpine Platform</h3>
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <EnvelopeIcon className="h-4 w-4" />
-                    info@verispinejointcenters.com
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  All products are sold directly by VeriSpine
-                </p>
+                <h3 className="font-medium text-gray-900">
+                  {order.sellerName || product?.sellerName || 'Seller'}
+                </h3>
+                {(order.sellerEmail || product?.sellerEmail) && (
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <EnvelopeIcon className="h-4 w-4" />
+                      {order.sellerEmail || product?.sellerEmail}
+                    </span>
+                  </div>
+                )}
+                {order.sellerId && (
+                  <Link
+                    to={`/seller/${order.sellerId}`}
+                    className="inline-block text-sm text-primary-600 hover:text-primary-700 mt-2"
+                  >
+                    View seller storefront →
+                  </Link>
+                )}
               </div>
-              <button className="btn-outline flex items-center gap-2">
+              <Link to="/help" className="btn-outline flex items-center gap-2">
                 <ChatBubbleLeftIcon className="h-4 w-4" />
                 Contact Support
-              </button>
+              </Link>
             </div>
           </div>
         </div>

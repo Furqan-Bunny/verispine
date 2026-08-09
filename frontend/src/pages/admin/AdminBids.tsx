@@ -390,7 +390,7 @@ const AdminBids = () => {
                       {formatPrice(product.currentPrice || product.startingPrice)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {product.totalBids || product.bidsCount || 0}
+                      {product.totalBids || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getProductStatusColor(product.status)}`}>

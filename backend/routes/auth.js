@@ -202,6 +202,23 @@ router.post('/login', [
       return res.status(401).json({ error: 'Account is disabled' });
     }
 
+    /**
+     * Email verification gate.
+     *
+     * Registration sends an OTP but creates the account immediately, so without
+     * this check anyone can sign up with an address they don't control and use
+     * the platform — including receiving order and payout mail at it. The
+     * response carries `requiresVerification` and the address so the client can
+     * send the user to the OTP screen instead of showing a credentials error.
+     */
+    if (!user.emailVerified) {
+      return res.status(403).json({
+        error: 'Please verify your email address before signing in.',
+        requiresVerification: true,
+        email: user.email
+      });
+    }
+
     // Update last login
     await userUtils.update(user.id, { lastLogin: new Date() });
 

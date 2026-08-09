@@ -3,6 +3,7 @@ const router = express.Router();
 const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { validateBuyerShippingInfo, validatePickupPointOrder } = require('../utils/addressValidation');
+const { PLATFORM_FEE_RATE } = require('../utils/sellerPayout');
 
 // Create order after auction win or buy now
 router.post('/', authMiddleware, async (req, res) => {
@@ -564,7 +565,13 @@ router.get('/admin/all', authMiddleware, adminMiddleware, async (req, res) => {
       delivered: allOrders.filter(o => o.status === 'delivered').length,
       cancelled: allOrders.filter(o => o.status === 'cancelled').length,
       totalRevenue: allOrders.reduce((sum, o) => sum + Number(o.amount || 0), 0),
-      totalCommission: allOrders.reduce((sum, o) => sum + (Number(o.amount || 0) * 0.05), 0) // 5% commission
+      // Rate read from the module that actually charges it. This was hardcoded
+      // to 5% while the platform charged 10%, so admin reporting understated
+      // commission by half.
+      totalCommission: allOrders.reduce(
+        (sum, o) => sum + (Number(o.amount || 0) * PLATFORM_FEE_RATE),
+        0
+      )
     };
     
     res.json({

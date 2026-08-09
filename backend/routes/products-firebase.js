@@ -605,7 +605,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
         ? `${shippingData.pickupCity}, ${shippingData.pickupProvince}`
         : (shippingData.location || 'United States'),
       views: 0,
-      bidsCount: 0,
+      totalBids: 0,
       watchers: 0,
       featured: false,
       // Live auction fields
@@ -825,7 +825,7 @@ router.put('/:id', authMiddleware, upload.array('images', 5), async (req, res) =
     if (updates.startingPrice) {
       const doc = await db.collection('products').doc(productId).get();
       const existing = doc.data();
-      if (existing.bidsCount === 0 || existing.currentPrice === existing.startingPrice) {
+      if (!existing.totalBids || existing.currentPrice === existing.startingPrice) {
         updates.currentPrice = updates.startingPrice;
       }
     }

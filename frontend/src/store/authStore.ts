@@ -292,7 +292,25 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Use Firebase authentication
       const response = await firebaseAuth.login(email, password)
       const { token, user } = response
-      
+
+      /**
+       * Refuse to establish a session for an unverified address.
+       *
+       * The login page already redirected unverified users to the OTP screen,
+       * but only AFTER the token was stored and isAuthenticated was set — so the
+       * user could navigate away from that screen and browse as a fully
+       * authenticated account with an email they may not own. The signed-out
+       * error carries the address so the OTP screen can be pre-filled.
+       */
+      if (!user.emailVerified) {
+        await firebaseAuth.logout().catch(() => {})
+        set({ isLoading: false })
+        const err: any = new Error('Please verify your email address before signing in.')
+        err.requiresVerification = true
+        err.email = user.email
+        throw err
+      }
+
       // Format user object to match our interface
       const formattedUser: User = {
         id: user.uid,
@@ -326,8 +344,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       toast.success('Login successful!')
     } catch (error: any) {
       set({ isLoading: false })
-      const errorMessage = getFirebaseErrorMessage(error)
-      toast.error(errorMessage)
+      // The verification error already carries a user-facing message; running it
+      // through the Firebase error mapper would replace it with a generic one.
+      toast.error(error?.requiresVerification ? error.message : getFirebaseErrorMessage(error))
       throw error
     }
   },

@@ -57,6 +57,10 @@ const EditProduct = () => {
   const [saving, setSaving] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
 
+  // Images chosen but not yet saved. Kept as real Files so they can be uploaded;
+  // previewUrl is a blob: URL used only to render a thumbnail before saving.
+  const [pendingImages, setPendingImages] = useState<{ file: File; previewUrl: string }[]>([])
+
   const [formData, setFormData] = useState({
     listingType: 'auction',
     title: '',
@@ -200,17 +204,36 @@ const EditProduct = () => {
     }))
   }
 
+  /**
+   * Queue a new image for upload.
+   *
+   * The file is held until save and then sent as multipart, which is what the
+   * backend expects. It used to be turned into a blob: URL with
+   * URL.createObjectURL and pushed straight into the images array — that URL is
+   * valid only inside the current tab, so the "uploaded" picture was saved as an
+   * unusable string and the real file was never sent anywhere. The listing came
+   * back with a broken image and the seller had no way to tell why.
+   */
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      // In a real app, upload to storage and get URL
-      // For now, using local URL
-      const imageUrl = URL.createObjectURL(file)
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageUrl]
-      }))
+    if (!file) return
+
+    if (formData.images.length + pendingImages.length >= 5) {
+      toast.error('A listing can have at most 5 images')
+      return
     }
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only image files can be uploaded')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Images must be under 5MB')
+      return
+    }
+
+    // The preview URL is display-only and is never sent or saved.
+    setPendingImages(prev => [...prev, { file, previewUrl: URL.createObjectURL(file) }])
+    e.target.value = '' // let the same file be picked again after a removal
   }
 
   const handleImageRemove = (index: number) => {
@@ -218,6 +241,14 @@ const EditProduct = () => {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }))
+  }
+
+  const handlePendingImageRemove = (index: number) => {
+    setPendingImages(prev => {
+      const removed = prev[index]
+      if (removed) URL.revokeObjectURL(removed.previewUrl)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   const handleTagAdd = () => {
@@ -307,11 +338,34 @@ const EditProduct = () => {
         if (formData.endDate) updateData.endDate = formData.endDate
       }
 
-      const response = await axios.put(`/api/products/${productId}`, updateData)
+      /**
+       * Send as multipart when there are new files, JSON otherwise.
+       *
+       * The backend appends uploaded files to the product's existing images, so
+       * `images` here carries only the ones the seller kept — removing an
+       * existing image and adding a new one in the same save works.
+       */
+      let response
+      if (pendingImages.length > 0) {
+        const body = new FormData()
+        for (const [key, value] of Object.entries(updateData)) {
+          if (value === undefined || value === null) continue
+          body.append(key, Array.isArray(value) ? JSON.stringify(value) : String(value))
+        }
+        for (const { file } of pendingImages) body.append('images', file)
+
+        response = await axios.put(`/api/products/${productId}`, body, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+      } else {
+        response = await axios.put(`/api/products/${productId}`, updateData)
+      }
 
       if (response.data.success) {
+        pendingImages.forEach(p => URL.revokeObjectURL(p.previewUrl))
+        setPendingImages([])
         toast.success('Product updated successfully')
-        navigate('/admin/products')
+        navigate(user?.role === 'admin' ? '/admin/products' : '/my-auctions')
       }
     } catch (error: any) {
       console.error('Error updating product:', error)
@@ -741,17 +795,47 @@ const EditProduct = () => {
               </div>
             ))}
             
-            <label className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400">
-              <PhotoIcon className="h-8 w-8 text-gray-400" />
-              <span className="mt-2 text-xs text-gray-600">Add Image</span>
-              <input
-                type="file"
-                onChange={handleImageAdd}
-                accept="image/*"
-                className="hidden"
-              />
-            </label>
+            {/* Not-yet-uploaded images, badged so it is obvious they only exist
+                once the listing is saved. */}
+            {pendingImages.map((pending, index) => (
+              <div key={`pending-${index}`} className="relative">
+                <img
+                  src={pending.previewUrl}
+                  alt={`New image ${index + 1}`}
+                  className="w-full h-24 object-cover rounded-lg ring-2 ring-primary-400"
+                />
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] font-medium bg-primary-600 text-white rounded">
+                  Not saved
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handlePendingImageRemove(index)}
+                  className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+
+            {formData.images.length + pendingImages.length < 5 && (
+              <label className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400">
+                <PhotoIcon className="h-8 w-8 text-gray-400" />
+                <span className="mt-2 text-xs text-gray-600">Add Image</span>
+                <input
+                  type="file"
+                  onChange={handleImageAdd}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
+
+          {pendingImages.length > 0 && (
+            <p className="mt-3 text-sm text-gray-500">
+              {pendingImages.length} new image{pendingImages.length > 1 ? 's' : ''} will be uploaded when you save.
+            </p>
+          )}
         </div>
 
         {/* Tags */}

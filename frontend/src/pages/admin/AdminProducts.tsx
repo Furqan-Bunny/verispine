@@ -477,7 +477,7 @@ const AdminProducts = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      {(product.totalBids || product.bidsCount || 0) > 0 && (
+                      {(product.totalBids || 0) > 0 && (
                         <button
                           onClick={() => navigate(`/admin/bids?product=${product.id}`)}
                           className="text-primary-600 hover:text-primary-800"
