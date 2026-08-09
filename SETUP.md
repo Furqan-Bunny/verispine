@@ -210,3 +210,44 @@ Then, on the live project, the parts that need real credentials:
 5. Seller funds move `pendingBalance` → `balance` → withdrawal request → admin approve
 6. Replay the Stripe webhook event — the seller must not be credited twice
 7. Two concurrent bids at the same price — `currentPrice` must not regress
+
+---
+
+## Running locally
+
+The whole stack runs against the Firebase emulator suite — no Firebase project,
+no Stripe account, no carrier credentials. Needs Java (the Firestore emulator is
+a JAR).
+
+```bash
+cp backend/.env.example backend/.env      # then set the emulator block, below
+cp frontend/.env.example frontend/.env
+
+npx firebase emulators:start --project verispine-local --only auth,firestore,storage
+node backend/start.js                     # in a second terminal
+cd frontend && npm run dev                # in a third
+```
+
+In `backend/.env`, these three lines are what switch the Admin SDK to the
+emulators — their presence makes it skip service-account auth entirely, so no
+production key is needed:
+
+```
+FIREBASE_PROJECT_ID=verispine-local
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199
+```
+
+In `frontend/.env`, set `VITE_USE_FIREBASE_EMULATORS=true`. It is ignored in
+production builds, so it cannot point real users at localhost.
+
+Then seed the catalog and you have a working marketplace:
+
+```bash
+node backend/scripts/seedCatalog.js
+```
+
+Emulator UI at http://localhost:4000 shows the data as you go. Emulator state is
+in-memory: restarting the emulators wipes everything, which is usually what you
+want between test runs.
