@@ -174,6 +174,16 @@ const ShippingTracker: React.FC<ShippingTrackerProps> = ({
     );
   }
 
+  // Freight is admin-tracked and has no public portal, so it gets no external link.
+  const carrier = String(trackingInfo.carrier || 'USPS').toLowerCase();
+  const carrierLabel = carrier === 'ups' ? 'UPS' : carrier === 'freight' ? 'Freight (LTL)' : 'USPS';
+  const carrierTrackingUrl =
+    carrier === 'ups'
+      ? `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingInfo.trackingNumber)}`
+      : carrier === 'usps'
+        ? `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(trackingInfo.trackingNumber)}`
+        : null;
+
   return (
     <div className="bg-white rounded-lg shadow-lg">
       {/* Header */}
@@ -183,9 +193,7 @@ const ShippingTracker: React.FC<ShippingTrackerProps> = ({
             <h2 className="text-xl font-bold text-gray-900">
               Tracking: {trackingInfo.trackingNumber}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {(trackingInfo.carrier || 'SAPO') === 'ShipLogic' ? 'ShipLogic Courier' : 'SAPO Shipping Service'}
-            </p>
+            <p className="text-sm text-gray-600 mt-1">{carrierLabel}</p>
           </div>
           {onClose && (
             <button
@@ -302,14 +310,14 @@ const ShippingTracker: React.FC<ShippingTrackerProps> = ({
           >
             Refresh Tracking
           </button>
-          {(trackingInfo.carrier || 'SAPO') !== 'ShipLogic' && (
+          {carrierTrackingUrl && (
             <a
-              href={`https://tracking.postoffice.co.za/tracking/${trackingInfo.trackingNumber}`}
+              href={carrierTrackingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-600 hover:text-primary-700 font-medium text-sm"
             >
-              View on SAPO Website →
+              View on {carrierLabel} →
             </a>
           )}
         </div>

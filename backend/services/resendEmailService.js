@@ -2,19 +2,20 @@ const { Resend } = require('resend');
 const { admin, db } = require('../config/firebase');
 
 /**
- * Build the "Track Your Order" link for the courier that actually shipped the parcel.
- * SAPO → Post Office tracking. ShipLogic → SHIPLOGIC_TRACKING_URL if configured, else the
- * in-app order page (always safe). No tracking number → the order page.
+ * Build the "Track Your Order" link for the carrier that actually shipped the parcel.
+ * Freight has no public tracking portal (it is admin-updated), so it falls back to the
+ * in-app order page — as does anything unrecognised or untracked.
  */
 function trackingUrlFor(trackingNumber, carrier, orderUrl) {
   if (!trackingNumber) return orderUrl;
-  if (String(carrier || 'SAPO').toLowerCase() === 'shiplogic') {
-    const base = process.env.SHIPLOGIC_TRACKING_URL;
-    return base
-      ? `${base}${base.includes('?') ? '&' : '?'}tracking_reference=${encodeURIComponent(trackingNumber)}`
-      : orderUrl;
+  const c = String(carrier || 'USPS').toLowerCase();
+  if (c === 'ups') {
+    return `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`;
   }
-  return `https://trackingnew.postoffice.co.za/?trackcode=${trackingNumber}`;
+  if (c === 'usps') {
+    return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(trackingNumber)}`;
+  }
+  return orderUrl;
 }
 
 class ResendEmailService {
@@ -729,11 +730,14 @@ class ResendEmailService {
       });
       const invoiceNumber = `INV-${Date.now().toString().slice(-8)}`;
 
-      // Calculate amounts
+      // Calculate amounts. Sales tax is NOT computed here — US sales tax is
+      // destination-based and varies by state and locality, so quoting a made-up
+      // rate on a receipt would be wrong in most states. The invoice shows what
+      // was actually charged; tax handling belongs in the payment processor.
       const subtotal = Number(order.amount || order.totalAmount || 0);
       const shippingCost = Number(order.shippingCost || order.shipping?.cost || 0);
-      const platformFee = subtotal * 0.15; // 15% VAT
       const total = subtotal + shippingCost;
+      const carrierName = order.shippingCarrier || (shippingInfo && shippingInfo.carrier) || 'Carrier';
 
       // Get shipping address
       const shipping = order.shippingInfo || order.shippingAddress || {};
@@ -748,7 +752,7 @@ class ResendEmailService {
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #dee2e6;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
               <div>
-                <h3 style="margin: 0; color: #333; font-size: 20px;">TAX INVOICE</h3>
+                <h3 style="margin: 0; color: #333; font-size: 20px;">INVOICE</h3>
                 <p style="margin: 5px 0 0; color: #666; font-size: 14px;">Invoice #: ${invoiceNumber}</p>
               </div>
               <div style="text-align: right;">
@@ -778,7 +782,7 @@ class ResendEmailService {
                 </tr>
                 ${shippingCost > 0 ? `
                 <tr>
-                  <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6;">Shipping (SAPO)</td>
+                  <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6;">Shipping (${carrierName})</td>
                   <td style="padding: 12px 10px; text-align: center; border-bottom: 1px solid #dee2e6;">-</td>
                   <td style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #dee2e6;">$${shippingCost.toFixed(2)}</td>
                 </tr>
@@ -789,10 +793,12 @@ class ResendEmailService {
                   <td colspan="2" style="padding: 12px 10px; text-align: right;"><strong>Subtotal:</strong></td>
                   <td style="padding: 12px 10px; text-align: right;">$${subtotal.toFixed(2)}</td>
                 </tr>
+                ${shippingCost > 0 ? `
                 <tr>
-                  <td colspan="2" style="padding: 12px 10px; text-align: right;">VAT (15%):</td>
-                  <td style="padding: 12px 10px; text-align: right;">$${platformFee.toFixed(2)}</td>
+                  <td colspan="2" style="padding: 12px 10px; text-align: right;">Shipping:</td>
+                  <td style="padding: 12px 10px; text-align: right;">$${shippingCost.toFixed(2)}</td>
                 </tr>
+                ` : ''}
                 <tr style="background: #e9ecef;">
                   <td colspan="2" style="padding: 12px 10px; text-align: right;"><strong style="font-size: 16px;">TOTAL:</strong></td>
                   <td style="padding: 12px 10px; text-align: right;"><strong style="font-size: 18px; color: #28a745;">$${total.toFixed(2)}</strong></td>
@@ -808,7 +814,7 @@ class ResendEmailService {
             <div style="display: grid; gap: 15px;">
               <div>
                 <p style="margin: 0; color: #666; font-size: 12px; text-transform: uppercase;">Carrier</p>
-                <p style="margin: 5px 0 0; color: #333; font-weight: bold;">SAPO (South African Post Office)</p>
+                <p style="margin: 5px 0 0; color: #333; font-weight: bold;">${carrierName}</p>
               </div>
 
               ${shippingInfo?.trackingNumber ? `
@@ -900,7 +906,7 @@ class ResendEmailService {
 
             <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 15px 0;">
               <p style="margin: 0; font-size: 14px; color: #2e7d32;">
-                <strong>📍 Shipping via:</strong> SAPO (South African Post Office)
+                <strong>📍 Shipping via:</strong> ${order.shippingCarrier || order.carrier || 'Carrier'}
               </p>
               <p style="margin: 10px 0 0; font-size: 18px;">
                 <strong>Tracking Number:</strong>

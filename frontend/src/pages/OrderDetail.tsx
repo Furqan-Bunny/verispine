@@ -19,6 +19,7 @@ import {
   PrinterIcon
 } from '@heroicons/react/24/outline'
 import { formatPrice, getPaymentTimeRemaining } from '../utils/formatters'
+import { carrierLabel, carrierTrackingUrl } from '../utils/carriers'
 import toast from 'react-hot-toast'
 
 // Mock order data (kept for reference)
@@ -243,16 +244,21 @@ const OrderDetail = () => {
     }
   }
 
-  // Open SAPO tracking page
+  // Open the carrier's public tracking page for this order
   const handleTrackPackage = () => {
     if (!order.trackingNumber) {
       toast.error('No tracking number available')
       return
     }
 
-    // Open SAPO tracking page in new tab
-    const sapoTrackingUrl = `https://trackingnew.postoffice.co.za/?trackcode=${order.trackingNumber}`
-    window.open(sapoTrackingUrl, '_blank')
+    const url = carrierTrackingUrl(order.shippingCarrier || order.carrier, order.trackingNumber)
+    if (!url) {
+      // Freight and manually-arranged shipments have no public portal — the
+      // timeline on this page is the tracking.
+      toast('Tracking updates for this shipment appear below', { icon: '📦' })
+      return
+    }
+    window.open(url, '_blank')
   }
 
   const handlePrint = () => {
@@ -328,18 +334,18 @@ const OrderDetail = () => {
             <tr>
               <td>${order.productTitle || 'Product'}</td>
               <td>${order.quantity || 1}</td>
-              <td>R ${(order.productPrice || order.amount || 0).toFixed(2)}</td>
-              <td>R ${(order.productPrice || order.amount || 0).toFixed(2)}</td>
+              <td>$${(order.productPrice || order.amount || 0).toFixed(2)}</td>
+              <td>$${(order.productPrice || order.amount || 0).toFixed(2)}</td>
             </tr>
             ${(order.shippingCost || order.shipping?.cost || 0) > 0 ? `
             <tr>
-              <td colspan="3" style="text-align: right;">Shipping (SAPO)</td>
-              <td>R ${(order.shippingCost || order.shipping?.cost || 0).toFixed(2)}</td>
+              <td colspan="3" style="text-align: right;">Shipping (${carrierLabel(order.shippingCarrier || order.carrier)})</td>
+              <td>$${(order.shippingCost || order.shipping?.cost || 0).toFixed(2)}</td>
             </tr>
             ` : ''}
             <tr class="total-row">
               <td colspan="3" style="text-align: right;">Total</td>
-              <td>R ${((order.productPrice || order.amount || 0) + (order.shippingCost || order.shipping?.cost || 0)).toFixed(2)}</td>
+              <td>$${((order.productPrice || order.amount || 0) + (order.shippingCost || order.shipping?.cost || 0)).toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -677,16 +683,9 @@ const OrderDetail = () => {
               <div>
                 <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                   <MapPinIcon className="h-5 w-5 text-gray-400" />
-                  {order.deliveryMethod === 'pickup-point' ? 'Collect at Pargo Point' : 'Delivery Address'}
+                  Delivery Address
                 </h3>
-                {order.deliveryMethod === 'pickup-point' && order.pargoPoint ? (
-                  <p className="text-gray-600">
-                    <span className="font-medium text-gray-800">{order.pargoPoint.name || order.pargoPoint.code}</span><br />
-                    {order.pargoPoint.address && <>{order.pargoPoint.address}<br /></>}
-                    {[order.pargoPoint.city, order.pargoPoint.postalCode].filter(Boolean).join(', ')}<br />
-                    <span className="text-sm text-gray-500">Contact: {order.shippingInfo?.fullName || order.buyerName} · {order.shippingInfo?.phone}</span>
-                  </p>
-                ) : (order.shippingInfo || order.shippingAddress) ? (
+                {(order.shippingInfo || order.shippingAddress) ? (
                   <p className="text-gray-600">
                     {order.shippingInfo?.fullName || order.shippingAddress?.fullName || order.buyerName}<br />
                     {order.shippingInfo?.address || order.shippingAddress?.addressLine1}<br />
@@ -729,7 +728,7 @@ const OrderDetail = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-purple-600">Carrier</p>
-                        <p className="font-medium text-purple-900">{order.shippingCarrier || 'SAPO'}</p>
+                        <p className="font-medium text-purple-900">{carrierLabel(order.shippingCarrier || order.carrier)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-purple-600">Tracking Number</p>
@@ -993,7 +992,7 @@ const OrderDetail = () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Live Tracking</h3>
-                <p className="text-sm text-gray-500">SAPO - South African Post Office</p>
+                <p className="text-sm text-gray-500">{carrierLabel(order.shippingCarrier || order.carrier)}</p>
               </div>
             </div>
 

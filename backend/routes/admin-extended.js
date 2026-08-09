@@ -3,7 +3,7 @@ const router = express.Router();
 const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
-const sapoShippingService = require('../services/shippingService'); // provider facade (SAPO/ShipLogic)
+const shippingFacade = require('../services/shippingService'); // provider facade (USPS/UPS/Freight)
 const { runAdminDelete } = require('../utils/adminDelete');
 
 // Admin middleware - check if user is admin
@@ -800,26 +800,27 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
     const serverTimestamp = admin ? admin.firestore.FieldValue.serverTimestamp() : new Date();
     const regularTimestamp = new Date(); // serverTimestamp not allowed inside arrays
 
-    // ========= SAPO INTEGRATION FOR STATUS TRANSITIONS =========
-    // shipped: if no tracking yet, register parcel with SAPO + create shipment doc.
-    //          if tracking already exists, just flip the status field.
-    // delivered: notify SAPO via event code 37 so SAPO's tracking system also reflects delivery.
-    // cancelled: notify SAPO via event code 15 so SAPO cancels the parcel.
+    // ========= CARRIER INTEGRATION FOR STATUS TRANSITIONS =========
+    // shipped:   if no tracking yet, book with the carrier + create the shipment doc.
+    //            if tracking already exists, just flip the status field.
+    // delivered: push the delivery event so the carrier record matches ours.
+    // cancelled: void/cancel the shipment with the carrier.
+    // Which carrier that is comes from the shipping facade, not from here.
     let resolvedTrackingNumber = providedTrackingNumber || order.trackingNumber || null;
     let resolvedCarrier = order.carrier || null;
-    let sapoActionPerformed = null;
-    let sapoActionError = null;
+    let carrierActionPerformed = null;
+    let carrierActionError = null;
 
     if (status === 'shipped' && !resolvedTrackingNumber) {
       // No tracking yet — admin is asking us to actually register the parcel.
-      // Block the status flip if SAPO fails so we never sit in "shipped" without a TRN.
+      // Block the status flip if the carrier fails so we never sit in "shipped" without tracking.
       try {
-        const shipmentResult = await sapoShippingService.createShipmentForOrder({ id: orderId, ...order });
+        const shipmentResult = await shippingFacade.createShipmentForOrder({ id: orderId, ...order });
         resolvedTrackingNumber = shipmentResult.trackingNumber;
-        resolvedCarrier = shipmentResult.carrier || 'SAPO';
-        sapoActionPerformed = 'created';
+        resolvedCarrier = shipmentResult.carrier || 'USPS';
+        carrierActionPerformed = 'created';
       } catch (shippingError) {
-        console.error('Admin Mark as Shipped: SAPO createShipmentForOrder failed:', shippingError.message);
+        console.error('Admin Mark as Shipped: createShipmentForOrder failed:', shippingError.message);
         // Persist the error so it shows in the modal, but DO NOT flip status to shipped.
         try {
           await orderRef.update({
@@ -830,29 +831,29 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
           });
         } catch (e) { /* swallow */ }
         return res.status(502).json({
-          error: 'Failed to register shipment with SAPO',
+          error: 'Failed to register the shipment with the carrier',
           details: shippingError.message,
-          hint: 'Check the order has valid shippingInfo (4-digit postcode, address, city) and a valid pickup block on the product. Order status was not changed.'
+          hint: 'Check the order has valid shippingInfo (5-digit ZIP, address, city, state) and a valid pickup block on the product. Order status was not changed.'
         });
       }
     } else if (status === 'delivered' && resolvedTrackingNumber) {
-      // Order has a SAPO tracking number — push the DELIVERED event so SAPO's
-      // tracking system reflects it too. If this fails it is non-fatal; we still
-      // mark the order as delivered locally and surface the error in shippingError.
+      // Order already has tracking — push the DELIVERED event so the carrier record
+      // reflects it too. If this fails it is non-fatal; we still mark the order as
+      // delivered locally and surface the error in shippingError.
       try {
-        await sapoShippingService.markAsDelivered(resolvedTrackingNumber, order.buyerName || 'Recipient');
-        sapoActionPerformed = 'delivered';
+        await shippingFacade.markAsDelivered(resolvedTrackingNumber, order.buyerName || 'Recipient');
+        carrierActionPerformed = 'delivered';
       } catch (shippingError) {
-        console.error('Admin Mark as Delivered: SAPO markAsDelivered failed:', shippingError.message);
-        sapoActionError = shippingError.message;
+        console.error('Admin Mark as Delivered: markAsDelivered failed:', shippingError.message);
+        carrierActionError = shippingError.message;
       }
     } else if (status === 'cancelled' && resolvedTrackingNumber) {
       try {
-        await sapoShippingService.cancelShipment(resolvedTrackingNumber, notes || 'Cancelled by admin');
-        sapoActionPerformed = 'cancelled';
+        await shippingFacade.cancelShipment(resolvedTrackingNumber, notes || 'Cancelled by admin');
+        carrierActionPerformed = 'cancelled';
       } catch (shippingError) {
-        console.error('Admin Cancel: SAPO cancelShipment failed:', shippingError.message);
-        sapoActionError = shippingError.message;
+        console.error('Admin Cancel: cancelShipment failed:', shippingError.message);
+        carrierActionError = shippingError.message;
       }
     }
 
@@ -882,7 +883,7 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
       updateData.shippingStatus = 'shipped';
       if (!order.shippedAt) updateData.shippedAt = serverTimestamp;
       // If we just successfully created a shipment, clear any stale error.
-      if (sapoActionPerformed === 'created') {
+      if (carrierActionPerformed === 'created') {
         updateData.shippingError = admin.firestore.FieldValue.delete();
         updateData.shippingErrorAt = admin.firestore.FieldValue.delete();
       }
@@ -890,13 +891,13 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
     if (status === 'delivered') {
       updateData.deliveredAt = serverTimestamp;
       updateData.shippingStatus = 'delivered';
-      if (sapoActionError) {
-        updateData.shippingError = sapoActionError;
+      if (carrierActionError) {
+        updateData.shippingError = carrierActionError;
         updateData.shippingErrorAt = serverTimestamp;
       }
     }
-    if (status === 'cancelled' && sapoActionError) {
-      updateData.shippingError = sapoActionError;
+    if (status === 'cancelled' && carrierActionError) {
+      updateData.shippingError = carrierActionError;
       updateData.shippingErrorAt = serverTimestamp;
     }
 
@@ -931,7 +932,7 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
       });
 
       // Email — pick the right template per status. Generic update for processing/refunded;
-      // dedicated shipped/delivered templates which include the SAPO tracking link.
+      // dedicated shipped/delivered templates which include the carrier tracking link.
       try {
         const buyerDoc = await db.collection('users').doc(order.buyerId).get();
         if (buyerDoc.exists) {
@@ -955,16 +956,16 @@ router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (re
 
     res.json({
       success: true,
-      message: sapoActionPerformed === 'created'
-        ? 'Order shipped and registered with SAPO'
+      message: carrierActionPerformed === 'created'
+        ? `Order shipped and booked with ${resolvedCarrier || 'the carrier'}`
         : 'Order status updated successfully',
       data: {
         orderId,
         status,
         trackingNumber: resolvedTrackingNumber,
         carrier: resolvedCarrier,
-        sapoAction: sapoActionPerformed,
-        sapoActionError
+        carrierAction: carrierActionPerformed,
+        carrierActionError
       }
     });
   } catch (error) {

@@ -23,6 +23,23 @@ import ConfirmDialog from '../../components/admin/ConfirmDialog';
 import BulkDeleteBar from '../../components/admin/BulkDeleteBar';
 import PaginationBar from '../../components/admin/PaginationBar';
 import { adminBulkDelete } from '../../services/adminDelete';
+import { FREIGHT_THRESHOLD_LBS } from '../../config/locale';
+
+/**
+ * The provider list must stay in step with backend/utils/shippingSettings.js —
+ * saving a name the backend doesn't recognise silently falls back to the default.
+ */
+const SHIPPING_PROVIDERS = ['usps', 'ups', 'freight'] as const;
+type ShippingProvider = typeof SHIPPING_PROVIDERS[number];
+const DEFAULT_PROVIDER: ShippingProvider = 'usps';
+
+const PROVIDER_LABEL: Record<ShippingProvider, string> = {
+  usps: 'USPS',
+  ups: 'UPS',
+  freight: 'Freight (LTL)',
+};
+
+const isProvider = (v: any): v is ShippingProvider => SHIPPING_PROVIDERS.includes(v);
 
 interface ShipmentData {
   id: string;
@@ -61,7 +78,7 @@ const AdminShipping: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [shippingSettings, setShippingSettings] = useState({
-    activeProvider: 'sapo' as 'sapo' | 'shiplogic' | 'rtt' | 'pargo',
+    activeProvider: DEFAULT_PROVIDER as ShippingProvider,
     enableAutoTracking: true,
     autoGenerateTracking: true,
     notifyOnStatusChange: true
@@ -97,7 +114,7 @@ const AdminShipping: React.FC = () => {
       setShippingSettings((prev) => ({
         ...prev,
         ...data,
-        activeProvider: (data.activeProvider === 'shiplogic' || data.activeProvider === 'rtt' || data.activeProvider === 'pargo') ? data.activeProvider : 'sapo'
+        activeProvider: isProvider(data.activeProvider) ? data.activeProvider : DEFAULT_PROVIDER
       }));
     } catch (error) {
       console.error('Error fetching shipping settings:', error);
@@ -231,7 +248,7 @@ const AdminShipping: React.FC = () => {
         shippingSettings,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(`Shipping settings saved — active courier: ${shippingSettings.activeProvider === 'shiplogic' ? 'ShipLogic' : shippingSettings.activeProvider === 'rtt' ? 'RTT' : shippingSettings.activeProvider === 'pargo' ? 'Pargo' : 'SAPO'}`);
+      toast.success(`Shipping settings saved — active carrier: ${PROVIDER_LABEL[shippingSettings.activeProvider]}`);
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
@@ -364,14 +381,15 @@ const AdminShipping: React.FC = () => {
             <div>
               <p className="font-semibold text-gray-900 flex items-center">
                 <Truck className="h-5 w-5 mr-2 text-primary-600" />
-                Active Courier Provider
+                Active Carrier
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                Which courier ships all new orders. ShipLogic delivers nationwide (city restriction lifts); SAPO is post-office delivery.
+                Which carrier ships all new parcel orders. Items over {FREIGHT_THRESHOLD_LBS} lbs or larger
+                than 108" in any dimension are routed to freight automatically, whatever is selected here.
               </p>
             </div>
             <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden bg-white">
-              {(['sapo', 'shiplogic', 'rtt', 'pargo'] as const).map((p) => (
+              {SHIPPING_PROVIDERS.map((p) => (
                 <button
                   key={p}
                   type="button"
@@ -382,7 +400,7 @@ const AdminShipping: React.FC = () => {
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  {p === 'sapo' ? 'SAPO' : p === 'shiplogic' ? 'ShipLogic' : p === 'rtt' ? 'RTT' : 'Pargo'}
+                  {PROVIDER_LABEL[p]}
                 </button>
               ))}
             </div>

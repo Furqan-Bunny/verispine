@@ -443,7 +443,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       dimensions
     } = req.body;
 
-    // Optional parcel dimensions (cm) for courier rating (ShipLogic). Accept a JSON
+    // Optional parcel dimensions (inches) for carrier rating. Accept a JSON
     // string or object; store only if all three are valid positive numbers (<=200cm).
     const parseDimensions = (raw) => {
       if (!raw) return null;
@@ -483,8 +483,8 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       }
     }
 
-    // Validate weight upfront — required by SAPO. Without this, every shipment
-    // defaults to 1kg silently and SAPO underbills heavy items.
+    // Validate weight upfront — required by the carriers. Without this, every shipment
+    // defaults to 1 lb silently and heavy items are underbilled.
     const { validateProductWeight, validatePickupAddress } = require('../utils/addressValidation');
     const weightCheck = validateProductWeight(weight);
     if (!weightCheck.valid) {
@@ -492,7 +492,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
     }
 
     // Validate pickup address (already validated client-side in CreateAuction,
-    // but defense in depth: SAPO Sender block requires these fields).
+    // but defense in depth: the ship-from block requires these fields).
     const shippingDataPreview = shipping ? JSON.parse(shipping) : null;
     if (shippingDataPreview && (shippingDataPreview.pickupAddress || shippingDataPreview.pickupCity || shippingDataPreview.pickupPostalCode)) {
       const pickupCheck = validatePickupAddress({
@@ -577,7 +577,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       freeShipping: shippingData.cost === 0,
       // Product weight in lbs — see utils/addressValidation
       weight: weightCheck.weight,
-      // Optional parcel dimensions (cm) for courier rating (ShipLogic); null = use defaults
+      // Optional parcel dimensions (inches) for carrier rating; null = use defaults
       dimensions: parcelDimensions,
       // "City, Province" string for backward compat display (ProductCard/ProductDetail)
       location: shippingData.pickupCity && shippingData.pickupProvince
@@ -656,7 +656,7 @@ router.put('/:id', authMiddleware, upload.array('images', 5), async (req, res) =
 
     const updates = { ...req.body };
 
-    // If weight is being updated, validate against SAPO bounds
+    // If weight is being updated, validate against the shipping bounds
     if (updates.weight !== undefined && updates.weight !== '') {
       const { validateProductWeight } = require('../utils/addressValidation');
       const weightCheck = validateProductWeight(updates.weight);
