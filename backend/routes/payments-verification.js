@@ -199,7 +199,7 @@ router.post('/verify/:orderId', authMiddleware, async (req, res) => {
           userId: order.sellerId,
           type: 'sale',
           title: 'New Sale!',
-          message: `Your item "${order.productTitle}" has been sold for R${order.amount}`,
+          message: `Your item "${order.productTitle}" has been sold for $${order.amount}`,
           orderId,
           read: false,
           createdAt: admin.firestore.FieldValue.serverTimestamp()

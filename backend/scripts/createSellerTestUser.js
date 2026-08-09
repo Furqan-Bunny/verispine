@@ -61,7 +61,7 @@ async function main() {
     firstName,
     lastName,
     role: 'user',
-    balance: 1000,                  // R1000 to play with
+    balance: 1000,                  // $1000 to play with
     emailVerified: true,
     isActive: true,
     kycStatus: 'NOT_SUBMITTED',     // user will submit KYC themselves
@@ -85,7 +85,7 @@ async function main() {
   console.log(` UID:      ${authUser.uid}`);
   console.log(` Role:     user`);
   console.log(` KYC:      NOT_SUBMITTED  (you will submit it from the UI)`);
-  console.log(` Balance:  R1000`);
+  console.log(` Balance:  $1000`);
   console.log('================================================\n');
 
   console.log('Full test flow:');

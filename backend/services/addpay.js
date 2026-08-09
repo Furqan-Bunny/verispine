@@ -48,7 +48,7 @@ class AddPayService {
         description: data.description || 'VeriSpine Purchase',
         amount: {
           value: parseFloat(data.amount),
-          currency_code: data.currency || 'ZAR'
+          currency_code: data.currency || 'USD'
         }
       };
 
@@ -177,7 +177,7 @@ class AddPayService {
           reference: txData.reference,
           status: status, // READY, COMPLETE, FAILED, CANCELLED
           amount: txData.amount?.value || null,
-          currency: txData.amount?.currency_code || 'ZAR',
+          currency: txData.amount?.currency_code || 'USD',
           meta: txData.meta
         }
       };

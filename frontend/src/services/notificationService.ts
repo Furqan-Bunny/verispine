@@ -291,7 +291,7 @@ class NotificationService {
     return this.createNotification({
       type: 'bid',
       title: 'Bid Placed Successfully',
-      message: `Your bid of R${amount.toFixed(2)} has been placed on ${productTitle}`,
+      message: `Your bid of $${amount.toFixed(2)} has been placed on ${productTitle}`,
       priority: 'medium',
       actionUrl: `/products/${productId}`,
       actionLabel: 'View Auction',
@@ -303,7 +303,7 @@ class NotificationService {
     return this.createNotification({
       type: 'outbid',
       title: 'You have been outbid!',
-      message: `Someone has placed a higher bid on ${productTitle}. Current price: R${newAmount.toFixed(2)}`,
+      message: `Someone has placed a higher bid on ${productTitle}. Current price: $${newAmount.toFixed(2)}`,
       priority: 'high',
       actionUrl: `/products/${productId}`,
       actionLabel: 'Place New Bid',
@@ -315,7 +315,7 @@ class NotificationService {
     return this.createNotification({
       type: 'won',
       title: 'Congratulations! You won!',
-      message: `You won the auction for ${productTitle} for R${amount.toFixed(2)}. Complete your payment to secure the item.`,
+      message: `You won the auction for ${productTitle} for $${amount.toFixed(2)}. Complete your payment to secure the item.`,
       priority: 'urgent',
       actionUrl: `/orders/${orderId}`,
       actionLabel: 'Complete Payment',
@@ -347,17 +347,17 @@ class NotificationService {
     const messages = {
       requested: {
         title: 'Withdrawal Request Submitted',
-        message: `Your withdrawal request for R${amount.toFixed(2)} has been submitted and is pending approval.`,
+        message: `Your withdrawal request for $${amount.toFixed(2)} has been submitted and is pending approval.`,
         priority: 'medium' as const
       },
       approved: {
         title: 'Withdrawal Approved!',
-        message: `Your withdrawal of R${amount.toFixed(2)} has been approved and will be processed within 1-2 business days.`,
+        message: `Your withdrawal of $${amount.toFixed(2)} has been approved and will be processed within 1-2 business days.`,
         priority: 'high' as const
       },
       rejected: {
         title: 'Withdrawal Rejected',
-        message: `Your withdrawal request for R${amount.toFixed(2)} has been rejected. Please check your email for details.`,
+        message: `Your withdrawal request for $${amount.toFixed(2)} has been rejected. Please check your email for details.`,
         priority: 'high' as const
       }
     }
@@ -380,8 +380,8 @@ class NotificationService {
       type: 'payment',
       title: status === 'success' ? 'Payment Successful' : 'Payment Failed',
       message: status === 'success'
-        ? `Your payment of R${amount.toFixed(2)} was successful.`
-        : `Your payment of R${amount.toFixed(2)} failed. Please try again.`,
+        ? `Your payment of $${amount.toFixed(2)} was successful.`
+        : `Your payment of $${amount.toFixed(2)} failed. Please try again.`,
       priority: status === 'success' ? 'medium' : 'high',
       actionUrl: `/orders`,
       actionLabel: 'View Order',

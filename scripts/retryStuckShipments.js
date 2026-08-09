@@ -74,7 +74,7 @@ async function retryShipment(orderDoc) {
   console.log(`\n--- Order ${orderId} ---`);
   console.log(`  Product:        ${order.productTitle || '(no title)'}`);
   console.log(`  Buyer:          ${order.buyerName || order.buyerId}`);
-  console.log(`  Amount:         R${order.amount}`);
+  console.log(`  Amount:         $${order.amount}`);
   console.log(`  Status:         ${order.status}`);
   console.log(`  Payment Status: ${order.paymentStatus}`);
   console.log(`  Payment Method: ${order.paymentMethod || '(unknown)'}`);

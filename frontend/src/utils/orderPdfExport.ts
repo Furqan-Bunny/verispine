@@ -22,13 +22,13 @@ export function exportOrderPDF(order: any) {
 
   const formatDate = (d: any): string => {
     if (!d) return ''
-    if (d.toDate) return d.toDate().toLocaleString('en-ZA')
-    if (d._seconds) return new Date(d._seconds * 1000).toLocaleString('en-ZA')
+    if (d.toDate) return d.toDate().toLocaleString('en-US')
+    if (d._seconds) return new Date(d._seconds * 1000).toLocaleString('en-US')
     if (typeof d === 'string') {
       const parsed = new Date(d)
-      return isNaN(parsed.getTime()) ? d : parsed.toLocaleString('en-ZA')
+      return isNaN(parsed.getTime()) ? d : parsed.toLocaleString('en-US')
     }
-    if (d instanceof Date) return d.toLocaleString('en-ZA')
+    if (d instanceof Date) return d.toLocaleString('en-US')
     return ''
   }
 
@@ -72,7 +72,7 @@ export function exportOrderPDF(order: any) {
   doc.setFontSize(9)
   doc.setTextColor(100, 100, 100)
   doc.text(`Order ID: ${orderId}`, left, y)
-  doc.text(`Generated: ${new Date().toLocaleString('en-ZA')}`, pageWidth - left, y, { align: 'right' })
+  doc.text(`Generated: ${new Date().toLocaleString('en-US')}`, pageWidth - left, y, { align: 'right' })
   y += 5
 
   // Divider

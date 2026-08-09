@@ -13,7 +13,7 @@ router.post('/initialize', authMiddleware, async (req, res) => {
   try {
     const {
       amount,
-      currency = 'ZAR',
+      currency = 'USD',
       customerDetails,
       metadata
     } = req.body;

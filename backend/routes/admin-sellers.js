@@ -351,7 +351,7 @@ router.get('/:sellerId/activity', authMiddleware, adminMiddleware, async (req, r
         events.push({
           type: 'product_listed',
           title: `Listed "${p.title}"`,
-          detail: p.startingPrice != null ? `Starting price R${p.startingPrice}` : null,
+          detail: p.startingPrice != null ? `Starting price $${p.startingPrice}` : null,
           productId: doc.id,
           timestamp: createdAt.toISOString()
         });
@@ -362,7 +362,7 @@ router.get('/:sellerId/activity', authMiddleware, adminMiddleware, async (req, r
         events.push({
           type: p.status === 'sold' ? 'product_sold' : 'auction_ended',
           title: p.status === 'sold' ? `Sold "${p.title}"` : `Auction ended for "${p.title}"`,
-          detail: p.currentPrice != null ? `Final price R${p.currentPrice}` : null,
+          detail: p.currentPrice != null ? `Final price $${p.currentPrice}` : null,
           productId: doc.id,
           timestamp: updatedAt.toISOString()
         });
@@ -376,7 +376,7 @@ router.get('/:sellerId/activity', authMiddleware, adminMiddleware, async (req, r
         events.push({
           type: 'order_received',
           title: `Received order #${doc.id.slice(0, 8)}`,
-          detail: `R${parseFloat(o.amount || 0).toFixed(2)} · ${o.paymentStatus || o.status || 'pending'}`,
+          detail: `$${parseFloat(o.amount || 0).toFixed(2)} · ${o.paymentStatus || o.status || 'pending'}`,
           orderId: doc.id,
           timestamp: t.toISOString()
         });
@@ -389,7 +389,7 @@ router.get('/:sellerId/activity', authMiddleware, adminMiddleware, async (req, r
       if (t) {
         events.push({
           type: 'payout_requested',
-          title: `Requested payout R${parseFloat(w.amount || 0).toFixed(2)}`,
+          title: `Requested payout $${parseFloat(w.amount || 0).toFixed(2)}`,
           detail: w.status || 'pending',
           withdrawalId: doc.id,
           timestamp: t.toISOString()
@@ -400,7 +400,7 @@ router.get('/:sellerId/activity', authMiddleware, adminMiddleware, async (req, r
         events.push({
           type: 'payout_' + w.status,
           title: `Payout ${w.status}`,
-          detail: `R${parseFloat(w.amount || 0).toFixed(2)}`,
+          detail: `$${parseFloat(w.amount || 0).toFixed(2)}`,
           withdrawalId: doc.id,
           timestamp: updatedAt.toISOString()
         });

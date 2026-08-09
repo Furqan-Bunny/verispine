@@ -1089,7 +1089,7 @@ const AdminOrders = () => {
                   const city = ship.city
                   const region = ship.province || ship.state
                   const postcode = ship.postalCode || ship.zipCode
-                  const country = ship.country || 'South Africa'
+                  const country = ship.country || 'United States'
                   const phone = ship.phone || ship.phoneNumber
                   const email = ship.email
                   return (

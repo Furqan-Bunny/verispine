@@ -223,7 +223,7 @@ const AdminWithdrawals = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Pending Amount</p>
-              <p className="text-2xl font-semibold text-gray-900">R{stats.pendingAmount}</p>
+              <p className="text-2xl font-semibold text-gray-900">${stats.pendingAmount}</p>
             </div>
           </div>
         </motion.div>
@@ -315,12 +315,12 @@ const AdminWithdrawals = () => {
                         <div className="text-sm font-medium text-gray-900">{withdrawal.userName}</div>
                         <div className="text-sm text-gray-500">{withdrawal.userEmail}</div>
                         {withdrawal.user && (
-                          <div className="text-xs text-gray-400">Balance: R{withdrawal.user.balance}</div>
+                          <div className="text-xs text-gray-400">Balance: ${withdrawal.user.balance}</div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">R{withdrawal.amount}</div>
+                      <div className="text-sm font-medium text-gray-900">${withdrawal.amount}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{withdrawal.bankDetails.bankName}</div>
@@ -409,7 +409,7 @@ const AdminWithdrawals = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Amount</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">R{selectedWithdrawal.amount}</p>
+                  <p className="mt-1 text-lg font-semibold text-gray-900">${selectedWithdrawal.amount}</p>
                 </div>
               </div>
 
@@ -480,7 +480,7 @@ const AdminWithdrawals = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-500">Amount</p>
-                <p className="text-lg font-semibold">R{actionModal.withdrawal.amount}</p>
+                <p className="text-lg font-semibold">${actionModal.withdrawal.amount}</p>
               </div>
 
               <div>

@@ -23,7 +23,7 @@ import BulkDeleteBar from '../../components/admin/BulkDeleteBar'
 import { adminBulkDelete } from '../../services/adminDelete'
 
 const formatCurrency = (n: number) =>
-  `R${(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  `$${(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const formatRelativeMs = (ms: number | null) => {
   if (!ms) return 'Never'

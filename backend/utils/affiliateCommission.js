@@ -207,7 +207,7 @@ async function releaseAffiliateCommissionForOrder(orderId) {
           settledDebt: settled,
           status: 'completed',
           description: settled > 0
-            ? `Commission released from delivered order (Order: ${orderId}); R${settled.toFixed(2)} applied to prior reversal debt`
+            ? `Commission released from delivered order (Order: ${orderId}); $${settled.toFixed(2)} applied to prior reversal debt`
             : `Commission released from delivered order (Order: ${orderId})`,
           orderId,
           referredUserId: c.referredUserId,
@@ -216,7 +216,7 @@ async function releaseAffiliateCommissionForOrder(orderId) {
       });
       released += Number(c.commissionAmount || 0);
     }
-    console.log(`Affiliate: released commission for order ${orderId}: R${released}`);
+    console.log(`Affiliate: released commission for order ${orderId}: $${released}`);
     return { success: true, released };
   } catch (error) {
     console.error('Error releasing affiliate commission:', error);
@@ -289,7 +289,7 @@ async function reverseAffiliateCommissionForOrder(orderId) {
           owed: owedAdded,
           status: 'completed',
           description: owedAdded > 0
-            ? `Commission reversed (order ${orderId} cancelled/refunded); R${owedAdded.toFixed(2)} recorded as debt (balance was insufficient)`
+            ? `Commission reversed (order ${orderId} cancelled/refunded); $${owedAdded.toFixed(2)} recorded as debt (balance was insufficient)`
             : `Commission reversed (order ${orderId} cancelled/refunded)`,
           orderId,
           referredUserId: c.referredUserId,
@@ -298,7 +298,7 @@ async function reverseAffiliateCommissionForOrder(orderId) {
       });
       reversed += Number(c.commissionAmount || 0);
     }
-    console.log(`Affiliate: reversed commission for order ${orderId}: R${reversed}`);
+    console.log(`Affiliate: reversed commission for order ${orderId}: $${reversed}`);
     return { success: true, reversed };
   } catch (error) {
     console.error('Error reversing affiliate commission:', error);

@@ -88,7 +88,7 @@ const AdminReports = () => {
     ? Object.entries(analytics.dailyRevenue)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([date, revenue]) => ({
-          date: new Date(date).toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' }),
+          date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           revenue
         }))
     : []
@@ -174,7 +174,7 @@ const AdminReports = () => {
                   <LineChart data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tickFormatter={(v) => `R${(v / 1000).toFixed(0)}k`} />
+                    <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(value) => formatPrice(Number(value))} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" stroke="#1A8C7A" strokeWidth={2} name="Revenue" dot={false} />
@@ -382,7 +382,7 @@ const AdminReports = () => {
                   <LineChart data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tickFormatter={(v) => `R${(v / 1000).toFixed(0)}k`} />
+                    <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(value) => formatPrice(Number(value))} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" stroke="#1A8C7A" strokeWidth={2} name="Revenue" dot={false} />

@@ -2,14 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
-const { validateBuyerShippingInfo, validatePickupPointOrder } = require('../utils/sapoValidation');
-const { checkCityRestriction } = require('../utils/cityRestriction');
-const { isNationwideCourierActive } = require('../utils/shippingSettings');
+const { validateBuyerShippingInfo, validatePickupPointOrder } = require('../utils/addressValidation');
 
 // Create order after auction win or buy now
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { productId, type, amount, shippingCost, totalAmount, shippingInfo, paymentMethod, quantity, shipmentRate, pargoPoint, deliveryMethod } = req.body;
+    const { productId, type, amount, shippingCost, totalAmount, shippingInfo, paymentMethod, quantity, shipmentRate, deliveryMethod } = req.body;
     const buyerId = req.user.uid;
 
     // Validate input
@@ -18,18 +16,18 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     // Validate the buyer's delivery details before creating the order (reject upfront so a bad
-    // order never reaches the courier call where it would be silently swallowed). Pargo orders go
-    // to a pickup point, so they validate contact + point instead of a full home address.
+    // order never reaches the carrier call where it would be silently swallowed). Local-pickup
+    // orders are collected from the seller, so they only need contact details.
     if (!shippingInfo) {
       return res.status(400).json({ error: 'Shipping information is required' });
     }
-    const isPickupPoint = deliveryMethod === 'pickup-point';
-    const shippingCheck = isPickupPoint
-      ? validatePickupPointOrder(shippingInfo, pargoPoint)
+    const isLocalPickup = deliveryMethod === 'local-pickup';
+    const shippingCheck = isLocalPickup
+      ? validatePickupPointOrder(shippingInfo)
       : validateBuyerShippingInfo(shippingInfo);
     if (!shippingCheck.valid) {
       return res.status(400).json({
-        error: isPickupPoint ? 'Invalid pickup / contact information' : 'Invalid shipping information',
+        error: isLocalPickup ? 'Invalid contact information' : 'Invalid shipping information',
         fieldErrors: shippingCheck.errors
       });
     }
@@ -42,19 +40,6 @@ router.post('/', authMiddleware, async (req, res) => {
     }
     
     const product = productDoc.data();
-
-    // City restriction (temporary, until nationwide courier). Only same-city buyers may purchase.
-    // Automatically bypassed when a nationwide courier (ShipLogic / RTT / Pargo) is active.
-    if (!(await isNationwideCourierActive())) {
-      const cityCheck = checkCityRestriction(product, shippingInfo.city);
-      if (!cityCheck.allowed) {
-        return res.status(403).json({
-          error: `This product is only available for delivery in ${cityCheck.productCity}. Nationwide delivery is coming soon.`,
-          cityRestricted: true,
-          productCity: cityCheck.productCity
-        });
-      }
-    }
 
     // Log product details for debugging
     console.log('Product details:', {
@@ -97,11 +82,9 @@ router.post('/', authMiddleware, async (req, res) => {
       if (Math.abs(Number(amount) - expectedTotal) > 0.01) {
         return res.status(400).json({ error: `Invalid purchase amount. Expected: ${expectedTotal}, Got: ${amount}` });
       }
-      // SAPO ships one parcel per order; cap total weight at the 30kg SAPO maximum.
-      const totalWeight = Number(product.weight || 1) * saleQuantity;
-      if (totalWeight > 30) {
-        return res.status(400).json({ error: 'This quantity exceeds the 30kg shipping limit for a single parcel. Please order fewer units.' });
-      }
+      // Weight is informational for rating only. There is deliberately no cap:
+      // medical machinery routinely exceeds parcel limits and is quoted as
+      // freight instead (see FREIGHT_THRESHOLD_LBS in utils/locale.js).
     } else if (type === 'buy_now') {
       // Only block if product is explicitly sold or ended
       const blockedStatuses = ['sold', 'ended', 'cancelled', 'deleted'];
@@ -195,9 +178,8 @@ router.post('/', authMiddleware, async (req, res) => {
       ...(type === 'sale' ? { quantity: saleQuantity, unitPrice: saleUnitPrice } : {}),
       // Live courier rate selected at checkout (ShipLogic), reused at shipment creation
       ...(shipmentRate && shipmentRate.provider ? { shipmentRate } : {}),
-      // Pargo Click & Collect: the buyer-selected pickup point + delivery method
-      ...(isPickupPoint ? { deliveryMethod: 'pickup-point' } : {}),
-      ...(pargoPoint && pargoPoint.code ? { pargoPoint } : {}),
+      // Local pickup: buyer collects from the seller
+      ...(isLocalPickup ? { deliveryMethod: 'local-pickup' } : {}),
       amount: Number(amount),
       shippingCost: productShippingCost,
       totalAmount: Number(orderTotalAmount),

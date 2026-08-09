@@ -72,7 +72,7 @@ const mockOrder = {
       street: '123 Main Street',
       city: 'Cape Town',
       state: 'Western Cape',
-      country: 'South Africa',
+      country: 'United States',
       zipCode: '8001'
     },
     method: 'Express Delivery',
@@ -558,7 +558,7 @@ const OrderDetail = () => {
                 <p className="text-sm opacity-80">
                   {deadline.urgency === 'expired'
                     ? 'This order will be cancelled soon.'
-                    : `Pay by ${new Date(order.paymentDeadline).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' })}`
+                    : `Pay by ${new Date(order.paymentDeadline).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`
                   }
                 </p>
               </div>
@@ -694,7 +694,7 @@ const OrderDetail = () => {
                       <>{order.shippingInfo?.city || order.shippingAddress?.city}, </>
                     )}
                     {order.shippingInfo?.province || order.shippingAddress?.state || ''} {order.shippingInfo?.postalCode || order.shippingAddress?.zipCode || ''}<br />
-                    {order.shippingInfo?.country || order.shippingAddress?.country || 'South Africa'}
+                    {order.shippingInfo?.country || order.shippingAddress?.country || 'United States'}
                   </p>
                 ) : (
                   <p className="text-gray-500">No shipping address provided</p>
@@ -835,7 +835,7 @@ const OrderDetail = () => {
                     {deadline.text}
                   </div>
                   <p className="text-xs mt-1 opacity-80">
-                    Deadline: {new Date(order.paymentDeadline).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' })}
+                    Deadline: {new Date(order.paymentDeadline).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
               )
@@ -1029,7 +1029,7 @@ const OrderDetail = () => {
               {trackingInfo.origin && (
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-xs text-gray-500">Origin</p>
-                  <p className="font-medium">{trackingInfo.origin.country || 'South Africa'}</p>
+                  <p className="font-medium">{trackingInfo.origin.country || 'United States'}</p>
                 </div>
               )}
             </div>

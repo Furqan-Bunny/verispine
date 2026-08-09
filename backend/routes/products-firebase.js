@@ -485,7 +485,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
 
     // Validate weight upfront — required by SAPO. Without this, every shipment
     // defaults to 1kg silently and SAPO underbills heavy items.
-    const { validateProductWeight, validatePickupAddress } = require('../utils/sapoValidation');
+    const { validateProductWeight, validatePickupAddress } = require('../utils/addressValidation');
     const weightCheck = validateProductWeight(weight);
     if (!weightCheck.valid) {
       return res.status(400).json({ error: weightCheck.error, field: 'weight' });
@@ -575,7 +575,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       // Store at top level for easy access
       shippingCost: shippingData.cost || 0,
       freeShipping: shippingData.cost === 0,
-      // Product weight in kg (required by SAPO — see utils/sapoValidation)
+      // Product weight in lbs — see utils/addressValidation
       weight: weightCheck.weight,
       // Optional parcel dimensions (cm) for courier rating (ShipLogic); null = use defaults
       dimensions: parcelDimensions,
@@ -658,7 +658,7 @@ router.put('/:id', authMiddleware, upload.array('images', 5), async (req, res) =
 
     // If weight is being updated, validate against SAPO bounds
     if (updates.weight !== undefined && updates.weight !== '') {
-      const { validateProductWeight } = require('../utils/sapoValidation');
+      const { validateProductWeight } = require('../utils/addressValidation');
       const weightCheck = validateProductWeight(updates.weight);
       if (!weightCheck.valid) {
         return res.status(400).json({ error: weightCheck.error, field: 'weight' });

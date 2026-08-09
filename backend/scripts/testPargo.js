@@ -82,7 +82,7 @@ async function main() {
   try {
     const q = await axios.post(`${base}/orders/quotation`, quoteBody, { headers: await headers(), timeout: 30000 });
     const quote = q.data && q.data.data && q.data.data.attributes && q.data.data.attributes.quotation;
-    console.log('    OK — price:', quote ? `R${quote.price}` : JSON.stringify(q.data).slice(0, 300));
+    console.log('    OK — price:', quote ? `$${quote.price}` : JSON.stringify(q.data).slice(0, 300));
   } catch (e) {
     console.error('    quotation error:', e.response ? `HTTP ${e.response.status} ${JSON.stringify(e.response.data).slice(0,300)}` : e.message);
   }

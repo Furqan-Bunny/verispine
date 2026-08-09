@@ -105,7 +105,7 @@ async function completePayment(orderId, paymentData) {
       orderId,
       userId: order.buyerId,
       amount: chargeAmount,
-      currency: 'ZAR',
+      currency: 'USD',
       method: 'traderoot',
       status: 'completed',
       transactionId: paymentData.transactionId || null,

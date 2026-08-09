@@ -3,8 +3,6 @@ const router = express.Router();
 const { admin, db } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
-const { checkCityRestriction } = require('../utils/cityRestriction');
-const { isShipLogicActive } = require('../utils/shippingSettings');
 
 // Helper functions for Firebase operations
 const serverTimestamp = () => {
@@ -91,7 +89,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const minimumBid = Number(product.currentPrice) + Number(product.incrementAmount || 100);
     if (bidAmount < minimumBid) {
       return res.status(400).json({
-        error: `Minimum bid amount is R${minimumBid}`
+        error: `Minimum bid amount is $${minimumBid}`
       });
     }
 
@@ -105,26 +103,6 @@ router.post('/', authMiddleware, async (req, res) => {
     // Get user details
     const userDoc = await db.collection('users').doc(userId).get();
     const userData = userDoc.data();
-
-    // City restriction (temporary, until nationwide courier). Only same-city buyers may bid,
-    // so an out-of-city user can't win an auction they then can't receive delivery for.
-    // Automatically bypassed when ShipLogic (nationwide delivery) is the active courier.
-    if (!(await isShipLogicActive())) {
-      const cityCheck = checkCityRestriction(product, userData && userData.city);
-      if (!cityCheck.allowed) {
-        if (cityCheck.reason === 'no-buyer-city') {
-          return res.status(403).json({
-            error: 'Set your city in your profile to bid on this product',
-            requiresCity: true
-          });
-        }
-        return res.status(403).json({
-          error: `You can only bid on products available in ${cityCheck.productCity}`,
-          cityRestricted: true,
-          productCity: cityCheck.productCity
-        });
-      }
-    }
 
     // Note: users can bid without balance; payment is required only when they win the auction.
 
@@ -159,7 +137,7 @@ router.post('/', authMiddleware, async (req, res) => {
         if (nowTx >= endTx) throw bidError(400, 'This auction has ended');
 
         const minBid = Number(p.currentPrice) + Number(p.incrementAmount || 100);
-        if (bidAmount < minBid) throw bidError(400, `Minimum bid amount is R${minBid}`);
+        if (bidAmount < minBid) throw bidError(400, `Minimum bid amount is $${minBid}`);
         if (p.buyNowPrice && bidAmount >= Number(p.buyNowPrice)) {
           throw bidError(400, 'Bid exceeds Buy Now price. Please use Buy Now option instead.');
         }

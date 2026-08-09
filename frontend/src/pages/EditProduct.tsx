@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { US_STATES, DEFAULT_STATE } from '../config/locale'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import axios from '../config/axios'
@@ -47,18 +48,6 @@ const parseDate = (dateValue: any): string => {
     return ''
   } catch { return '' }
 }
-
-const SA_PROVINCES = [
-  'Eastern Cape',
-  'Free State',
-  'Gauteng',
-  'KwaZulu-Natal',
-  'Limpopo',
-  'Mpumalanga',
-  'North West',
-  'Northern Cape',
-  'Western Cape'
-] as const
 
 const EditProduct = () => {
   const { productId } = useParams()
@@ -566,7 +555,7 @@ const EditProduct = () => {
                   name="pickupAddress"
                   value={formData.pickupAddress}
                   onChange={handleInputChange}
-                  placeholder="e.g., 12 Long Street"
+                  placeholder="e.g., 4319 Covington Hwy"
                   maxLength={105}
                   className="input-field pl-10"
                 />
@@ -582,7 +571,7 @@ const EditProduct = () => {
                 name="pickupSuburb"
                 value={formData.pickupSuburb}
                 onChange={handleInputChange}
-                placeholder="e.g., Gardens"
+                placeholder="e.g., Suite 102"
                 maxLength={100}
                 className="input-field"
               />
@@ -598,7 +587,7 @@ const EditProduct = () => {
                   name="pickupCity"
                   value={formData.pickupCity}
                   onChange={handleInputChange}
-                  placeholder="e.g., Cape Town"
+                  placeholder="e.g., Atlanta"
                   maxLength={35}
                   className="input-field"
                 />
@@ -606,7 +595,7 @@ const EditProduct = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Province *
+                  State *
                 </label>
                 <select
                   name="pickupProvince"
@@ -614,8 +603,8 @@ const EditProduct = () => {
                   onChange={handleInputChange}
                   className="input-field"
                 >
-                  <option value="">Select province</option>
-                  {SA_PROVINCES.map(province => (
+                  <option value="">Select state</option>
+                  {US_STATES.map(province => (
                     <option key={province} value={province}>{province}</option>
                   ))}
                 </select>
@@ -623,15 +612,15 @@ const EditProduct = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Postal Code *
+                  ZIP Code *
                 </label>
                 <input
                   type="text"
                   name="pickupPostalCode"
                   value={formData.pickupPostalCode}
                   onChange={handleInputChange}
-                  placeholder="e.g., 8001"
-                  maxLength={4}
+                  placeholder="e.g., 30035"
+                  maxLength={10}
                   className="input-field"
                 />
               </div>
@@ -641,7 +630,7 @@ const EditProduct = () => {
 
         {/* Parcel dimensions (optional, for courier rates) */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Parcel Dimensions (cm)</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Parcel Dimensions (in)</h2>
           <p className="text-sm text-gray-500 mb-3">Optional. Used for courier rate accuracy (ShipLogic). Leave blank to use a default size based on weight.</p>
           <div className="grid grid-cols-3 gap-3">
             {(['length', 'width', 'height'] as const).map((dim) => (
@@ -743,7 +732,7 @@ const EditProduct = () => {
               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <span className="font-medium">{option.method}</span>
-                  <span className="ml-3 text-gray-600">R{option.cost}</span>
+                  <span className="ml-3 text-gray-600">${option.cost}</span>
                   {option.estimatedDays && (
                     <span className="ml-2 text-sm text-gray-500">({option.estimatedDays})</span>
                   )}

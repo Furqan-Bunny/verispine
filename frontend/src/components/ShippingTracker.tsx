@@ -123,7 +123,7 @@ const ShippingTracker: React.FC<ShippingTrackerProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-ZA', {
+    return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

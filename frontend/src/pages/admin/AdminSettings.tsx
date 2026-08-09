@@ -238,7 +238,7 @@ const AdminSettings = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Bid Amount (ZAR)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Min Bid Amount (USD)</label>
                 <input
                   type="number"
                   value={settings.minBidAmount}
@@ -334,7 +334,7 @@ const AdminSettings = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Payout (ZAR)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Payout (USD)</label>
                 <input type="number" defaultValue="100" className="input-field" />
               </div>
               <div>

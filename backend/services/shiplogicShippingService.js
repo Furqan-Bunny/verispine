@@ -152,7 +152,7 @@ class ShipLogicShippingService {
     const serviceLevel = (r.service_level && (r.service_level.name || r.service_level.code)) || r.service_level_code || 'Standard';
     return {
       success: true,
-      currency: 'ZAR',
+      currency: 'USD',
       provider: 'shiplogic',
       rateId: r.id != null ? r.id : (r.rate_id != null ? r.rate_id : null),
       serviceLevel,
@@ -275,7 +275,7 @@ class ShipLogicShippingService {
       return {
         trackingNumber, weight: 1,
         origin: { country: 'ZA', code: '' }, destination: { country: 'ZA', code: '' },
-        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'ZAR' } },
+        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'USD' } },
         events: [{ code: 'created', description: 'Shipment created', office: '', officeCode: '', timestamp: new Date().toISOString(), status: 'Order Shipped' }],
         currentStatus: 'Order Shipped', lastUpdate: new Date().toISOString(),
       };
@@ -299,7 +299,7 @@ class ShipLogicShippingService {
       weight: data.weight || 1,
       origin: { country: 'ZA', code: data.collection_hub || '' },
       destination: { country: 'ZA', code: data.delivery_hub || '' },
-      characteristics: { express: false, exempt: false, insured: { amount: data.declared_value || 0, currency: 'ZAR' } },
+      characteristics: { express: false, exempt: false, insured: { amount: data.declared_value || 0, currency: 'USD' } },
       events,
       currentStatus: this.mapStatus(data.status || (events[events.length - 1] && events[events.length - 1].code) || ''),
       lastUpdate: data.time_modified || (events[events.length - 1] && events[events.length - 1].timestamp) || null,

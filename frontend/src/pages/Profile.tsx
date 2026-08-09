@@ -509,7 +509,7 @@ const Profile = () => {
           <div className="w-full sm:w-auto text-left sm:text-right">
             <p className="text-sm text-gray-600">Account Balance</p>
             <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatPrice(user?.balance || 0)}</p>
-            <p className="text-xs text-gray-500 mt-2">Earn R5 per referral!</p>
+            <p className="text-xs text-gray-500 mt-2">Earn $5 per referral!</p>
           </div>
         </div>
       </div>

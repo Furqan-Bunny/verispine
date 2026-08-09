@@ -342,8 +342,8 @@ const MyAuctions = () => {
                           {product.status === 'scheduled' && scheduledTime && (
                             <span className="text-blue-600 font-medium">
                               <CalendarIcon className="inline h-3 w-3" />
-                              {' '}Goes live {scheduledTime.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' })} at{' '}
-                              {scheduledTime.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
+                              {' '}Goes live {scheduledTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at{' '}
+                              {scheduledTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                         </div>

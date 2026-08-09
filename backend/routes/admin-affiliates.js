@@ -379,7 +379,7 @@ router.get('/:id/activity', authMiddleware, adminMiddleware, async (req, res) =>
       if (created) {
         events.push({
           type: 'commission_pending',
-          title: `Commission earned R${amt.toFixed(2)}`,
+          title: `Commission earned $${amt.toFixed(2)}`,
           detail: c.orderId ? `Order #${String(c.orderId).slice(0, 8)} (held until delivery)` : null,
           timestamp: created.toISOString()
         });
@@ -388,7 +388,7 @@ router.get('/:id/activity', authMiddleware, adminMiddleware, async (req, res) =>
       if (released && c.status === 'credited') {
         events.push({
           type: 'commission_released',
-          title: `Commission released R${amt.toFixed(2)}`,
+          title: `Commission released $${amt.toFixed(2)}`,
           detail: c.orderId ? `Order #${String(c.orderId).slice(0, 8)} delivered` : null,
           timestamp: released.toISOString()
         });
@@ -397,7 +397,7 @@ router.get('/:id/activity', authMiddleware, adminMiddleware, async (req, res) =>
       if (reversed && c.status === 'reversed') {
         events.push({
           type: 'commission_reversed',
-          title: `Commission reversed R${amt.toFixed(2)}`,
+          title: `Commission reversed $${amt.toFixed(2)}`,
           detail: c.orderId ? `Order #${String(c.orderId).slice(0, 8)} cancelled/refunded` : null,
           timestamp: reversed.toISOString()
         });

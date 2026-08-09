@@ -14,7 +14,6 @@ import LiveAuctionRegistrationModal from '../components/LiveAuctionRegistrationM
 import auctionRegistrationService from '../services/auctionRegistrationService'
 import questionService from '../services/questionService'
 import { getWatchlist, getUserProfile } from '../services/userService'
-import { SUPPORTED_CITIES } from '../config/cities'
 import { ChatBubbleLeftIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   HeartIcon,
@@ -35,9 +34,6 @@ import 'react-image-gallery/styles/css/image-gallery.css'
 interface BidForm {
   amount: number
 }
-
-// City restriction (temporary, until nationwide courier).
-const normalizeCity = (c?: string) => String(c || '').toLowerCase().trim().replace(/\s+/g, ' ')
 
 const ProductDetail = () => {
   const { id } = useParams()
@@ -65,8 +61,6 @@ const ProductDetail = () => {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
   const [isRegistered, setIsRegistered] = useState(false)
 
-  // City restriction state (temporary, until nationwide courier)
-  const [buyerCity, setBuyerCity] = useState<string>('')
   const [saleQty, setSaleQty] = useState(1)
 
   const {
@@ -75,34 +69,6 @@ const ProductDetail = () => {
     setValue,
     formState: { errors }
   } = useForm<BidForm>()
-
-  // Fetch buyer's profile city for the city-restriction gate
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setBuyerCity('')
-      return
-    }
-    getUserProfile()
-      .then((res: any) => setBuyerCity(res?.data?.city || ''))
-      .catch(() => setBuyerCity(''))
-  }, [isAuthenticated])
-
-  // Derived: is this buyer blocked from this product on city grounds?
-  // City is stored as shipping.pickupCity (nested) or a "City, Province" location
-  // string — not a top-level pickupCity. Resolve from any of those.
-  const resolveProductCity = (p: any): string => {
-    if (!p) return ''
-    if (p.pickupCity) return p.pickupCity
-    if (p.shipping?.pickupCity) return p.shipping.pickupCity
-    if (p.location && normalizeCity(p.location) !== 'south africa') {
-      return String(p.location).split(',')[0].trim()
-    }
-    return ''
-  }
-  const productCity = resolveProductCity(product)
-  const cityBlocked = Boolean(
-    productCity && buyerCity && normalizeCity(productCity) !== normalizeCity(buyerCity)
-  )
 
   useEffect(() => {
     let mounted = true;
@@ -140,7 +106,7 @@ const ProductDetail = () => {
             totalBids: prev.totalBids + 1
           }))
           setBids((prev) => [bidData, ...prev])
-          toast.success(`New bid placed: R${bidData.amount}`)
+          toast.success(`New bid placed: $${bidData.amount}`)
         }
       })
     }
@@ -208,7 +174,7 @@ const ProductDetail = () => {
         incrementAmount: productData.incrementAmount || 100,
         shipping: productData.shipping || {
           cost: productData.shippingCost || productData.shipping?.cost || 0,
-          location: productData.shipping?.location || productData.location || 'South Africa'
+          location: productData.shipping?.location || productData.location || 'United States'
         },
         shippingCost: productData.shippingCost || productData.shipping?.cost || 0
       }
@@ -247,12 +213,6 @@ const ProductDetail = () => {
       return
     }
 
-    // City restriction (temporary): block bidding for out-of-city buyers
-    if (cityBlocked) {
-      toast.error(`You can only bid on products available in ${productCity}`)
-      return
-    }
-
     // Check if live auction registration is required
     if (product?.isLiveAuction && !isRegistered) {
       setShowRegistrationModal(true)
@@ -271,9 +231,6 @@ const ProductDetail = () => {
       // Handle live auction registration requirement
       if (error.response?.data?.requiresRegistration) {
         setShowRegistrationModal(true)
-      } else if (error.response?.data?.requiresCity) {
-        toast.error('Set your city in your profile to bid on this product')
-        navigate('/profile')
       } else {
         toast.error(error.response?.data?.error || 'Failed to place bid')
       }
@@ -289,12 +246,6 @@ const ProductDetail = () => {
     if (!isAuthenticated) {
       toast.error('Please login to buy now')
       navigate('/login')
-      return
-    }
-
-    // City restriction (temporary): block buying for out-of-city buyers
-    if (cityBlocked) {
-      toast.error(`This product is only available for delivery in ${productCity}. Nationwide delivery is coming soon.`)
       return
     }
 
@@ -330,11 +281,6 @@ const ProductDetail = () => {
       navigate('/login')
       return
     }
-    if (cityBlocked) {
-      toast.error(`This product is only available for delivery in ${productCity}. Nationwide delivery is coming soon.`)
-      return
-    }
-
     const unlimited = product.stockType === 'unlimited'
     const remaining = Math.max(0, Number(product.quantity || 0) - Number(product.soldQuantity || 0))
     const qty = unlimited ? Math.max(1, saleQty) : Math.max(1, Math.min(saleQty, remaining))
@@ -683,14 +629,14 @@ const ProductDetail = () => {
                 <p className="text-sm text-blue-600">
                   This auction is scheduled to go live on{' '}
                   <strong>
-                    {scheduledStartTime.toLocaleDateString('en-ZA', {
+                    {scheduledStartTime.toLocaleDateString('en-US', {
                       weekday: 'long',
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric'
                     })}{' '}
                     at{' '}
-                    {scheduledStartTime.toLocaleTimeString('en-ZA', {
+                    {scheduledStartTime.toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
@@ -730,7 +676,7 @@ const ProductDetail = () => {
                   <div>
                     <div className="text-sm text-gray-500">Price</div>
                     <div className="text-4xl font-bold text-primary-600">
-                      R{salePrice.toLocaleString()}
+                      ${salePrice.toLocaleString()}
                     </div>
                     <div className={`text-sm mt-1 font-medium ${soldOut ? 'text-red-600' : 'text-green-600'}`}>
                       {soldOut ? 'Out of stock' : (isUnlimitedStock ? 'In stock' : `In stock: ${stockRemaining}`)}
@@ -750,16 +696,16 @@ const ProductDetail = () => {
                             const v = parseInt(e.target.value, 10) || 1
                             setSaleQty(isUnlimitedStock ? Math.max(1, v) : Math.max(1, Math.min(v, stockRemaining)))
                           }}
-                          disabled={cityBlocked}
+                         
                           className="input-field w-24 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </div>
                       <button
                         onClick={handleSaleBuy}
-                        disabled={cityBlocked}
+                       
                         className="btn-primary px-8 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Buy Now — R{(salePrice * (isUnlimitedStock ? Math.max(1, saleQty) : Math.max(1, Math.min(saleQty, stockRemaining)))).toLocaleString()}
+                        Buy Now — ${(salePrice * (isUnlimitedStock ? Math.max(1, saleQty) : Math.max(1, Math.min(saleQty, stockRemaining)))).toLocaleString()}
                       </button>
                     </div>
                   )}
@@ -771,7 +717,7 @@ const ProductDetail = () => {
               <div>
                 <div className="text-sm text-gray-500">{isScheduled ? 'Starting Price' : 'Current Bid'}</div>
                 <div className="text-4xl font-bold text-primary-600">
-                  R{(isScheduled ? product.startingPrice : product.currentPrice).toLocaleString()}
+                  ${(isScheduled ? product.startingPrice : product.currentPrice).toLocaleString()}
                 </div>
                 {!isScheduled && (
                   <div className="text-sm text-gray-500 mt-1">
@@ -781,28 +727,18 @@ const ProductDetail = () => {
               </div>
               )}
 
-              {/* City restriction info — shown to everyone when product is city-locked */}
-              {productCity && !isAuctionEnded && (
-                <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3">
-                  <MapPinIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-blue-800">
-                    Only buyers in <strong>{productCity}</strong> can bid on or buy this product. Nationwide delivery coming soon.
-                  </p>
-                </div>
-              )}
-
               {/* Buy Now Price - only show if auction is still active and not scheduled */}
               {!isSale && product.buyNowPrice && !isAuctionEnded && !isScheduled && (
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <div>
                     <div className="text-sm text-gray-500">Buy Now Price</div>
                     <div className="text-2xl font-semibold text-gray-900">
-                      R{product.buyNowPrice.toLocaleString()}
+                      ${product.buyNowPrice.toLocaleString()}
                     </div>
                   </div>
                   <button
                     onClick={handleBuyNow}
-                    disabled={cityBlocked}
+                   
                     className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Buy Now
@@ -817,26 +753,16 @@ const ProductDetail = () => {
                   <span className="text-sm text-blue-700">Shipping</span>
                 </div>
                 <span className="font-semibold text-blue-900">
-                  {(product.shippingCost || product.shipping?.cost || 0) > 0 ? `R${(product.shippingCost || product.shipping?.cost || 0).toLocaleString()}` : 'Free'}
+                  {(product.shippingCost || product.shipping?.cost || 0) > 0 ? `$${(product.shippingCost || product.shipping?.cost || 0).toLocaleString()}` : 'Free'}
                 </span>
               </div>
-
-              {/* City-restricted notice */}
-              {!isAuctionEnded && !isScheduled && cityBlocked && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-2">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-800">
-                    This product is only delivered in <strong>{productCity}</strong>. You're in {buyerCity || 'another city'}. Nationwide delivery coming soon.
-                  </p>
-                </div>
-              )}
 
               {/* Bid Form (auctions only) */}
               {!isSale && !isAuctionEnded && !isScheduled && user?.id !== product.seller?._id && (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Your Bid (minimum: R{minimumBid.toLocaleString()})
+                      Your Bid (minimum: ${minimumBid.toLocaleString()})
                     </label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <input
@@ -844,16 +770,16 @@ const ProductDetail = () => {
                           required: 'Bid amount is required',
                           min: {
                             value: minimumBid,
-                            message: `Minimum bid is R${minimumBid.toLocaleString()}`
+                            message: `Minimum bid is $${minimumBid.toLocaleString()}`
                           }
                         })}
                         type="number"
                         step="0.01"
-                        disabled={cityBlocked}
+                       
                         className="input-field flex-1 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder={`Enter bid amount`}
                       />
-                      <button type="submit" disabled={cityBlocked} className="btn-primary px-8 disabled:opacity-50 disabled:cursor-not-allowed">
+                      <button type="submit" className="btn-primary px-8 disabled:opacity-50 disabled:cursor-not-allowed">
                         Place Bid
                       </button>
                     </div>
@@ -874,7 +800,7 @@ const ProductDetail = () => {
                           Congratulations! You won this auction!
                         </p>
                         <p className="text-green-600 text-sm mt-1">
-                          Winning price: R{(product.finalPrice || product.currentPrice).toLocaleString()}
+                          Winning price: ${(product.finalPrice || product.currentPrice).toLocaleString()}
                         </p>
                         <p className="text-yellow-700 text-xs mt-2 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
                           Complete payment within 7 days or the item will be re-listed.
@@ -973,21 +899,13 @@ const ProductDetail = () => {
                       <div className="flex justify-between gap-2">
                         <span className="text-blue-700">Shipping Cost:</span>
                         <span className="font-medium text-blue-900">
-                          {(product.shippingCost || product.shipping?.cost || 0) > 0 ? `R${product.shippingCost || product.shipping?.cost || 0}` : 'Free'}
+                          {(product.shippingCost || product.shipping?.cost || 0) > 0 ? `$${product.shippingCost || product.shipping?.cost || 0}` : 'Free'}
                         </span>
                       </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-blue-700">Location:</span>
-                        <span className="font-medium text-blue-900">{product.location || 'South Africa'}</span>
+                        <span className="font-medium text-blue-900">{product.location || 'United States'}</span>
                       </div>
-                      {productCity && (
-                        <div className="mt-1 flex items-center gap-1 rounded-md bg-amber-50 border border-amber-200 px-2 py-1.5">
-                          <TruckIcon className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                          <span className="text-xs text-amber-800">
-                            Delivery available in <strong>{productCity}</strong> only. Nationwide delivery coming soon.
-                          </span>
-                        </div>
-                      )}
                       {product.shipping?.methods && (
                         <div>
                           <span className="text-blue-700">Available Methods:</span>
@@ -1104,11 +1022,11 @@ const ProductDetail = () => {
                             <div className={`text-xl font-bold ${
                               index === 0 ? 'text-primary-600' : 'text-gray-900'
                             }`}>
-                              R{bid.amount.toLocaleString()}
+                              ${bid.amount.toLocaleString()}
                             </div>
                             {index > 0 && (
                               <p className="text-sm text-gray-500">
-                                +R{(Number(bids[index-1].amount) - Number(bid.amount)).toLocaleString()}
+                                +${(Number(bids[index-1].amount) - Number(bid.amount)).toLocaleString()}
                               </p>
                             )}
                           </div>

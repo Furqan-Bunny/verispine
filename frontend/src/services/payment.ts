@@ -138,8 +138,8 @@ class PaymentService {
   }
 
   // Format currency based on country
-  formatCurrency(amount: number, currency = 'ZAR'): string {
-    const formatter = new Intl.NumberFormat('en-ZA', {
+  formatCurrency(amount: number, currency = 'USD'): string {
+    const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
@@ -150,9 +150,8 @@ class PaymentService {
   }
 
   // Get currency symbol
-  getCurrencySymbol(currency = 'ZAR'): string {
+  getCurrencySymbol(currency = 'USD'): string {
     const symbols: Record<string, string> = {
-      'ZAR': 'R',
       'USD': '$',
       'EUR': '€',
       'GBP': '£',

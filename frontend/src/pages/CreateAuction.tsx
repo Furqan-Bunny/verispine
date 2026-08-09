@@ -18,25 +18,12 @@ import {
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 import axios from '../config/axios'
-import { SUPPORTED_CITIES } from '../config/cities'
-import CitySelect from '../components/CitySelect'
+import { US_STATES, DEFAULT_STATE, POSTAL_CODE_RE, WEIGHT_MIN, WEIGHT_MAX, WEIGHT_UNIT } from '../config/locale'
 
 interface Category {
   id: string
   name: string
 }
-
-const SA_PROVINCES = [
-  'Eastern Cape',
-  'Free State',
-  'Gauteng',
-  'KwaZulu-Natal',
-  'Limpopo',
-  'Mpumalanga',
-  'North West',
-  'Northern Cape',
-  'Western Cape'
-] as const
 
 type ListingType = '' | 'auction' | 'sale'
 
@@ -232,21 +219,19 @@ const CreateAuction = () => {
     }
     if (!formData.pickupCity.trim()) {
       newErrors.pickupCity = 'City is required'
-    } else if (!SUPPORTED_CITIES.includes(formData.pickupCity as any)) {
-      newErrors.pickupCity = 'Please select a supported delivery city'
     }
     if (!formData.pickupProvince) newErrors.pickupProvince = 'Province is required'
     if (!formData.pickupPostalCode.trim()) {
-      newErrors.pickupPostalCode = 'Postal code is required'
-    } else if (!/^\d{4}$/.test(formData.pickupPostalCode.trim())) {
-      newErrors.pickupPostalCode = 'Postal code must be exactly 4 digits'
+      newErrors.pickupPostalCode = 'ZIP code is required'
+    } else if (!POSTAL_CODE_RE.test(formData.pickupPostalCode.trim())) {
+      newErrors.pickupPostalCode = 'ZIP code must be 5 digits (e.g. 30035)'
     }
     if (!formData.weight || parseFloat(formData.weight) <= 0) {
-      newErrors.weight = 'Weight is required (in kg) for shipping'
-    } else if (parseFloat(formData.weight) > 30) {
-      newErrors.weight = 'Weight must be 30 kg or less'
-    } else if (parseFloat(formData.weight) < 0.1) {
-      newErrors.weight = 'Weight must be at least 0.1 kg'
+      newErrors.weight = `Weight is required (in ${WEIGHT_UNIT}) for shipping`
+    } else if (parseFloat(formData.weight) > WEIGHT_MAX) {
+      newErrors.weight = `Weight must be ${WEIGHT_MAX} ${WEIGHT_UNIT} or less`
+    } else if (parseFloat(formData.weight) < WEIGHT_MIN) {
+      newErrors.weight = `Weight must be at least ${WEIGHT_MIN} ${WEIGHT_UNIT}`
     }
     if (formData.images.length === 0) newErrors.images = 'At least one image is required'
 
@@ -595,7 +580,7 @@ const CreateAuction = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (ZAR) *
+                  Price (USD) *
                 </label>
                 <div className="relative">
                   <CurrencyDollarIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -710,7 +695,7 @@ const CreateAuction = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Starting Price (ZAR) *
+                  Starting Price (USD) *
                 </label>
                 <div className="relative">
                   <CurrencyDollarIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -732,7 +717,7 @@ const CreateAuction = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bid Increment (ZAR) *
+                  Bid Increment (USD) *
                 </label>
                 <div className="relative">
                   <TagIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -756,7 +741,7 @@ const CreateAuction = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reserve Price (ZAR)
+                  Reserve Price (USD)
                   <span className="text-gray-500 text-sm ml-1">(Optional)</span>
                 </label>
                 <input
@@ -776,7 +761,7 @@ const CreateAuction = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Buy Now Price (ZAR)
+                  Buy Now Price (USD)
                   <span className="text-gray-500 text-sm ml-1">(Optional)</span>
                 </label>
                 <input
@@ -847,7 +832,7 @@ const CreateAuction = () => {
               {formData.isLiveAuction && (
                 <div className="mt-4 ml-7">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Registration Fee (ZAR)
+                    Registration Fee (USD)
                   </label>
                   <input
                     type="number"
@@ -872,7 +857,7 @@ const CreateAuction = () => {
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-orange-800">Live Auction</h3>
                       <p className="mt-1 text-sm text-orange-700">
-                        Bidders will need to pay R{formData.registrationFee || 5} registration fee before they can place bids.
+                        Bidders will need to pay ${formData.registrationFee || 5} registration fee before they can place bids.
                         This helps ensure serious bidders only.
                       </p>
                     </div>
@@ -925,14 +910,14 @@ const CreateAuction = () => {
                           <p className="text-sm text-blue-700">
                             This auction will go live on{' '}
                             <strong>
-                              {new Date(formData.scheduledStartTime).toLocaleDateString('en-ZA', {
+                              {new Date(formData.scheduledStartTime).toLocaleDateString('en-US', {
                                 weekday: 'long',
                                 day: 'numeric',
                                 month: 'long',
                                 year: 'numeric'
                               })}{' '}
                               at{' '}
-                              {new Date(formData.scheduledStartTime).toLocaleTimeString('en-ZA', {
+                              {new Date(formData.scheduledStartTime).toLocaleTimeString('en-US', {
                                 hour: '2-digit',
                                 minute: '2-digit'
                               })}
@@ -965,7 +950,7 @@ const CreateAuction = () => {
                   name="pickupAddress"
                   value={formData.pickupAddress}
                   onChange={handleInputChange}
-                  placeholder="e.g., 12 Long Street"
+                  placeholder="e.g., 4319 Covington Hwy"
                   maxLength={105}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                     errors.pickupAddress ? 'border-red-300' : 'border-gray-300'
@@ -986,7 +971,7 @@ const CreateAuction = () => {
                   name="pickupSuburb"
                   value={formData.pickupSuburb}
                   onChange={handleInputChange}
-                  placeholder="e.g., Gardens"
+                  placeholder="e.g., Suite 102"
                   maxLength={100}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                     errors.pickupSuburb ? 'border-red-300' : 'border-gray-300'
@@ -1001,18 +986,23 @@ const CreateAuction = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   City *
                 </label>
-                <CitySelect
+                <input
+                  type="text"
+                  name="pickupCity"
                   value={formData.pickupCity}
-                  onChange={(city) => setFormData(prev => ({ ...prev, pickupCity: city }))}
-                  hasError={!!errors.pickupCity}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Atlanta"
+                  maxLength={50}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    errors.pickupCity ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 />
-                <p className="mt-1 text-xs text-gray-500">Type to search. We currently deliver in these cities only.</p>
                 {errors.pickupCity && <p className="mt-1 text-sm text-red-600">{errors.pickupCity}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Province *
+                  State *
                 </label>
                 <select
                   name="pickupProvince"
@@ -1023,7 +1013,7 @@ const CreateAuction = () => {
                   }`}
                 >
                   <option value="">Select province</option>
-                  {SA_PROVINCES.map(province => (
+                  {US_STATES.map(province => (
                     <option key={province} value={province}>{province}</option>
                   ))}
                 </select>
@@ -1032,15 +1022,15 @@ const CreateAuction = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Postal Code *
+                  ZIP Code *
                 </label>
                 <input
                   type="text"
                   name="pickupPostalCode"
                   value={formData.pickupPostalCode}
                   onChange={handleInputChange}
-                  placeholder="e.g., 8001"
-                  maxLength={4}
+                  placeholder="e.g., 30035"
+                  maxLength={10}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                     errors.pickupPostalCode ? 'border-red-300' : 'border-gray-300'
                   }`}
@@ -1051,7 +1041,7 @@ const CreateAuction = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Parcel Weight (kg) *
+                Parcel Weight (lbs) *
               </label>
               <input
                 type="number"
@@ -1066,13 +1056,13 @@ const CreateAuction = () => {
                   errors.weight ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
-              <p className="mt-1 text-xs text-gray-500">Required for courier shipping. Range: 0.1 - 30 kg.</p>
+              <p className="mt-1 text-xs text-gray-500">Required for courier shipping. Range: 0.1 - 5000 lbs. Items over 150 lbs are quoted as freight.</p>
               {errors.weight && <p className="mt-1 text-sm text-red-600">{errors.weight}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Parcel Dimensions (cm) <span className="text-gray-500 text-sm ml-1">(Optional — used for courier rates)</span>
+                Parcel Dimensions (in) <span className="text-gray-500 text-sm ml-1">(Optional — used for courier rates)</span>
               </label>
               <div className="grid grid-cols-3 gap-3">
                 {(['length', 'width', 'height'] as const).map((dim) => (
@@ -1110,7 +1100,7 @@ const CreateAuction = () => {
             {!formData.freeShipping && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Shipping Cost (ZAR) *
+                  Shipping Cost (USD) *
                 </label>
                 <div className="relative">
                   <TruckIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -1176,7 +1166,7 @@ const CreateAuction = () => {
                     <>
                       <div>
                         <span className="text-sm font-medium text-gray-600">Price:</span>
-                        <p className="font-medium">R{parseFloat(formData.price || '0').toLocaleString()}</p>
+                        <p className="font-medium">${parseFloat(formData.price || '0').toLocaleString()}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-600">Stock:</span>
@@ -1191,7 +1181,7 @@ const CreateAuction = () => {
                     <>
                       <div>
                         <span className="text-sm font-medium text-gray-600">Starting Price:</span>
-                        <p className="font-medium">R{parseFloat(formData.startingPrice || '0').toLocaleString()}</p>
+                        <p className="font-medium">${parseFloat(formData.startingPrice || '0').toLocaleString()}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-600">Duration:</span>
@@ -1214,7 +1204,7 @@ const CreateAuction = () => {
                   <p className="font-medium">
                     {formData.freeShipping
                       ? 'Free shipping'
-                      : `R${parseFloat(formData.shippingCost || '0').toLocaleString()}`
+                      : `$${parseFloat(formData.shippingCost || '0').toLocaleString()}`
                     }
                   </p>
                 </div>
@@ -1234,7 +1224,7 @@ const CreateAuction = () => {
                 {formData.isLiveAuction && (
                   <div className="flex items-center space-x-2 text-orange-600">
                     <CheckCircleIcon className="h-5 w-5" />
-                    <span className="font-medium">Live Auction - R{formData.registrationFee} registration fee</span>
+                    <span className="font-medium">Live Auction - ${formData.registrationFee} registration fee</span>
                   </div>
                 )}
 
@@ -1243,14 +1233,14 @@ const CreateAuction = () => {
                     <CalendarIcon className="h-5 w-5" />
                     <span className="font-medium">
                       Scheduled for{' '}
-                      {new Date(formData.scheduledStartTime).toLocaleDateString('en-ZA', {
+                      {new Date(formData.scheduledStartTime).toLocaleDateString('en-US', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
                       })}{' '}
                       at{' '}
-                      {new Date(formData.scheduledStartTime).toLocaleTimeString('en-ZA', {
+                      {new Date(formData.scheduledStartTime).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit'
                       })}

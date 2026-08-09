@@ -36,7 +36,7 @@ const Terms = () => {
               <li><strong>"Seller"</strong> means a User who lists an item for auction or sale.</li>
               <li><strong>"Auction"</strong> means the online bidding process conducted on the Platform.</li>
               <li><strong>"Item"</strong> means any goods or services listed on VeriSpine.</li>
-              <li><strong>"Wallet"</strong> means the digital balance held in a User's VeriSpine account, denominated in South African Rand (ZAR).</li>
+              <li><strong>"Wallet"</strong> means the digital balance held in a User's VeriSpine account, denominated in South African Rand (USD).</li>
               <li><strong>"KYC"</strong> means Know Your Customer identity verification.</li>
               <li><strong>"CPA"</strong> means the Consumer Protection Act 68 of 2008.</li>
               <li><strong>"ECTA"</strong> means the Electronic Communications and Transactions Act 25 of 2002.</li>
@@ -83,7 +83,7 @@ const Terms = () => {
 
             <div className="bg-gray-50 rounded-lg p-5 my-4">
               <p className="font-semibold text-gray-900 mb-3">Step 3: Account Activation</p>
-              <p>Upon successful email verification, your account is activated immediately. You will receive a welcome email confirming your registration. All new accounts are registered with a "User" role (Buyer), with a starting Wallet balance of R0.00.</p>
+              <p>Upon successful email verification, your account is activated immediately. You will receive a welcome email confirming your registration. All new accounts are registered with a "User" role (Buyer), with a starting Wallet balance of $0.00.</p>
             </div>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">3.3 KYC Verification (Optional)</p>
@@ -189,7 +189,7 @@ const Terms = () => {
             </div>
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">6.3 Accepted Payment Methods</p>
-            <p>VeriSpine supports the following payment methods, all denominated in South African Rand (ZAR):</p>
+            <p>VeriSpine supports the following payment methods, all denominated in South African Rand (USD):</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="font-semibold text-gray-900 mb-2">VeriSpine Wallet</p>
@@ -219,7 +219,7 @@ const Terms = () => {
 
             <p className="font-semibold text-gray-800 mt-4 mb-3">6.4 VeriSpine Wallet</p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
-              <li>Users may add funds to their Wallet via AddPay or Traderoot (minimum top-up: R10.00).</li>
+              <li>Users may add funds to their Wallet via AddPay or Traderoot (minimum top-up: $10.00).</li>
               <li>Wallet funds can be used to pay for purchases instantly.</li>
               <li>Wallet balances are displayed in your account dashboard and on the navigation bar.</li>
               <li>Sellers receive sale proceeds into their Wallet balance after deduction of platform fees.</li>

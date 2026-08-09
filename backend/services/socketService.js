@@ -150,7 +150,7 @@ class SocketService {
           const minBid = productData.currentPrice + (productData.incrementAmount || 100);
           if (amount < minBid) {
             socket.emit('bid-error', {
-              message: `Minimum bid is R${minBid}`
+              message: `Minimum bid is $${minBid}`
             });
             return;
           }

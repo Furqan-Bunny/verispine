@@ -58,7 +58,7 @@ function calculateRate({ originPostalCode, destPostalCode, weightKg = 1, dimensi
   return {
     serviceable: true,
     cost: round2(total),
-    currency: 'ZAR',
+    currency: 'USD',
     service: 'RTT Door-to-Door (2-3 working days)',
     billedKg,
     areaType,

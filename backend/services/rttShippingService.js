@@ -156,7 +156,7 @@ class RTTShippingService {
     }
     return {
       success: true,
-      currency: r.currency || 'ZAR',
+      currency: r.currency || 'USD',
       provider: 'rtt',
       rateId: null,
       serviceLevel: r.service,
@@ -324,7 +324,7 @@ class RTTShippingService {
       return {
         trackingNumber, weight: 1,
         origin: { country: 'ZA', code: '' }, destination: { country: 'ZA', code: '' },
-        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'ZAR' } },
+        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'USD' } },
         events: [{ code: 'created', description: 'Consignment created', office: '', officeCode: '', timestamp: this.nowIso(), status: 'Order Shipped' }],
         currentStatus: 'Order Shipped', lastUpdate: this.nowIso(),
       };
@@ -369,7 +369,7 @@ class RTTShippingService {
       weight: 1,
       origin: { country: 'ZA', code: '' },
       destination: { country: 'ZA', code: '' },
-      characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'ZAR' } },
+      characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'USD' } },
       events,
       currentStatus: last ? last.status : 'Order Shipped',
       lastUpdate: last ? last.timestamp : null,

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { US_STATES, DEFAULT_STATE, COUNTRY, POSTAL_CODE_RE } from '../config/locale'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
@@ -20,11 +21,6 @@ import {
   type SellerApplicationStatus
 } from '../services/sellerApplicationService'
 
-const SA_PROVINCES = [
-  'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo',
-  'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'
-]
-
 const BecomeSeller = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuthStore()
@@ -44,9 +40,9 @@ const BecomeSeller = () => {
     phoneNumber: '',
     street: '',
     city: '',
-    province: 'Gauteng',
+    province: DEFAULT_STATE,
     postalCode: '',
-    country: 'South Africa',
+    country: COUNTRY,
     businessRegNumber: '',
     taxNumber: '',
     termsAccepted: false
@@ -79,9 +75,9 @@ const BecomeSeller = () => {
               phoneNumber: response.data.phoneNumber || '',
               street: response.data.address?.street || '',
               city: response.data.address?.city || '',
-              province: response.data.address?.province || 'Gauteng',
+              province: response.data.address?.province || DEFAULT_STATE,
               postalCode: response.data.address?.postalCode || '',
-              country: response.data.address?.country || 'South Africa',
+              country: response.data.address?.country || COUNTRY,
               businessRegNumber: response.data.businessRegNumber || '',
               taxNumber: response.data.taxNumber || ''
             }))
@@ -116,7 +112,7 @@ const BecomeSeller = () => {
     if (!form.street.trim()) return 'Street address is required'
     if (!form.city.trim()) return 'City is required'
     if (!form.province.trim()) return 'Province is required'
-    if (!/^\d{4}$/.test(form.postalCode.trim())) return 'Postal code must be 4 digits'
+    if (!POSTAL_CODE_RE.test(form.postalCode.trim())) return 'ZIP code must be 5 digits'
     if (!form.country.trim()) return 'Country is required'
     if (!form.termsAccepted) return 'You must accept the seller terms'
     return null
@@ -438,7 +434,7 @@ const BecomeSeller = () => {
                   onChange={(e) => handleChange('province', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {SA_PROVINCES.map(p => (
+                  {US_STATES.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
@@ -446,14 +442,14 @@ const BecomeSeller = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Postal Code <span className="text-red-500">*</span>
+                  ZIP Code <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={form.postalCode}
                   onChange={(e) => handleChange('postalCode', e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="0000"
-                  pattern="\d{4}"
+                  pattern="\d{5}(-\d{4})?"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />

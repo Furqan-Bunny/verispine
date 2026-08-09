@@ -153,7 +153,7 @@ class AffiliateService {
 
   // Format date
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('en-ZA', {
+    return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -162,9 +162,9 @@ class AffiliateService {
 
   // Format currency
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'ZAR',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);

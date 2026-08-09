@@ -30,7 +30,7 @@ router.post('/request', authMiddleware, async (req, res) => {
     // Check user balance
     if (userData.balance < amount) {
       return res.status(400).json({ 
-        error: `Insufficient balance. Available: R${userData.balance}` 
+        error: `Insufficient balance. Available: $${userData.balance}` 
       });
     }
     
@@ -59,7 +59,7 @@ router.post('/request', authMiddleware, async (req, res) => {
       const firstPending = pendingDetails[0];
       
       return res.status(400).json({ 
-        error: `You have a pending withdrawal request of R${firstPending.amount}. Please wait for it to be processed or cancel it first.`,
+        error: `You have a pending withdrawal request of $${firstPending.amount}. Please wait for it to be processed or cancel it first.`,
         pendingWithdrawalId: firstPending.id
       });
     }

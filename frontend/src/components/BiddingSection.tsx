@@ -18,8 +18,6 @@ import {
 interface BiddingSectionProps {
   product: any
   onBidPlaced?: () => void
-  cityBlocked?: boolean
-  productCity?: string
 }
 
 interface Bid {
@@ -30,7 +28,7 @@ interface Bid {
   timestamp: Date
 }
 
-const BiddingSection = ({ product, onBidPlaced, cityBlocked = false, productCity = '' }: BiddingSectionProps) => {
+const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
   const { user, isAuthenticated } = useAuthStore()
   const [socket, setSocket] = useState<any>(null)
   const [bidAmount, setBidAmount] = useState('')
@@ -175,12 +173,6 @@ const BiddingSection = ({ product, onBidPlaced, cityBlocked = false, productCity
   const handlePlaceBid = () => {
     if (!isAuthenticated) {
       toast.error('Please login to place a bid')
-      return
-    }
-
-    // City restriction (temporary): block bidding for out-of-city buyers
-    if (cityBlocked) {
-      toast.error(`You can only bid on products available in ${productCity}`)
       return
     }
 
@@ -340,12 +332,12 @@ const BiddingSection = ({ product, onBidPlaced, cityBlocked = false, productCity
                     onChange={(e) => setBidAmount(e.target.value)}
                     className="input pl-8"
                     placeholder={minimumBid.toString()}
-                    disabled={!isAuthenticated || isPlacingBid || cityBlocked}
+                    disabled={!isAuthenticated || isPlacingBid}
                   />
                 </div>
                 <button
                   onClick={handlePlaceBid}
-                  disabled={!isAuthenticated || isPlacingBid || !bidAmount || (isLiveAuction && !isRegistered) || cityBlocked}
+                  disabled={!isAuthenticated || isPlacingBid || !bidAmount || (isLiveAuction && !isRegistered)}
                   className="btn-primary px-8 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPlacingBid ? (

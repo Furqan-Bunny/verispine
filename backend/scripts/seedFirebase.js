@@ -174,7 +174,7 @@ const products = [
     featured: false
   },
   {
-    title: 'Canon EOS R5 Mirrorless Camera',
+    title: 'Canon EOS $5 Mirrorless Camera',
     description: 'Professional camera body with 45MP sensor. Includes battery grip and extra batteries.',
     images: [
       'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800'

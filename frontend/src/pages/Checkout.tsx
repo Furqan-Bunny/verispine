@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { US_STATES, DEFAULT_STATE, COUNTRY } from '../config/locale'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
@@ -6,11 +7,10 @@ import axios from '../config/axios'
 import toast from 'react-hot-toast'
 import {
   validateBuyerShippingInfo,
-  SAPO_MAX_NAME,
-  SAPO_MAX_ADDRESS,
-  SAPO_MAX_CITY
-} from '../utils/sapoValidation'
-import CitySelect from '../components/CitySelect'
+  MAX_NAME,
+  MAX_ADDRESS,
+  MAX_CITY
+} from '../utils/addressValidation'
 import PargoPointPicker from '../components/PargoPointPicker'
 import {
   CreditCardIcon,
@@ -75,9 +75,9 @@ const Checkout = () => {
     address: '',
     suburb: '',
     city: '',
-    province: 'Gauteng',
+    province: DEFAULT_STATE,
     postalCode: '',
-    country: 'South Africa'
+    country: COUNTRY
   })
 
   useEffect(() => {
@@ -119,7 +119,7 @@ const Checkout = () => {
 
   // ShipLogic: fetch a live delivery quote once the shipping address is complete,
   // and use it as the shipping cost. SAPO keeps the seller-entered cost.
-  // Free-shipping products are never live-quoted — they stay R0 (seller/platform
+  // Free-shipping products are never live-quoted — they stay $0 (seller/platform
   // absorbs the courier fee, which is still charged when the shipment is created).
   useEffect(() => {
     if (activeProvider !== 'shiplogic' || !checkoutItem || freeShipping) return
@@ -158,9 +158,9 @@ const Checkout = () => {
           address: userData.address || '',
           suburb: userData.suburb || '',
           city: userData.city || '',
-          province: userData.province || 'Gauteng',
+          province: userData.province || DEFAULT_STATE,
           postalCode: userData.postalCode || '',
-          country: userData.country || 'South Africa'
+          country: userData.country || COUNTRY
         }))
         
         // Set user balance
@@ -208,7 +208,7 @@ const Checkout = () => {
       }
     }
 
-    // SAPO field validation (mirrors backend/utils/sapoValidation.js)
+    // Address validation (mirrors backend/utils/addressValidation.js)
     const sapoCheck = validateBuyerShippingInfo(shippingInfo)
     if (!sapoCheck.valid && sapoCheck.errors) {
       const firstError = Object.values(sapoCheck.errors)[0]
@@ -299,7 +299,7 @@ const Checkout = () => {
         // Initialize AddPay payment
         const response = await axios.post('/api/payments/addpay/initialize', {
           amount: totalAmount,
-          currency: 'ZAR',
+          currency: 'USD',
           customerDetails: {
             email: shippingInfo.email,
             name: shippingInfo.fullName,
@@ -338,9 +338,9 @@ const Checkout = () => {
   }
 
   const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('en-ZA', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'ZAR'
+      currency: 'USD'
     }).format(amount)
   }
 
@@ -351,11 +351,6 @@ const Checkout = () => {
       </div>
     )
   }
-
-  const provinces = [
-    'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal',
-    'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'
-  ]
 
   return (
     <motion.div
@@ -405,9 +400,9 @@ const Checkout = () => {
                   className="input"
                   placeholder="John Doe"
                   required
-                  maxLength={SAPO_MAX_NAME}
+                  maxLength={MAX_NAME}
                 />
-                <p className="mt-1 text-xs text-gray-500">{shippingInfo.fullName.length}/{SAPO_MAX_NAME} characters</p>
+                <p className="mt-1 text-xs text-gray-500">{shippingInfo.fullName.length}/{MAX_NAME} characters</p>
               </div>
 
               <div>
@@ -461,7 +456,7 @@ const Checkout = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <MapPinIcon className="inline h-4 w-4 mr-1" />
-                  Postal Code *
+                  ZIP Code *
                 </label>
                 <input
                   type="text"
@@ -469,13 +464,13 @@ const Checkout = () => {
                   value={shippingInfo.postalCode}
                   onChange={handleInputChange}
                   className="input"
-                  placeholder="2000"
+                  placeholder="30035"
                   required
-                  maxLength={4}
-                  pattern="\d{4}"
+                  maxLength={10}
+                  pattern="\d{5}(-\d{4})?"
                   inputMode="numeric"
                 />
-                <p className="mt-1 text-xs text-gray-500">4 digits</p>
+                <p className="mt-1 text-xs text-gray-500">5 digits (e.g. 30035)</p>
               </div>
 
               <div className="sm:col-span-2">
@@ -490,9 +485,9 @@ const Checkout = () => {
                   className="input"
                   placeholder="123 Main Street, Apartment 4B"
                   required
-                  maxLength={SAPO_MAX_ADDRESS}
+                  maxLength={MAX_ADDRESS}
                 />
-                <p className="mt-1 text-xs text-gray-500">{shippingInfo.address.length}/{SAPO_MAX_ADDRESS} characters</p>
+                <p className="mt-1 text-xs text-gray-500">{shippingInfo.address.length}/{MAX_ADDRESS} characters</p>
               </div>
 
               <div>
@@ -515,16 +510,21 @@ const Checkout = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   City *
                 </label>
-                <CitySelect
+                <input
+                  type="text"
+                  name="city"
                   value={shippingInfo.city}
-                  onChange={(city) => setShippingInfo(prev => ({ ...prev, city }))}
+                  onChange={handleInputChange}
+                  className="input"
+                  placeholder="Atlanta"
+                  required
+                  maxLength={MAX_CITY}
                 />
-                <p className="mt-1 text-xs text-gray-500">Type to search. We currently deliver in these cities only.</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Province *
+                  State *
                 </label>
                 <select
                   name="province"
@@ -533,7 +533,7 @@ const Checkout = () => {
                   className="input"
                   required
                 >
-                  {provinces.map(province => (
+                  {US_STATES.map(province => (
                     <option key={province} value={province}>{province}</option>
                   ))}
                 </select>
@@ -616,7 +616,7 @@ const Checkout = () => {
                     AddPay
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Visa, Mastercard, 3D Secure (South Africa)
+                    Visa, Mastercard, Amex — secured by 3-D Secure
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">Visa</span>

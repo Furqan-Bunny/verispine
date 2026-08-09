@@ -72,7 +72,7 @@ console.log('TokenRequesterKy:', mask(TOKEN_REQUESTER_KEY));
 console.log('MerchantID      :', MERCHANT_ID || '(not set)');
 console.log('Callback URL    :', CALLBACK_URL);
 console.log('Notification URL:', NOTIFICATION_URL);
-console.log('Amount (cents)  :', AMOUNT_CENTS, `(R${(AMOUNT_CENTS / 100).toFixed(2)})`);
+console.log('Amount (cents)  :', AMOUNT_CENTS, `($${(AMOUNT_CENTS / 100).toFixed(2)})`);
 console.log('Mode            :', LIVE ? 'LIVE (will POST)' : 'DRY-RUN (local validation only)');
 console.log('='.repeat(64));
 

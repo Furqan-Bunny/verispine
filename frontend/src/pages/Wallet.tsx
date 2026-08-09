@@ -105,7 +105,7 @@ const Wallet = () => {
   const handleAddFunds = async () => {
     const parsedAmount = parseFloat(amount)
     if (!parsedAmount || parsedAmount < 10) {
-      toast.error('Minimum top-up amount is R10')
+      toast.error('Minimum top-up amount is $10')
       return
     }
 
@@ -147,7 +147,7 @@ const Wallet = () => {
     const date = timestamp._seconds
       ? new Date(timestamp._seconds * 1000)
       : new Date(timestamp)
-    return date.toLocaleDateString('en-ZA', {
+    return date.toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -172,7 +172,7 @@ const Wallet = () => {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="text-primary-100">Available Balance</p>
-            <p className="text-3xl font-bold mt-2">R{(user?.balance || 0).toFixed(2)}</p>
+            <p className="text-3xl font-bold mt-2">${(user?.balance || 0).toFixed(2)}</p>
           </div>
           <div className="flex gap-3">
             <button
@@ -260,10 +260,10 @@ const Wallet = () => {
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
                       tx.type === 'credit' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {tx.type === 'credit' ? '+' : '-'}R{tx.amount.toFixed(2)}
+                      {tx.type === 'credit' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      R{tx.balanceAfter.toFixed(2)}
+                      ${tx.balanceAfter.toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -339,7 +339,7 @@ const Wallet = () => {
                           : 'border-gray-300 text-gray-700 hover:border-primary-300'
                       }`}
                     >
-                      R{preset}
+                      ${preset}
                     </button>
                   ))}
                 </div>
@@ -357,7 +357,7 @@ const Wallet = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="pl-10 block w-full h-11 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 transition-colors"
-                    placeholder="Enter amount (min R10)"
+                    placeholder="Enter amount (min $10)"
                   />
                 </div>
               </div>

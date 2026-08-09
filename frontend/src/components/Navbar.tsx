@@ -270,7 +270,7 @@ const Navbar = () => {
                 {/* Balance */}
                 <div className="bg-primary-50 px-3 py-1 rounded-lg">
                   <span className="text-sm font-medium text-primary-700">
-                    R{user?.balance?.toFixed(2) || '0.00'}
+                    ${user?.balance?.toFixed(2) || '0.00'}
                   </span>
                 </div>
               </>

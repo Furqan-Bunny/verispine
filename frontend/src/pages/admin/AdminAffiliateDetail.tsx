@@ -37,7 +37,7 @@ const emptyTotals: AdminAffiliateTimeseriesTotals = {
 
 // Format an ISO yyyy-mm-dd as "12 May" (month by name, not number)
 const fmtTick = (iso: string) =>
-  new Date(iso + 'T00:00:00').toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })
+  new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
 
 const RANGE_LABELS: Record<string, string> = {
   '7d': 'last 7 days',
@@ -54,7 +54,7 @@ type Period = '7d' | '30d' | '90d' | '1y' | 'custom'
 const isoDay = (d: Date) => d.toISOString().slice(0, 10)
 
 const formatCurrency = (n: number) =>
-  `R${(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  `$${(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const toDateStr = (v: any): string => {
   if (!v) return '—'

@@ -1,12 +1,10 @@
-// Utility functions for formatting data
-// Replaces the need for mockData.ts imports
+// Shared display formatters.
+// Currency/region behaviour comes from config/locale.ts — don't hardcode it here.
 
-export const formatPrice = (price: number): string => {
-  return 'R ' + new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-};
+import { LOCALE, formatCurrency } from '../config/locale'
+
+/** Money for display, e.g. $1,250.00 */
+export const formatPrice = (price: number): string => formatCurrency(price)
 
 export const getTimeRemaining = (endDate: string | Date): string => {
   const end = new Date(endDate).getTime();
@@ -25,7 +23,7 @@ export const getTimeRemaining = (endDate: string | Date): string => {
 };
 
 export const formatDate = (date: string | Date): string => {
-  return new Date(date).toLocaleDateString('en-ZA', {
+  return new Date(date).toLocaleDateString(LOCALE, {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
@@ -33,7 +31,7 @@ export const formatDate = (date: string | Date): string => {
 };
 
 export const formatDateTime = (date: string | Date): string => {
-  return new Date(date).toLocaleString('en-ZA', {
+  return new Date(date).toLocaleString(LOCALE, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

@@ -18,7 +18,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'What is VeriSpine?',
-        answer: 'VeriSpine is a South African online auction platform where you can buy and sell items through live bidding, Buy Now purchases, and scheduled auctions. We provide a secure marketplace with integrated payments and nationwide shipping via trusted courier partners.'
+        answer: 'VeriSpine is a US medical equipment marketplace where you can buy and sell imaging systems, surgical instruments, rehab equipment and machinery through live bidding, Buy Now purchases, and scheduled auctions. We provide a secure marketplace with integrated payments and nationwide shipping via trusted courier partners.'
       },
       {
         question: 'Is VeriSpine free to use?',
@@ -47,7 +47,7 @@ const faqData: FAQSection[] = [
       },
       {
         question: 'What is KYC verification and do I need it?',
-        answer: 'KYC (Know Your Customer) is an optional identity verification process that enhances trust on your account. It requires a valid South African ID, passport, or driver\'s licence and a clear selfie. KYC submissions are reviewed within 1-2 business days. While optional, VeriSpine may require KYC verification for certain activities.'
+        answer: 'KYC (Know Your Customer) is an optional identity verification process that enhances trust on your account. It requires a valid government-issued ID, passport, or driver\'s licence and a clear selfie. KYC submissions are reviewed within 1-2 business days. While optional, VeriSpine may require KYC verification for certain activities.'
       }
     ]
   },
@@ -85,7 +85,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'What payment methods are accepted?',
-        answer: 'VeriSpine accepts three payment methods: (1) VeriSpine Wallet — pay instantly from your account balance; (2) AddPay — credit/debit cards (Visa, Mastercard) with 3D Secure verification; (3) Traderoot — securely tokenized cards with 3D Secure for fast repeat payments. All payments are processed in South African Rand (ZAR).'
+        answer: 'VeriSpine accepts two payment methods: (1) VeriSpine Wallet — pay instantly from your account balance; (2) Card payment via Stripe — credit and debit cards (Visa, Mastercard, Amex, Discover), secured by 3-D Secure. All payments are processed in US Dollars (USD).'
       },
       {
         question: 'How does the VeriSpine Wallet work?',
@@ -93,7 +93,7 @@ const faqData: FAQSection[] = [
       },
       {
         question: 'How do I top up my wallet?',
-        answer: 'Go to your Wallet page from the navigation menu, enter the amount you\'d like to add (minimum R10.00), choose AddPay or Traderoot, and complete the card payment. Funds are added to your wallet balance once the payment is confirmed.'
+        answer: 'Go to your Wallet page from the navigation menu, enter the amount you\'d like to add (minimum $10.00), choose your card, and complete the card payment. Funds are added to your wallet balance once the payment is confirmed.'
       },
       {
         question: 'Is my payment secure?',
@@ -123,7 +123,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'How does shipping work?',
-        answer: 'VeriSpine ships through trusted South African courier partners. Once your payment is confirmed, a shipment is automatically created and a unique tracking number is generated. The tracking number appears in your order details and is also sent to you via email.'
+        answer: 'VeriSpine ships through trusted US carriers. Larger machinery ships as freight with a custom quote. Once your payment is confirmed, a shipment is automatically created and a unique tracking number is generated. The tracking number appears in your order details and is also sent to you via email.'
       },
       {
         question: 'How long does delivery take?',
@@ -135,7 +135,7 @@ const faqData: FAQSection[] = [
       },
       {
         question: 'What areas do you deliver to?',
-        answer: 'VeriSpine currently delivers to addresses within South Africa, using our courier partners. Shipping costs are based on the item weight, size, and the distance between the seller\'s location and your delivery address.'
+        answer: 'VeriSpine currently delivers to addresses within the United States. Shipping costs are based on the item weight, size, and the distance between the seller\'s location and your delivery address.'
       }
     ]
   },

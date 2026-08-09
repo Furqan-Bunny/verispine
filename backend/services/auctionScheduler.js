@@ -180,7 +180,7 @@ class AuctionScheduler {
             userId: highestBid.userId,
             type: 'won',
             title: 'You won an auction!',
-            message: `Congratulations! You won "${product.title}" for R${highestBid.amount}. Complete payment within 7 days.`,
+            message: `Congratulations! You won "${product.title}" for $${highestBid.amount}. Complete payment within 7 days.`,
             priority: 'urgent',
             actionUrl: `/orders/${orderRef.id}`,
             actionLabel: 'Complete Payment',
@@ -336,7 +336,7 @@ class AuctionScheduler {
             userId: u.id,
             type: 'auction_live',
             title: 'New Auction is Live!',
-            message: `"${product.title}" is now live! Starting at R${product.startingPrice}.`,
+            message: `"${product.title}" is now live! Starting at $${product.startingPrice}.`,
             actionUrl: `/products/${productId}`,
             actionLabel: 'View Auction',
             priority: 'medium',
@@ -407,10 +407,10 @@ class AuctionScheduler {
 
       // Format the scheduled date for display
       const scheduledDate = new Date(product.scheduledStartTime);
-      const dateStr = scheduledDate.toLocaleDateString('en-ZA', {
+      const dateStr = scheduledDate.toLocaleDateString('en-US', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
       });
-      const timeStr = scheduledDate.toLocaleTimeString('en-ZA', {
+      const timeStr = scheduledDate.toLocaleTimeString('en-US', {
         hour: '2-digit', minute: '2-digit'
       });
 
@@ -427,7 +427,7 @@ class AuctionScheduler {
             userId: u.id,
             type: 'auction_scheduled',
             title: 'New Auction Coming Soon!',
-            message: `"${product.title}" is coming soon! Starting at R${product.startingPrice}. Goes live on ${dateStr} at ${timeStr}.`,
+            message: `"${product.title}" is coming soon! Starting at $${product.startingPrice}. Goes live on ${dateStr} at ${timeStr}.`,
             actionUrl: `/products/${productId}`,
             actionLabel: 'View Auction',
             priority: 'medium',
@@ -588,7 +588,7 @@ class AuctionScheduler {
         userId: bid.userId,
         type: 'won',
         title: 'You won an auction!',
-        message: `Congratulations! Your bid of R${bid.amount} on "${product.title}" was accepted. Proceed to payment.`,
+        message: `Congratulations! Your bid of $${bid.amount} on "${product.title}" was accepted. Proceed to payment.`,
         priority: 'urgent',
         actionUrl: `/orders/${orderRef.id}`,
         read: false,

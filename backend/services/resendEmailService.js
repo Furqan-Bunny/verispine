@@ -476,7 +476,7 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Your Bid Amount:</strong></td>
                 <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong style="color: #28a745; font-size: 20px;">R${bid.amount}</strong>
+                  <strong style="color: #28a745; font-size: 20px;">$${bid.amount}</strong>
                 </td>
               </tr>
               <tr>
@@ -535,7 +535,7 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #eee;">New Highest Bid:</td>
                 <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong style="color: #dc3545; font-size: 20px;">R${newBidAmount}</strong>
+                  <strong style="color: #dc3545; font-size: 20px;">$${newBidAmount}</strong>
                 </td>
               </tr>
             </table>
@@ -585,7 +585,7 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Winning Bid:</strong></td>
                 <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong style="color: #28a745; font-size: 24px;">R${finalAmount}</strong>
+                  <strong style="color: #28a745; font-size: 24px;">$${finalAmount}</strong>
                 </td>
               </tr>
             </table>
@@ -642,7 +642,7 @@ class ResendEmailService {
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Order Details:</h3>
             <p><strong>Item:</strong> ${order.productTitle}</p>
-            <p><strong>Amount:</strong> R${order.amount || order.totalAmount}</p>
+            <p><strong>Amount:</strong> $${order.amount || order.totalAmount}</p>
             <p><strong>Order ID:</strong> ${order.id || order.orderId || 'N/A'}</p>
             <p><strong>Payment Method:</strong> ${order.paymentMethod || 'N/A'}</p>
           </div>
@@ -685,9 +685,9 @@ class ResendEmailService {
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Sale Details:</h3>
             <p><strong>Item:</strong> ${order.productTitle}</p>
-            <p><strong>Sale Price:</strong> R${order.amount || order.totalAmount}</p>
-            <p><strong>Platform Fee (10%):</strong> R${platformFee.toFixed(2)}</p>
-            <p><strong>Your Earnings:</strong> <span style="color: #28a745; font-size: 18px; font-weight: bold;">R${sellerAmount.toFixed(2)}</span></p>
+            <p><strong>Sale Price:</strong> $${order.amount || order.totalAmount}</p>
+            <p><strong>Platform Fee (10%):</strong> $${platformFee.toFixed(2)}</p>
+            <p><strong>Your Earnings:</strong> <span style="color: #28a745; font-size: 18px; font-weight: bold;">$${sellerAmount.toFixed(2)}</span></p>
             <p><strong>Buyer:</strong> ${order.buyerName || 'Customer'}</p>
           </div>
 
@@ -724,7 +724,7 @@ class ResendEmailService {
   async sendOrderConfirmationWithInvoice(user, order, shippingInfo) {
     try {
       const orderUrl = `${this.frontendUrl}/orders/${order.id || order.orderId}`;
-      const orderDate = new Date().toLocaleDateString('en-ZA', {
+      const orderDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
       const invoiceNumber = `INV-${Date.now().toString().slice(-8)}`;
@@ -774,28 +774,28 @@ class ResendEmailService {
                     <strong>${order.productTitle || 'Product'}</strong>
                   </td>
                   <td style="padding: 12px 10px; text-align: center; border-bottom: 1px solid #dee2e6;">1</td>
-                  <td style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #dee2e6;">R${subtotal.toFixed(2)}</td>
+                  <td style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #dee2e6;">$${subtotal.toFixed(2)}</td>
                 </tr>
                 ${shippingCost > 0 ? `
                 <tr>
                   <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6;">Shipping (SAPO)</td>
                   <td style="padding: 12px 10px; text-align: center; border-bottom: 1px solid #dee2e6;">-</td>
-                  <td style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #dee2e6;">R${shippingCost.toFixed(2)}</td>
+                  <td style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #dee2e6;">$${shippingCost.toFixed(2)}</td>
                 </tr>
                 ` : ''}
               </tbody>
               <tfoot>
                 <tr>
                   <td colspan="2" style="padding: 12px 10px; text-align: right;"><strong>Subtotal:</strong></td>
-                  <td style="padding: 12px 10px; text-align: right;">R${subtotal.toFixed(2)}</td>
+                  <td style="padding: 12px 10px; text-align: right;">$${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="2" style="padding: 12px 10px; text-align: right;">VAT (15%):</td>
-                  <td style="padding: 12px 10px; text-align: right;">R${platformFee.toFixed(2)}</td>
+                  <td style="padding: 12px 10px; text-align: right;">$${platformFee.toFixed(2)}</td>
                 </tr>
                 <tr style="background: #e9ecef;">
                   <td colspan="2" style="padding: 12px 10px; text-align: right;"><strong style="font-size: 16px;">TOTAL:</strong></td>
-                  <td style="padding: 12px 10px; text-align: right;"><strong style="font-size: 18px; color: #28a745;">R${total.toFixed(2)}</strong></td>
+                  <td style="padding: 12px 10px; text-align: right;"><strong style="font-size: 18px; color: #28a745;">$${total.toFixed(2)}</strong></td>
                 </tr>
               </tfoot>
             </table>
@@ -920,7 +920,7 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #eee;">Order Amount:</td>
                 <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong>R${order.amount || order.totalAmount}</strong>
+                  <strong>$${order.amount || order.totalAmount}</strong>
                 </td>
               </tr>
               <tr>
@@ -960,7 +960,7 @@ class ResendEmailService {
   async sendOrderDelivered(user, order) {
     try {
       const orderUrl = `${this.frontendUrl}/orders/${order.orderId || order.id}`;
-      const deliveryDate = new Date().toLocaleDateString('en-ZA', {
+      const deliveryDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
 
@@ -1052,7 +1052,7 @@ class ResendEmailService {
               </tr>
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">R${order.totalAmount || order.amount || 0}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">$${order.totalAmount || order.amount || 0}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0;"><strong>Status:</strong></td>
@@ -1108,7 +1108,7 @@ class ResendEmailService {
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Withdrawal Details:</h3>
-            <p><strong>Amount:</strong> R${withdrawal.amount}</p>
+            <p><strong>Amount:</strong> $${withdrawal.amount}</p>
             <p><strong>Bank:</strong> ${withdrawal.bankDetails.bankName}</p>
             <p><strong>Account:</strong> ***${withdrawal.bankDetails.accountNumber.slice(-4)}</p>
             <p><strong>Status:</strong> <span style="background: #ffc107; color: #000; padding: 3px 10px; border-radius: 3px;">Pending Approval</span></p>
@@ -1140,7 +1140,7 @@ class ResendEmailService {
 
           <div style="background: #d4edda; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #155724;">Transaction Details:</h3>
-            <p><strong>Amount:</strong> R${withdrawal.amount}</p>
+            <p><strong>Amount:</strong> $${withdrawal.amount}</p>
             <p><strong>Bank:</strong> ${withdrawal.bankDetails.bankName}</p>
             <p><strong>Account:</strong> ***${withdrawal.bankDetails.accountNumber.slice(-4)}</p>
             ${transactionReference ? `<p><strong>Reference:</strong> ${transactionReference}</p>` : ''}
@@ -1173,7 +1173,7 @@ class ResendEmailService {
 
           <div style="background: #f8d7da; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #721c24;">Request Details:</h3>
-            <p><strong>Amount:</strong> R${withdrawal.amount}</p>
+            <p><strong>Amount:</strong> $${withdrawal.amount}</p>
             <p><strong>Reason:</strong> ${reason}</p>
           </div>
 
@@ -1255,7 +1255,7 @@ class ResendEmailService {
     try {
       const orderUrl = `${this.frontendUrl}/orders/${order.id || order.orderId}`;
       const deadline = order.paymentDeadline?.toDate?.() || new Date(order.paymentDeadline);
-      const deadlineStr = deadline.toLocaleString('en-ZA', {
+      const deadlineStr = deadline.toLocaleString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });
@@ -1294,7 +1294,7 @@ class ResendEmailService {
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Order Details:</h3>
             <p><strong>Item:</strong> ${order.productTitle}</p>
-            <p><strong>Amount Due:</strong> <span style="color: ${urgencyColor}; font-size: 20px; font-weight: bold;">R${order.amount || order.totalAmount}</span></p>
+            <p><strong>Amount Due:</strong> <span style="color: ${urgencyColor}; font-size: 20px; font-weight: bold;">$${order.amount || order.totalAmount}</span></p>
             <p><strong>Deadline:</strong> ${deadlineStr}</p>
           </div>
 
@@ -1332,7 +1332,7 @@ class ResendEmailService {
           <div style="background: #f8d7da; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #dc3545;">
             <h3 style="margin-top: 0; color: #721c24;">Order Cancelled</h3>
             <p style="margin: 0; color: #721c24;"><strong>Item:</strong> ${order.productTitle}</p>
-            <p style="margin: 5px 0 0; color: #721c24;"><strong>Amount:</strong> R${order.amount || order.totalAmount}</p>
+            <p style="margin: 5px 0 0; color: #721c24;"><strong>Amount:</strong> $${order.amount || order.totalAmount}</p>
             <p style="margin: 5px 0 0; color: #721c24;"><strong>Reason:</strong> Payment not received within 7 days</p>
           </div>
 
@@ -1363,7 +1363,7 @@ class ResendEmailService {
     try {
       const productUrl = `${this.frontendUrl}/products/${product.id}`;
       const newEndDate = product.newEndDate
-        ? new Date(product.newEndDate).toLocaleString('en-ZA', {
+        ? new Date(product.newEndDate).toLocaleString('en-US', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
           })
@@ -1424,14 +1424,14 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Starting Price:</strong></td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong style="color: #28a745; font-size: 20px;">R${product.startingPrice}</strong>
+                  <strong style="color: #28a745; font-size: 20px;">$${product.startingPrice}</strong>
                 </td>
               </tr>
               ${product.buyNowPrice ? `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee;">Buy Now Price:</td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong>R${product.buyNowPrice}</strong>
+                  <strong>$${product.buyNowPrice}</strong>
                 </td>
               </tr>
               ` : ''}
@@ -1461,7 +1461,7 @@ class ResendEmailService {
 
       await this.sendEmail({
         to: user.email,
-        subject: `New Auction Live: ${product.title} - Starting at R${product.startingPrice}`,
+        subject: `New Auction Live: ${product.title} - Starting at $${product.startingPrice}`,
         html
       });
       await this.logEmailSent('auction_going_live', user.email, user.uid || user.id);
@@ -1492,10 +1492,10 @@ class ResendEmailService {
               : product.scheduledStartTime);
 
         if (!isNaN(scheduledDate.getTime())) {
-          dateStr = scheduledDate.toLocaleDateString('en-ZA', {
+          dateStr = scheduledDate.toLocaleDateString('en-US', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
           });
-          timeStr = scheduledDate.toLocaleTimeString('en-ZA', {
+          timeStr = scheduledDate.toLocaleTimeString('en-US', {
             hour: '2-digit', minute: '2-digit'
           });
         } else {
@@ -1519,14 +1519,14 @@ class ResendEmailService {
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Starting Price:</strong></td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong style="color: #3b82f6; font-size: 20px;">R${product.startingPrice || 0}</strong>
+                  <strong style="color: #3b82f6; font-size: 20px;">$${product.startingPrice || 0}</strong>
                 </td>
               </tr>
               ${product.buyNowPrice ? `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee;">Buy Now Price:</td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">
-                  <strong>R${product.buyNowPrice}</strong>
+                  <strong>$${product.buyNowPrice}</strong>
                 </td>
               </tr>
               ` : ''}
@@ -1563,7 +1563,7 @@ class ResendEmailService {
       console.log(`[EMAIL] Sending scheduled auction email to ${user.email}...`);
       await this.sendEmail({
         to: user.email,
-        subject: `Coming Soon: ${product.title} - Starting at R${product.startingPrice} on ${dateStr}`,
+        subject: `Coming Soon: ${product.title} - Starting at $${product.startingPrice} on ${dateStr}`,
         html
       });
       console.log(`[EMAIL] Successfully sent scheduled auction email to ${user.email}`);

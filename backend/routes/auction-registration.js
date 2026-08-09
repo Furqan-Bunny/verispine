@@ -140,7 +140,7 @@ router.post('/:auctionId/register', authMiddleware, async (req, res) => {
     if (currentBalance < registrationFee) {
       return res.status(400).json({
         success: false,
-        error: `Insufficient balance. Required: R${registrationFee}, Available: R${currentBalance}`,
+        error: `Insufficient balance. Required: $${registrationFee}, Available: $${currentBalance}`,
         requiredAmount: registrationFee,
         currentBalance: currentBalance
       });
@@ -203,7 +203,7 @@ router.post('/:auctionId/register', authMiddleware, async (req, res) => {
 
     res.json({
       success: true,
-      message: `Successfully registered for auction. R${registrationFee} has been deducted from your wallet.`,
+      message: `Successfully registered for auction. $${registrationFee} has been deducted from your wallet.`,
       data: {
         auctionId,
         feePaid: registrationFee,

@@ -95,7 +95,7 @@ const Home = () => {
               Welcome to VeriSpine Joint Centers
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white/90">
-              South Africa's Premier Online Auction Platform
+              Medical Equipment Marketplace & Auctions
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
               <Link to="/products" className="btn-primary bg-white text-primary-600 hover:bg-gray-100 px-8 py-3 text-lg">
@@ -168,8 +168,8 @@ const Home = () => {
             className="card text-center"
           >
             <CurrencyDollarIcon className="h-12 w-12 text-primary-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">ZAR Currency</h3>
-            <p className="text-gray-600">All prices in South African Rand</p>
+            <h3 className="text-lg font-semibold mb-2">USD Payments</h3>
+            <p className="text-gray-600">All prices in US Dollars</p>
           </motion.div>
         </div>
       </section>
@@ -326,7 +326,7 @@ const Home = () => {
             <div className="text-gray-600 mt-2">Items Listed</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-4xl font-bold text-primary-600">R5M+</div>
+            <div className="text-2xl sm:text-4xl font-bold text-primary-600">$5M+</div>
             <div className="text-gray-600 mt-2">Total Sales</div>
           </div>
           <div className="text-center">

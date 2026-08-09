@@ -399,7 +399,7 @@ async function seedFirebase() {
         };
 
         await addDoc(collection(db, 'bids'), bid);
-        console.log(`✅ Created bid: ${bidder.username} bid R${currentBidAmount} on "${product.title}"`);
+        console.log(`✅ Created bid: ${bidder.username} bid $${currentBidAmount} on "${product.title}"`);
       } catch (error: any) {
         console.error(`❌ Failed to create bid:`, error.message);
       }

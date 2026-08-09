@@ -387,7 +387,7 @@ class SAPOShippingService {
         exempt: firstItem.Characteristics?.ExemptIndicator || false,
         insured: {
           amount: firstItem.Characteristics?.InsuredMoney?.Amount || 0,
-          currency: firstItem.Characteristics?.InsuredMoney?.Currency || 'ZAR'
+          currency: firstItem.Characteristics?.InsuredMoney?.Currency || 'USD'
         }
       },
       events: formattedEvents,
@@ -698,7 +698,7 @@ class SAPOShippingService {
 
     return {
       success: true,
-      currency: 'ZAR',
+      currency: 'USD',
       breakdown: {
         baseRate: BASE_RATE,
         weightCharge,

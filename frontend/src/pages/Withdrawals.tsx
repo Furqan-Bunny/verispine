@@ -77,7 +77,7 @@ const Withdrawals = () => {
     }
 
     if (user && parseFloat(formData.amount) > user.balance) {
-      toast.error(`Insufficient balance. Available: R${user.balance}`)
+      toast.error(`Insufficient balance. Available: $${user.balance}`)
       return
     }
 
@@ -188,7 +188,7 @@ const Withdrawals = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-primary-100">Available Balance</p>
-            <p className="text-3xl font-bold mt-2">R{user?.balance || 0}</p>
+            <p className="text-3xl font-bold mt-2">${user?.balance || 0}</p>
           </div>
           <button
             onClick={() => setShowRequestModal(true)}
@@ -246,7 +246,7 @@ const Withdrawals = () => {
                       {new Date(withdrawal.requestedAt._seconds * 1000).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      R{withdrawal.amount}
+                      ${withdrawal.amount}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {withdrawal.bankDetails.bankName} - ***{withdrawal.bankDetails.accountNumber.slice(-4)}
@@ -328,7 +328,7 @@ const Withdrawals = () => {
                       required
                     />
                   </div>
-                  <p className="mt-2 text-sm text-primary-600 font-medium">Available balance: R{user?.balance || 0}</p>
+                  <p className="mt-2 text-sm text-primary-600 font-medium">Available balance: ${user?.balance || 0}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

@@ -26,7 +26,7 @@ router.post('/add-funds', authMiddleware, async (req, res) => {
     const userId = req.user.uid;
 
     if (!amount || parseFloat(amount) < 10) {
-      return res.status(400).json({ success: false, message: 'Minimum top-up amount is R10' });
+      return res.status(400).json({ success: false, message: 'Minimum top-up amount is $10' });
     }
 
     const prov = provider === 'traderoot' ? 'traderoot' : 'addpay';
@@ -425,7 +425,7 @@ router.get('/balance', authMiddleware, async (req, res) => {
       success: true,
       data: {
         balance: userData.balance || 0,
-        currency: 'ZAR'
+        currency: 'USD'
       }
     });
 

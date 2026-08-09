@@ -46,7 +46,7 @@ router.post('/process', authMiddleware, async (req, res) => {
       // Process balance payment
       if (user.balance < order.amount) {
         return res.status(400).json({ 
-          error: `Insufficient balance. Required: R${order.amount}, Available: R${user.balance}` 
+          error: `Insufficient balance. Required: $${order.amount}, Available: $${user.balance}` 
         });
       }
       
@@ -188,7 +188,7 @@ router.post('/process', authMiddleware, async (req, res) => {
       // Initialize AddPay payment
       const paymentData = {
         amount: order.amount,
-        currency: 'ZAR',
+        currency: 'USD',
         email: user.email,
         phone: user.phone || '',
         name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),

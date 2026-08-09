@@ -132,7 +132,7 @@ class PargoShippingService {
   async calculateShippingRate(params = {}) {
     const w = Number(params.weightKg || params.weight || 1);
     if (this.mock) {
-      return { success: true, currency: 'ZAR', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: {}, total: 55 + w * 8, estimatedDays: '2-4', mock: true };
+      return { success: true, currency: 'USD', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: {}, total: 55 + w * 8, estimatedDays: '2-4', mock: true };
     }
     const pointCode = params.pickupPointCode || (params.pargoPoint && params.pargoPoint.code) || '';
     try {
@@ -157,12 +157,12 @@ class PargoShippingService {
         const res = await this.client.post('/orders/quotation', body, { headers: await this.authHeaders() });
         const q = res.data && res.data.data && res.data.data.attributes && res.data.data.attributes.quotation;
         if (q && q.price != null) {
-          return { success: true, currency: 'ZAR', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: q, total: Number(q.price), estimatedDays: '2-4', mock: false };
+          return { success: true, currency: 'USD', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: q, total: Number(q.price), estimatedDays: '2-4', mock: false };
         }
       }
     } catch (e) { console.warn('Pargo live quotation failed (falling back to estimate):', e.message); }
     // Fallback estimate (no pickup point yet, or quotation unavailable).
-    return { success: true, currency: 'ZAR', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: {}, total: 60 + w * 9, estimatedDays: '2-4', mock: false };
+    return { success: true, currency: 'USD', provider: 'pargo', rateId: null, serviceLevel: 'Pargo Click & Collect', breakdown: {}, total: 60 + w * 9, estimatedDays: '2-4', mock: false };
   }
 
   // ---- Create shipment (W2P order, dynamic warehouse) ------------------------
@@ -275,7 +275,7 @@ class PargoShippingService {
       return {
         trackingNumber, weight: 1,
         origin: { country: 'ZA', code: '' }, destination: { country: 'ZA', code: '' },
-        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'ZAR' } },
+        characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'USD' } },
         events: [{ code: 'created', description: 'Parcel is being prepared', office: '', officeCode: '', timestamp: this.nowIso(), status: 'Order Shipped' }],
         currentStatus: 'Order Shipped', lastUpdate: this.nowIso(),
       };
@@ -295,7 +295,7 @@ class PargoShippingService {
     return {
       trackingNumber, weight: 1,
       origin: { country: 'ZA', code: '' }, destination: { country: 'ZA', code: '' },
-      characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'ZAR' } },
+      characteristics: { express: false, exempt: false, insured: { amount: 0, currency: 'USD' } },
       events,
       currentStatus: last ? last.status : 'Order Shipped',
       lastUpdate: last ? last.timestamp : null,
