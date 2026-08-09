@@ -152,9 +152,41 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
+/**
+ * Resolve a bearer token to a uid, for transports that aren't Express.
+ *
+ * Accepts both token kinds the HTTP middleware does — our own JWT and a Firebase
+ * ID token — so a websocket client can present exactly the token it already has.
+ * Returns null rather than throwing; the caller decides what an anonymous
+ * connection is allowed to do.
+ */
+const verifyTokenToUid = async (rawToken) => {
+  const token = String(rawToken || '').replace(/^Bearer\s+/i, '');
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded && decoded.userId) return decoded.userId;
+  } catch (jwtError) {
+    // Not one of ours — fall through and try Firebase.
+  }
+
+  try {
+    if (auth) {
+      const decodedToken = await auth.verifyIdToken(token);
+      if (decodedToken && decodedToken.uid) return decodedToken.uid;
+    }
+  } catch (firebaseError) {
+    // Invalid or expired.
+  }
+
+  return null;
+};
+
 module.exports = {
   authMiddleware,
   adminMiddleware,
   sellerMiddleware,
-  optionalAuth
+  optionalAuth,
+  verifyTokenToUid
 };

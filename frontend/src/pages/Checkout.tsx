@@ -209,11 +209,24 @@ const Checkout = () => {
       return
     }
 
-    setProcessingPayment(true)
-
     // Calculate total with shipping
     const shippingCost = Number(checkoutItem.shippingCost || 0)
     const totalAmount = Number(checkoutItem.price) + shippingCost
+
+    /**
+     * Check the balance BEFORE creating the order.
+     *
+     * This check used to run after the order was created, so every wallet
+     * attempt with insufficient funds left an orphaned pending_payment order
+     * behind — which held stock and then expired the listing. The server
+     * re-checks authoritatively; this only avoids creating an unpayable order.
+     */
+    if (paymentMethod === 'wallet' && userBalance < totalAmount) {
+      toast.error('Insufficient wallet balance')
+      return
+    }
+
+    setProcessingPayment(true)
 
     try {
       let orderId: string
@@ -252,12 +265,7 @@ const Checkout = () => {
 
       // Process payment based on selected method
       if (paymentMethod === 'wallet') {
-        // Check wallet balance (including shipping)
-        if (userBalance < totalAmount) {
-          toast.error('Insufficient wallet balance')
-          return
-        }
-
+        // Balance was checked before the order was created, above.
         // Process wallet payment
         const walletResponse = await axios.post('/api/payments/wallet', {
           orderId,

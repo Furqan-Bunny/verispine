@@ -481,17 +481,6 @@ const AdminOrders = () => {
       case 'mark-processing':
         handleBulkStatusUpdate('processing')
         break
-      case 'mark-shipped':
-        handleBulkStatusUpdate('shipped')
-        break
-      case 'mark-delivered':
-        handleBulkStatusUpdate('delivered')
-        break
-      case 'mark-cancelled':
-        if (confirm(`Are you sure you want to cancel ${selectedOrders.length} orders?`)) {
-          handleBulkStatusUpdate('cancelled')
-        }
-        break
     }
   }
 
@@ -752,27 +741,10 @@ const AdminOrders = () => {
               >
                 {updateLoading === 'bulk' ? 'Updating...' : 'Mark Processing'}
               </button>
-              <button
-                onClick={() => handleBulkAction('mark-shipped')}
-                className="text-sm text-purple-600 hover:text-purple-700 px-2 py-1 rounded border border-purple-200 hover:bg-purple-50 disabled:opacity-50"
-                disabled={updateLoading === 'bulk'}
-              >
-                {updateLoading === 'bulk' ? 'Updating...' : 'Mark Shipped'}
-              </button>
-              <button
-                onClick={() => handleBulkAction('mark-delivered')}
-                className="text-sm text-green-600 hover:text-green-700 px-2 py-1 rounded border border-green-200 hover:bg-green-50 disabled:opacity-50"
-                disabled={updateLoading === 'bulk'}
-              >
-                {updateLoading === 'bulk' ? 'Updating...' : 'Mark Delivered'}
-              </button>
-              <button
-                onClick={() => handleBulkAction('mark-cancelled')}
-                className="text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded border border-red-200 hover:bg-red-50 disabled:opacity-50"
-                disabled={updateLoading === 'bulk'}
-              >
-                {updateLoading === 'bulk' ? 'Updating...' : 'Cancel Orders'}
-              </button>
+              {/* Shipped / Delivered / Cancelled are intentionally absent from the
+                  bulk bar. Each books a shipment, voids a label, or releases seller
+                  funds — per-order decisions with money attached, which is why the
+                  backend rejects them here. They live on the individual order row. */}
               <button
                 onClick={() => setBulkOpen(true)}
                 className="text-sm text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded border border-red-600 flex items-center gap-1 disabled:opacity-50"

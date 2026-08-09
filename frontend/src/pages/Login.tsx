@@ -24,15 +24,15 @@ const Login = () => {
   const onSubmit = async (data: LoginForm) => {
     try {
       await login(data.email, data.password)
-      // Check if user is verified
-      const currentUser = useAuthStore.getState().user
-      if (currentUser && !currentUser.emailVerified) {
-        navigate('/verify-email', { state: { email: data.email } })
-      } else {
-        navigate('/dashboard')
+      navigate('/dashboard')
+    } catch (error: any) {
+      // The store refuses to create a session for an unverified address and
+      // throws instead of returning, so that case lands here.
+      if (error?.requiresVerification) {
+        navigate('/verify-email', { state: { email: error.email || data.email } })
+        return
       }
-    } catch (error) {
-      // Error is handled in the store
+      // Everything else already surfaced a toast in the store.
     }
   }
 

@@ -34,7 +34,7 @@ const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
   const [bidAmount, setBidAmount] = useState('')
   const [isPlacingBid, setIsPlacingBid] = useState(false)
   const [currentPrice, setCurrentPrice] = useState(product.currentPrice)
-  const [bidsCount, setBidsCount] = useState(product.bidsCount || 0)
+  const [bidsCount, setBidsCount] = useState(product.totalBids || 0)
   const [recentBids, setRecentBids] = useState<Bid[]>([])
   const [viewerCount, setViewerCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState('')
@@ -88,16 +88,18 @@ const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
     // Listen for auction info
     newSocket.on('auction-info', (data: any) => {
       setCurrentPrice(data.currentPrice)
-      setBidsCount(data.bidsCount)
+      setBidsCount(data.totalBids ?? bidsCount)
       if (data.topBids) {
         setRecentBids(data.topBids)
       }
     })
 
     // Listen for new bids
-    newSocket.on('new-bid', (bid: Bid) => {
-      setCurrentPrice(bid.amount)
-      setBidsCount((prev: number) => prev + 1)
+    newSocket.on('new-bid', (bid: any) => {
+      setCurrentPrice(bid.currentPrice ?? bid.amount)
+      // Prefer the server's count: incrementing locally drifts whenever an event
+      // is missed during a reconnect.
+      setBidsCount((prev: number) => bid.totalBids ?? prev + 1)
       setRecentBids((prev: Bid[]) => [bid, ...prev.slice(0, 4)])
       
       // Notify if someone else bid
@@ -110,7 +112,9 @@ const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
 
     // Listen for bid errors
     newSocket.on('bid-error', (error: any) => {
-      if (error.requiresRegistration) {
+      if (error.requiresAuth) {
+        toast.error('Please sign in again to place a bid.')
+      } else if (error.requiresRegistration) {
         // Show registration modal for live auctions
         setShowRegistrationModal(true)
       } else {
@@ -122,6 +126,8 @@ const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
     // Listen for bid success
     newSocket.on('bid-success', (data: any) => {
       toast.success(data.message)
+      if (data.currentPrice != null) setCurrentPrice(data.currentPrice)
+      if (data.totalBids != null) setBidsCount(data.totalBids)
       setBidAmount('')
       setIsPlacingBid(false)
       if (onBidPlaced) onBidPlaced()
@@ -190,11 +196,10 @@ const BiddingSection = ({ product, onBidPlaced }: BiddingSectionProps) => {
 
     setIsPlacingBid(true)
 
-    // Emit bid to socket
+    // The server identifies the bidder from the socket's verified token, so no
+    // userId is sent — one that was sent would be ignored anyway.
     socket.emit('place-bid', {
       productId: product.id,
-      userId: user?.uid,
-      userName: user?.firstName + ' ' + user?.lastName || user?.username,
       amount
     })
   }

@@ -3,6 +3,7 @@ const router = express.Router();
 const { admin, db } = require('../config/firebase');
 const { authMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
+const { placeBid } = require('../utils/placeBid');
 
 // Helper functions for Firebase operations
 const serverTimestamp = () => {
@@ -16,223 +17,63 @@ const increment = (value) => {
 // Place a bid
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    // Check if Firebase is available
-    if (!db) {
-      return res.status(503).json({ error: 'Database service is temporarily unavailable' });
-    }
-    
     const { productId, amount } = req.body;
-    const userId = req.user.uid;
-    
-    // Validate input
-    if (!productId || !amount) {
-      return res.status(400).json({ error: 'Product ID and amount are required' });
-    }
 
-    // A non-numeric amount (e.g. "abc" -> NaN) would otherwise slip through every `NaN < min`
-    // comparison (which is always false), so reject it up front.
-    const bidAmount = Number(amount);
-    if (!Number.isFinite(bidAmount) || bidAmount <= 0) {
-      return res.status(400).json({ error: 'A valid bid amount is required' });
-    }
+    // userId comes from the verified token, never from the body.
+    const result = await placeBid({ productId, amount, userId: req.user.uid });
 
-    // Get product details
-    const productDoc = await db.collection('products').doc(productId).get();
-    
-    if (!productDoc.exists) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    
-    const product = productDoc.data();
-
-    // Fixed-price products are not auctions — they can't be bid on.
-    if (product.listingType === 'sale') {
-      return res.status(400).json({ error: 'Bidding is not available for fixed-price products. Use Buy Now instead.' });
-    }
-
-    // Check if auction is still active
-    if (product.status !== 'active') {
-      return res.status(400).json({ error: 'This auction has ended' });
-    }
-    
-    // Check if auction end time has passed
-    const now = new Date();
-    const endDate = product.endDate?._seconds ? 
-      new Date(product.endDate._seconds * 1000) : 
-      new Date(product.endDate);
-    
-    if (now >= endDate) {
-      // Update product status
-      await productDoc.ref.update({ status: 'ended' });
-      return res.status(400).json({ error: 'This auction has ended' });
-    }
-    
-    // Check if user is the seller
-    if (product.sellerId === userId) {
-      return res.status(400).json({ error: 'You cannot bid on your own item' });
-    }
-
-    // Check if live auction registration is required
-    if (product.isLiveAuction) {
-      const registeredUsers = product.registeredUsers || [];
-      if (!registeredUsers.includes(userId)) {
-        return res.status(403).json({
-          error: 'You must register and pay the entry fee to bid in this live auction',
-          requiresRegistration: true,
-          registrationFee: product.registrationFee || 5
-        });
-      }
-    }
-
-    // Fast-fail validation against the currently-read price. The AUTHORITATIVE, race-safe version of
-    // these checks is re-done inside the transaction below against a transaction.get() read.
-    const minimumBid = Number(product.currentPrice) + Number(product.incrementAmount || 100);
-    if (bidAmount < minimumBid) {
-      return res.status(400).json({
-        error: `Minimum bid amount is $${minimumBid}`
-      });
-    }
-
-    // Check if it exceeds buy now price
-    if (product.buyNowPrice && bidAmount >= Number(product.buyNowPrice)) {
-      return res.status(400).json({
-        error: `Bid exceeds Buy Now price. Please use Buy Now option instead.`
-      });
-    }
-    
-    // Get user details
-    const userDoc = await db.collection('users').doc(userId).get();
-    const userData = userDoc.data();
-
-    // Note: users can bid without balance; payment is required only when they win the auction.
-
-    // Place the bid inside a transaction. ALL of the race-sensitive reads and validation (current
-    // price, auction status/end time, the standing highest bid) happen INSIDE the transaction against
-    // transaction.get() reads. Firestore serializes concurrent transactions on the same product doc,
-    // so a second simultaneous bid re-runs against the first one's committed currentPrice and is
-    // rejected if it is no longer high enough. This fixes the previous bug where the in-transaction
-    // product read was discarded, writes were unconditional, and currentPrice could regress to a
-    // lower concurrent bid (leaving two 'active' bids).
-    const productRef = db.collection('products').doc(productId);
-    const bidsCol = db.collection('bids');
-    const bidError = (httpStatus, message, payload) => {
-      const e = new Error(message);
-      e.httpStatus = httpStatus;
-      if (payload) e.payload = payload;
-      return e;
-    };
-
-    let result;
+    // Broadcast to everyone watching this auction. The socket service is
+    // registered on the app as 'socketService' — the previous code asked for
+    // 'io', got undefined, and silently skipped every REST-placed bid, so live
+    // viewers only ever saw bids placed through the websocket.
     try {
-      result = await db.runTransaction(async (transaction) => {
-        // ---- reads (all reads must precede all writes in a Firestore transaction) ----
-        const productSnap = await transaction.get(productRef);
-        if (!productSnap.exists) throw bidError(404, 'Product not found');
-        const p = productSnap.data();
-
-        // Re-validate the race-sensitive conditions against the in-transaction product.
-        if (p.status !== 'active') throw bidError(400, 'This auction has ended');
-        const nowTx = new Date();
-        const endTx = p.endDate?._seconds ? new Date(p.endDate._seconds * 1000) : new Date(p.endDate);
-        if (nowTx >= endTx) throw bidError(400, 'This auction has ended');
-
-        const minBid = Number(p.currentPrice) + Number(p.incrementAmount || 100);
-        if (bidAmount < minBid) throw bidError(400, `Minimum bid amount is $${minBid}`);
-        if (p.buyNowPrice && bidAmount >= Number(p.buyNowPrice)) {
-          throw bidError(400, 'Bid exceeds Buy Now price. Please use Buy Now option instead.');
-        }
-
-        // Currently-active bids + this user's prior bids. Both are equality-only queries, so they
-        // need no composite index (and work inside a transaction).
-        const activeBidsSnap = await transaction.get(
-          bidsCol.where('productId', '==', productId).where('status', '==', 'active')
-        );
-        const userBidsSnap = await transaction.get(
-          bidsCol.where('productId', '==', productId).where('userId', '==', userId)
-        );
-
-        // ---- writes ----
-        // Outbid every currently-active bid (normally exactly one — the standing highest). Doing this
-        // for all of them keeps the invariant that only the newest bid is 'active'.
-        let previousBidderData = null;
-        activeBidsSnap.forEach((doc) => {
-          const d = doc.data();
-          if (!previousBidderData || Number(d.amount) > Number(previousBidderData.amount)) {
-            previousBidderData = d;
-          }
-          transaction.update(doc.ref, { status: 'outbid', updatedAt: serverTimestamp() });
-        });
-
-        const bidRef = bidsCol.doc();
-        const bidData = {
+      const socketService = req.app.get('socketService');
+      if (socketService && socketService.io) {
+        socketService.io.to(`auction-${productId}`).emit('new-bid', {
+          id: result.bidId,
           productId,
-          userId,
-          userName: `${userData.firstName} ${userData.lastName}`,
-          amount: bidAmount,
-          status: 'active',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        transaction.set(bidRef, bidData);
-
-        const updates = {
-          // Validated above to be >= the in-transaction currentPrice + increment, so this can never
-          // regress to a lower value under concurrency.
-          currentPrice: bidAmount,
-          totalBids: increment(1),
-          lastBidAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        if (userBidsSnap.empty) {
-          updates.uniqueBidders = increment(1);
-        }
-        transaction.update(productRef, updates);
-
-        return { bidId: bidRef.id, ...bidData, previousBidderData };
-      });
-    } catch (txErr) {
-      // Validation failures thrown inside the transaction carry an httpStatus; map them to responses.
-      if (txErr && txErr.httpStatus) {
-        return res.status(txErr.httpStatus).json({ error: txErr.message, ...(txErr.payload || {}) });
+          userId: result.userId,
+          userName: result.userName,
+          amount: result.amount,
+          currentPrice: result.currentPrice,
+          totalBids: result.totalBids,
+          timestamp: new Date(),
+        });
       }
-      throw txErr; // unexpected error -> outer catch -> 500
+    } catch (e) {
+      console.error('Bid broadcast failed:', e.message);
     }
-    
-    // Emit socket event for real-time updates
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`auction-${productId}`).emit('new-bid', {
-        productId,
-        amount,
-        userName: result.userName,
-        timestamp: new Date()
-      });
-    }
-    
-    // Send email notifications
+
+    // Emails are best-effort; a mail failure must not undo a placed bid.
     try {
-      // Send bid confirmation to current bidder
-      await emailService.sendBidConfirmation(userData, result, product);
-      
-      // Send outbid notification to previous highest bidder
+      await emailService.sendBidConfirmation(result.bidder, result, result.product);
+
       if (result.previousBidderData) {
         const previousUserDoc = await db.collection('users').doc(result.previousBidderData.userId).get();
         if (previousUserDoc.exists) {
-          const previousUser = previousUserDoc.data();
-          await emailService.sendOutbidNotification(previousUser, product, amount);
+          await emailService.sendOutbidNotification(previousUserDoc.data(), result.product, result.amount);
         }
       }
     } catch (emailError) {
-      console.error('Error sending email notifications:', emailError);
-      // Don't fail the bid if email fails
+      console.error('Error sending bid email notifications:', emailError.message);
     }
-    
+
     res.status(201).json({
       success: true,
       message: 'Bid placed successfully',
-      data: result
+      data: {
+        bidId: result.bidId,
+        productId,
+        amount: result.amount,
+        userName: result.userName,
+        currentPrice: result.currentPrice,
+        totalBids: result.totalBids,
+      }
     });
   } catch (error) {
+    if (error && error.httpStatus) {
+      return res.status(error.httpStatus).json({ error: error.message, ...(error.payload || {}) });
+    }
     console.error('Error placing bid:', error);
     res.status(500).json({ error: 'Failed to place bid' });
   }

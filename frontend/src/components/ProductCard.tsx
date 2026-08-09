@@ -90,7 +90,7 @@ const ProductCard = ({ product, showTimer = false, initialWishlisted = false }: 
   const productImages = product.images || []
   const productPrice = (isSale ? (product.price ?? product.currentPrice) : product.currentPrice) || 0
   const productViews = product.views || 0
-  const productBids = product.bids || product.totalBids || product.bidsCount || 0
+  const productBids = product.bids || product.totalBids || 0
   const productLocation = product.location || product.shipping?.location || 'United States'
   const productCategory = product.category || 'Uncategorized'
   const productCondition = product.condition || 'Used'

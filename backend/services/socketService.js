@@ -1,5 +1,8 @@
 const socketIO = require('socket.io');
 const { admin, db, auth, storage } = require('../config/firebase');
+const { verifyTokenToUid } = require('../middleware/auth');
+const { placeBid } = require('../utils/placeBid');
+const emailService = require('./resendEmailService');
 
 class SocketService {
   constructor() {
@@ -25,6 +28,25 @@ class SocketService {
         methods: ["GET", "POST"],
         credentials: true
       }
+    });
+
+    /**
+     * Resolve the connection's identity once, at handshake.
+     *
+     * Connections are NOT rejected when the token is missing or invalid —
+     * browsing an auction live is open to anonymous visitors. What an anonymous
+     * socket cannot do is act: `place-bid` requires socket.data.userId, which
+     * only a verified token sets. Doing this at the handshake rather than per
+     * event means there is no code path where a handler reads an identity off
+     * the wire.
+     */
+    this.io.use(async (socket, next) => {
+      const token = socket.handshake.auth?.token
+        || socket.handshake.headers?.authorization
+        || socket.handshake.query?.token;
+
+      socket.data.userId = await verifyTokenToUid(token);
+      next();
     });
 
     this.setupEventHandlers();
@@ -67,7 +89,10 @@ class SocketService {
             
             socket.emit('auction-info', {
               currentPrice: productData.currentPrice,
-              bidsCount: productData.bidsCount || 0,
+              // `totalBids` is the canonical field. The socket path used to write
+              // `bidsCount` while REST wrote `totalBids`, so the count shown
+              // depended on which path placed the last bid.
+              totalBids: productData.totalBids || 0,
               topBids: bids,
               endDate: productData.endDate
             });
@@ -93,114 +118,75 @@ class SocketService {
       });
 
       // Handle new bid
-      socket.on('place-bid', async (bidData) => {
+      /**
+       * Place a bid over the websocket.
+       *
+       * The identity comes from the socket's verified token (see the
+       * authenticate handler above), NOT from the payload. Previously this
+       * handler took `userId` and `userName` straight off the wire, so anyone
+       * with a browser console could place bids as any user, and could bid on
+       * their own listing by sending someone else's id.
+       *
+       * The bid itself goes through utils/placeBid so the websocket and REST
+       * paths cannot drift apart again.
+       */
+      socket.on('place-bid', async (bidData = {}) => {
         try {
-          const { productId, userId, amount, userName } = bidData;
-
-          // Validate bid
-          const product = await db.collection('products').doc(productId).get();
-          if (!product.exists) {
-            socket.emit('bid-error', { message: 'Product not found' });
-            return;
-          }
-
-          const productData = product.data();
-
-          // Fixed-price products are not auctions — reject bids.
-          if (productData.listingType === 'sale') {
-            socket.emit('bid-error', { message: 'Bidding is not available for fixed-price products. Use Buy Now instead.' });
-            return;
-          }
-
-          // Check if user is the seller
-          if (productData.sellerId === userId) {
-            socket.emit('bid-error', { message: 'You cannot bid on your own item' });
-            return;
-          }
-
-          // Check if live auction registration is required
-          if (productData.isLiveAuction) {
-            const registeredUsers = productData.registeredUsers || [];
-            if (!registeredUsers.includes(userId)) {
-              socket.emit('bid-error', {
-                message: 'You must register and pay the entry fee to bid in this live auction',
-                requiresRegistration: true,
-                registrationFee: productData.registrationFee || 5
-              });
-              return;
-            }
-          }
-
-          // Check if auction is still active
-          const now = new Date();
-          const endDate = productData.endDate?._seconds
-            ? new Date(productData.endDate._seconds * 1000)
-            : new Date(productData.endDate);
-
-          if (now > endDate) {
-            socket.emit('bid-error', { message: 'Auction has ended' });
-            return;
-          }
-
-          // Check minimum bid amount
-          const minBid = productData.currentPrice + (productData.incrementAmount || 100);
-          if (amount < minBid) {
+          const userId = socket.data.userId;
+          if (!userId) {
             socket.emit('bid-error', {
-              message: `Minimum bid is $${minBid}`
+              message: 'You must be signed in to bid.',
+              requiresAuth: true,
             });
             return;
           }
-          
-          // Create bid in Firestore
-          if (!db) {
-            socket.emit('bid-error', { message: 'Database connection unavailable' });
-            return;
-          }
 
-          const timestamp = admin ? admin.firestore.FieldValue.serverTimestamp() : new Date();
-          const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
+          const { productId, amount } = bidData;
+          const result = await placeBid({ productId, amount, userId });
 
-          const bid = {
-            productId,
-            userId,
-            userName,
-            amount,
-            status: 'active',
-            createdAt: timestamp
-          };
-
-          const bidRef = await db.collection('bids').add(bid);
-
-          // Update product with new current price and bid count
-          await db.collection('products').doc(productId).update({
-            currentPrice: amount,
-            bidsCount: incrementFn(1),
-            lastBidAt: timestamp,
-            highestBidderId: userId,
-            highestBidderName: userName
-          });
-          
-          // Notify all users in the auction room
+          // Everyone in the room, including the bidder.
           this.io.to(`auction-${productId}`).emit('new-bid', {
-            id: bidRef.id,
-            ...bid,
-            timestamp: new Date()
+            id: result.bidId,
+            productId,
+            userId: result.userId,
+            userName: result.userName,
+            amount: result.amount,
+            currentPrice: result.currentPrice,
+            totalBids: result.totalBids,
+            timestamp: new Date(),
           });
-          
-          // Send success to bidder
+
           socket.emit('bid-success', {
             message: 'Bid placed successfully!',
-            bidId: bidRef.id,
-            amount
+            bidId: result.bidId,
+            amount: result.amount,
+            currentPrice: result.currentPrice,
+            totalBids: result.totalBids,
           });
-          
-          console.log(`New bid placed: ${amount} on product ${productId} by ${userName}`);
-          
+
+          console.log(`Bid ${result.amount} on product ${productId} by ${result.userName}`);
+
+          // Emails are best-effort — a mail failure must not undo a placed bid.
+          try {
+            await emailService.sendBidConfirmation(result.bidder, result, result.product);
+            if (result.previousBidderData) {
+              const prev = await db.collection('users').doc(result.previousBidderData.userId).get();
+              if (prev.exists) {
+                await emailService.sendOutbidNotification(prev.data(), result.product, result.amount);
+              }
+            }
+          } catch (emailError) {
+            console.error('Bid email notification failed:', emailError.message);
+          }
         } catch (error) {
+          // Validation failures carry an httpStatus and a message meant for the
+          // user; anything else is ours and gets a generic message.
+          if (error && error.httpStatus) {
+            socket.emit('bid-error', { message: error.message, ...(error.payload || {}) });
+            return;
+          }
           console.error('Error placing bid:', error);
-          socket.emit('bid-error', { 
-            message: 'Failed to place bid. Please try again.' 
-          });
+          socket.emit('bid-error', { message: 'Failed to place bid. Please try again.' });
         }
       });
 

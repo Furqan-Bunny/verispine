@@ -4,6 +4,24 @@ const { admin, db, auth, storage } = require('../config/firebase');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const emailService = require('../services/resendEmailService');
 
+/**
+ * A seller has THREE money fields, and they mean different things:
+ *
+ *   pendingBalance  Sale proceeds not yet earned. Credited when an order is paid,
+ *                   moved to `balance` only when that order is delivered (see
+ *                   utils/sellerPayout.releaseSellerFundsOnDelivery). NOT
+ *                   withdrawable — the buyer could still be refunded.
+ *   balance         Spendable. Released proceeds plus wallet top-ups.
+ *   heldBalance     Moved out of `balance` while a withdrawal is in flight, so
+ *                   the same funds cannot be spent and withdrawn at once.
+ *                   Returned to `balance` if the withdrawal is rejected or
+ *                   cancelled; simply dropped once it is paid out.
+ *
+ * Withdrawals therefore draw from `balance` alone. That is deliberate, not an
+ * oversight: allowing pendingBalance to be withdrawn would let a seller take the
+ * money and then have the order refunded.
+ */
+
 // Create withdrawal request
 router.post('/request', authMiddleware, async (req, res) => {
   try {
@@ -88,23 +106,39 @@ router.post('/request', authMiddleware, async (req, res) => {
       updatedAt: timestamp
     };
 
-    // Use transaction to ensure consistency
+    // Use a transaction to ensure consistency.
     const incrementFn = admin ? admin.firestore.FieldValue.increment : (val) => val;
-    await db.runTransaction(async (transaction) => {
-      const withdrawalRef = db.collection('withdrawals').doc();
+    try {
+      await db.runTransaction(async (transaction) => {
+        // Re-read the balance INSIDE the transaction. The check above ran against
+        // a stale read; two requests racing past it would each pass and together
+        // withdraw more than the seller has, driving `balance` negative.
+        const freshUser = await transaction.get(userDoc.ref);
+        const freshBalance = Number(freshUser.data().balance || 0);
+        if (freshBalance < amount) {
+          const e = new Error(`Insufficient balance. Available: $${freshBalance.toFixed(2)}`);
+          e.httpStatus = 400;
+          throw e;
+        }
 
-      // Create withdrawal request
-      transaction.set(withdrawalRef, withdrawalData);
+        const withdrawalRef = db.collection('withdrawals').doc();
+        transaction.set(withdrawalRef, withdrawalData);
 
-      // Deduct amount from user balance (hold the funds)
-      transaction.update(userDoc.ref, {
-        balance: incrementFn(-amount),
-        heldBalance: incrementFn(amount),
-        updatedAt: timestamp
+        // Move the funds out of spendable and into held.
+        transaction.update(userDoc.ref, {
+          balance: incrementFn(-amount),
+          heldBalance: incrementFn(amount),
+          updatedAt: timestamp
+        });
+
+        withdrawalData.id = withdrawalRef.id;
       });
-
-      withdrawalData.id = withdrawalRef.id;
-    });
+    } catch (txErr) {
+      if (txErr && txErr.httpStatus) {
+        return res.status(txErr.httpStatus).json({ error: txErr.message });
+      }
+      throw txErr;
+    }
     
     // Send email notification to user
     try {

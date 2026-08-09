@@ -111,7 +111,7 @@ const MyAuctions = () => {
     if (!confirm('Are you sure you want to end this auction early?')) return
     
     try {
-      const response = await axios.put(`/api/products/${productId}/end`)
+      const response = await axios.post(`/api/products/${productId}/end`)
       if (response.data.success) {
         loadMyAuctions()
         toast.success('Auction ended successfully')
