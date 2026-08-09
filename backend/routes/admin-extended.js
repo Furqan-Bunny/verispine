@@ -775,6 +775,75 @@ router.get('/notifications/stats', authMiddleware, adminMiddleware, async (req, 
 // ==================== ENHANCED ORDER MANAGEMENT ====================
 
 // Update order status with validation
+// NOTE: this literal route MUST stay above '/orders/:orderId/status'.
+// Express matches in registration order, so with the parameterised route
+// first, 'bulk' was captured as an orderId and every bulk update failed
+// with "Order not found".
+/**
+ * Bulk status change.
+ *
+ * Deliberately narrower than the single-order endpoint: it will not book
+ * shipments, void labels, or release funds. Those side effects are per-order
+ * decisions with real money attached, and applying them across a checkbox
+ * selection is how a mis-click becomes fifty wrong payouts. Statuses that carry
+ * side effects are rejected here and must go through the single-order route.
+ */
+const BULK_ALLOWED_STATUSES = ['processing', 'pending', 'confirmed'];
+
+router.put('/orders/bulk/status', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { orderIds, status } = req.body;
+
+    if (!Array.isArray(orderIds) || orderIds.length === 0) {
+      return res.status(400).json({ error: 'orderIds (non-empty array) is required' });
+    }
+    if (orderIds.length > 200) {
+      return res.status(400).json({ error: 'Maximum 200 orders per bulk update' });
+    }
+    if (!BULK_ALLOWED_STATUSES.includes(status)) {
+      return res.status(400).json({
+        error: `Bulk update supports only: ${BULK_ALLOWED_STATUSES.join(', ')}`,
+        hint: 'shipped, delivered, cancelled and refunded book shipments or move money, so they must be applied one order at a time.'
+      });
+    }
+
+    const timestamp = admin ? admin.firestore.FieldValue.serverTimestamp() : new Date();
+    const results = { succeeded: [], failed: [] };
+
+    for (const orderId of orderIds) {
+      try {
+        const orderRef = db.collection('orders').doc(orderId);
+        const snap = await orderRef.get();
+        if (!snap.exists) {
+          results.failed.push({ orderId, reason: 'not found' });
+          continue;
+        }
+
+        // Don't drag a completed order backwards into an earlier state.
+        const current = snap.data().status;
+        if (['delivered', 'cancelled', 'refunded'].includes(current)) {
+          results.failed.push({ orderId, reason: `cannot bulk-change a ${current} order` });
+          continue;
+        }
+
+        await orderRef.update({ status, updatedAt: timestamp, updatedBy: req.user.uid });
+        results.succeeded.push(orderId);
+      } catch (e) {
+        results.failed.push({ orderId, reason: e.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `${results.succeeded.length} of ${orderIds.length} orders updated to ${status}`,
+      data: results
+    });
+  } catch (error) {
+    console.error('Error bulk updating orders:', error.message);
+    res.status(500).json({ error: 'Failed to bulk update orders' });
+  }
+});
+
 router.put('/orders/:orderId/status', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -1071,71 +1140,6 @@ router.put('/orders/:orderId/notes', authMiddleware, adminMiddleware, async (req
   } catch (error) {
     console.error('Error updating admin notes:', error.message);
     res.status(500).json({ error: 'Failed to update notes' });
-  }
-});
-
-/**
- * Bulk status change.
- *
- * Deliberately narrower than the single-order endpoint: it will not book
- * shipments, void labels, or release funds. Those side effects are per-order
- * decisions with real money attached, and applying them across a checkbox
- * selection is how a mis-click becomes fifty wrong payouts. Statuses that carry
- * side effects are rejected here and must go through the single-order route.
- */
-const BULK_ALLOWED_STATUSES = ['processing', 'pending', 'confirmed'];
-
-router.put('/orders/bulk/status', authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const { orderIds, status } = req.body;
-
-    if (!Array.isArray(orderIds) || orderIds.length === 0) {
-      return res.status(400).json({ error: 'orderIds (non-empty array) is required' });
-    }
-    if (orderIds.length > 200) {
-      return res.status(400).json({ error: 'Maximum 200 orders per bulk update' });
-    }
-    if (!BULK_ALLOWED_STATUSES.includes(status)) {
-      return res.status(400).json({
-        error: `Bulk update supports only: ${BULK_ALLOWED_STATUSES.join(', ')}`,
-        hint: 'shipped, delivered, cancelled and refunded book shipments or move money, so they must be applied one order at a time.'
-      });
-    }
-
-    const timestamp = admin ? admin.firestore.FieldValue.serverTimestamp() : new Date();
-    const results = { succeeded: [], failed: [] };
-
-    for (const orderId of orderIds) {
-      try {
-        const orderRef = db.collection('orders').doc(orderId);
-        const snap = await orderRef.get();
-        if (!snap.exists) {
-          results.failed.push({ orderId, reason: 'not found' });
-          continue;
-        }
-
-        // Don't drag a completed order backwards into an earlier state.
-        const current = snap.data().status;
-        if (['delivered', 'cancelled', 'refunded'].includes(current)) {
-          results.failed.push({ orderId, reason: `cannot bulk-change a ${current} order` });
-          continue;
-        }
-
-        await orderRef.update({ status, updatedAt: timestamp, updatedBy: req.user.uid });
-        results.succeeded.push(orderId);
-      } catch (e) {
-        results.failed.push({ orderId, reason: e.message });
-      }
-    }
-
-    res.json({
-      success: true,
-      message: `${results.succeeded.length} of ${orderIds.length} orders updated to ${status}`,
-      data: results
-    });
-  } catch (error) {
-    console.error('Error bulk updating orders:', error.message);
-    res.status(500).json({ error: 'Failed to bulk update orders' });
   }
 });
 

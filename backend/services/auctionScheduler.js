@@ -216,8 +216,18 @@ class AuctionScheduler {
         await batch.commit();
         console.log(`Updated bid statuses for auction ${productId}`);
       } else {
-        // No bids - auction ended without winner
-        updates.status = 'ended_no_bids';
+        /**
+         * No bids — the auction still ENDED.
+         *
+         * This used to set status to 'ended_no_bids', a value nothing in the
+         * frontend recognises: the seller's "Ended" tab filters on 'ended', the
+         * status badge map has no entry for it, and the admin ended-count
+         * ignores it. The effect was that an auction nobody bid on vanished from
+         * every view the seller had. The status stays canonical and the fact
+         * that it drew no bids is recorded alongside it.
+         */
+        updates.status = 'ended';
+        updates.endedWithoutBids = true;
         await db.collection('products').doc(productId).update(updates);
         console.log(`Auction ${productId} ended with no bids`);
       }
