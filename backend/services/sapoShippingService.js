@@ -462,7 +462,7 @@ class SAPOShippingService {
 
   /**
    * Create shipment for an order
-   * Maps Quicksell order data to SAPO API format
+   * Maps VeriSpine order data to SAPO API format
    *
    * Order Data Mapping:
    * - order.id → customerRef (for tracking generation)
@@ -499,7 +499,7 @@ class SAPOShippingService {
 
       // Get seller contact info from order
       const seller = order.seller || {};
-      const sellerFirstName = seller.firstName || (seller.name ? seller.name.split(' ')[0] : 'Quicksell');
+      const sellerFirstName = seller.firstName || (seller.name ? seller.name.split(' ')[0] : 'VeriSpine');
 
       // Get structured pickup data (new orders have order.pickup object)
       const pickup = order.pickup || null;
@@ -535,14 +535,14 @@ class SAPOShippingService {
         // Pickup address = Product location (where the item is)
         // Seller contact info from seller profile
         sender: {
-          name: seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'Quicksell Seller',
+          name: seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'VeriSpine Seller',
           firstName: sellerFirstName,
           address: pickup?.address || (order.pickupLocation || 'South Africa'),
           city: pickup?.city || legacyCity || 'Johannesburg',
           province: pickup?.province || legacyProvince || 'Gauteng',
           postalCode: pickup?.postalCode || seller.postalCode || '',
           phone: seller.phone || '0000000000',
-          email: seller.email || 'seller@quicksell.co.za'
+          email: seller.email || 'seller@verispinejointcenters.com'
         },
 
         // Recipient (Buyer) information
@@ -611,7 +611,7 @@ class SAPOShippingService {
             description: 'Item received from customer',
             timestamp: new Date().toISOString(),
             office: this.config.officeCd,
-            officeName: 'Quicksell'
+            officeName: 'VeriSpine'
           }],
 
           // Mock flag for testing

@@ -45,8 +45,8 @@ const TOKEN_REQUESTER_KEY = process.env.TRADEROOT_KEY || '';
 const MERCHANT_ID = process.env.TRADEROOT_MERCHANT_ID || '';
 const WALLET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
-const CALLBACK_URL = (process.env.FRONTEND_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '') + '/payment/traderoot-callback?step=issue';
-const NOTIFICATION_URL = (process.env.SERVER_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '') + '/api/payments/traderoot/notification';
+const CALLBACK_URL = (process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '') + '/payment/traderoot-callback?step=issue';
+const NOTIFICATION_URL = (process.env.SERVER_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '') + '/api/payments/traderoot/notification';
 
 const IS_UAT = /travelbuy\.traderoot\.com:9973/.test(BASE_URL);
 

@@ -618,7 +618,7 @@ router.post('/quote', async (req, res) => {
       }));
       const rate = await shiplogic.calculateShippingRate({
         collection: {
-          type: 'business', company: 'Quicksell', street_address: pickup.address, local_area: '',
+          type: 'business', company: 'VeriSpine', street_address: pickup.address, local_area: '',
           city: pickup.city, zone: pickup.province, country: 'ZA', code: pickup.postalCode,
         },
         delivery: {

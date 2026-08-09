@@ -314,7 +314,7 @@ const Products = () => {
       <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6">
         <h1 className="text-3xl font-bold text-gray-900">Browse Auctions</h1>
         <p className="text-gray-600 mt-2">
-          Discover amazing deals on unique items from Quicksell Official
+          Discover amazing deals on unique items from VeriSpine Official
         </p>
       </div>
 

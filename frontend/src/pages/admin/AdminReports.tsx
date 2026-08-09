@@ -15,7 +15,7 @@ import { formatPrice } from '../../utils/formatters'
 import { exportReportPDF, exportReportExcel } from '../../utils/reportExport'
 import axios from '../../config/axios'
 
-const CHART_COLORS = ['#f97316', '#0ea5e9', '#10b981', '#8b5cf6', '#6b7280', '#ef4444', '#14b8a6', '#f59e0b']
+const CHART_COLORS = ['#1A8C7A', '#1E4F7A', '#C9973A', '#22B89E', '#6b7280', '#ef4444', '#14b8a6', '#f59e0b']
 
 interface AnalyticsData {
   dailyRevenue: Record<string, number>
@@ -121,8 +121,8 @@ const AdminReports = () => {
   // User distribution for pie chart
   const userDistribution = dashboard?.stats?.users
     ? [
-        { name: 'Buyers', value: dashboard.stats.users.buyers, color: '#0ea5e9' },
-        { name: 'Sellers', value: dashboard.stats.users.sellers, color: '#f97316' },
+        { name: 'Buyers', value: dashboard.stats.users.buyers, color: '#C9973A' },
+        { name: 'Sellers', value: dashboard.stats.users.sellers, color: '#1A8C7A' },
         { name: 'Admins', value: dashboard.stats.users.admins, color: '#8b5cf6' }
       ].filter(d => d.value > 0)
     : []
@@ -177,7 +177,7 @@ const AdminReports = () => {
                     <YAxis tickFormatter={(v) => `R${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(value) => formatPrice(Number(value))} />
                     <Legend />
-                    <Line type="monotone" dataKey="revenue" stroke="#f97316" strokeWidth={2} name="Revenue" dot={false} />
+                    <Line type="monotone" dataKey="revenue" stroke="#1A8C7A" strokeWidth={2} name="Revenue" dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -385,7 +385,7 @@ const AdminReports = () => {
                     <YAxis tickFormatter={(v) => `R${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(value) => formatPrice(Number(value))} />
                     <Legend />
-                    <Line type="monotone" dataKey="revenue" stroke="#f97316" strokeWidth={2} name="Revenue" dot={false} />
+                    <Line type="monotone" dataKey="revenue" stroke="#1A8C7A" strokeWidth={2} name="Revenue" dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (

@@ -111,8 +111,8 @@ async function testCall(label, endpoint, payload) {
     assuranceData,
     sessionId,
     peripheryData: {
-      callbackUrl: 'https://quicksell.co.za/payment/callback',
-      notificationUrl: 'https://quicksell.co.za/api/payments/traderoot/notification'
+      callbackUrl: 'https://verispinejointcenters.com/payment/callback',
+      notificationUrl: 'https://verispinejointcenters.com/api/payments/traderoot/notification'
     }
   });
 

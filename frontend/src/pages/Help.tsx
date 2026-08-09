@@ -13,7 +13,7 @@ const Help = () => {
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Help Centre</h1>
       <p className="text-gray-600 mb-8">
-        Find answers and learn how Quicksell works. Most questions are covered in our{' '}
+        Find answers and learn how VeriSpine works. Most questions are covered in our{' '}
         <Link to="/faq" className="text-primary-600 hover:underline">FAQ</Link>.
       </p>
 
@@ -31,7 +31,7 @@ const Help = () => {
         <h2 className="font-semibold text-gray-900 mb-1">Still need help?</h2>
         <p className="text-sm text-gray-600">
           Email our support team at{' '}
-          <a href="mailto:info@quicksellsa.co.za" className="text-primary-600 hover:underline">info@quicksellsa.co.za</a>{' '}
+          <a href="mailto:info@verispinejointcenters.com" className="text-primary-600 hover:underline">info@verispinejointcenters.com</a>{' '}
           and we'll get back to you. See also our{' '}
           <Link to="/terms" className="text-primary-600 hover:underline">Terms</Link> and{' '}
           <Link to="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>.

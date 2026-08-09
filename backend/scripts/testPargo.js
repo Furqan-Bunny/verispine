@@ -97,17 +97,17 @@ async function main() {
   const externalReference = `QS-TEST-${Date.now()}`;
   const createBody = { data: { type: 'W2P', attributes: {
     externalReference,
-    packageDescription: 'Quicksell test parcel',
+    packageDescription: 'VeriSpine test parcel',
     pickupPointCode,
     cubicWeight, deadWeight,
     communications: { name: pargo.supportName, supportPhoneNumber: pargo.supportPhone, supportEmail: pargo.supportEmail },
     consignee,
     warehouseAddress: {
-      companyName: 'Quicksell Test Seller',
+      companyName: 'VeriSpine Test Seller',
       address1: '17 Woodlands Road', address2: '',
       suburb: 'Woodstock', postalCode: '7925', city: 'Cape Town',
       country: 'ZA', province: 'Western Cape',
-      contactName: 'Quicksell Test Seller', email: pargo.supportEmail, phoneNumber: pargo.supportPhone,
+      contactName: 'VeriSpine Test Seller', email: pargo.supportEmail, phoneNumber: pargo.supportPhone,
     },
   } } };
   const created = await axios.post(`${base}/orders`, createBody, { headers: await headers(), timeout: 30000 });

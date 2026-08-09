@@ -371,7 +371,7 @@ router.get('/validate/:code', async (req, res) => {
       const userData = userDoc.data();
       return res.json({
         valid: true,
-        inviterName: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : userData.displayName || 'A Quicksell User',
+        inviterName: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : userData.displayName || 'A VeriSpine User',
         inviterEmail: maskEmail(userData.email),
         type: 'direct'
       });

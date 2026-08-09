@@ -48,7 +48,7 @@ class ShipLogicShippingService {
     return {
       address: {
         type: 'business',
-        company: seller.name || 'Quicksell Seller',
+        company: seller.name || 'VeriSpine Seller',
         street_address: pickup.address || order.pickupLocation || '',
         local_area: pickup.suburb || '',
         city: pickup.city || '',
@@ -57,9 +57,9 @@ class ShipLogicShippingService {
         code: pickup.postalCode || seller.postalCode || '',
       },
       contact: {
-        name: seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'Quicksell Seller',
+        name: seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'VeriSpine Seller',
         mobile_number: seller.phone || '',
-        email: seller.email || 'seller@quicksell.co.za',
+        email: seller.email || 'seller@verispinejointcenters.com',
       },
     };
   }
@@ -245,8 +245,8 @@ class ShipLogicShippingService {
           status: 'Order Shipped',
           description: 'Shipment created with ShipLogic',
           timestamp: new Date().toISOString(),
-          office: 'Quicksell',
-          officeName: 'Quicksell',
+          office: 'VeriSpine',
+          officeName: 'VeriSpine',
         }],
         isMock: this.mock,
       });

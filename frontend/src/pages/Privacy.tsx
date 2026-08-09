@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-// Privacy Policy — POPIA-aligned. Plain-language summary of how Quicksell handles personal
+// Privacy Policy — POPIA-aligned. Plain-language summary of how VeriSpine handles personal
 // information. This should be reviewed by the business/legal before launch.
 const Privacy = () => {
   const lastUpdated = '22 June 2026'
@@ -12,7 +12,7 @@ const Privacy = () => {
 
       <div className="space-y-6 text-gray-700 leading-relaxed">
         <p>
-          Quicksell ("we", "us") respects your privacy and is committed to protecting your personal
+          VeriSpine ("we", "us") respects your privacy and is committed to protecting your personal
           information in line with the Protection of Personal Information Act, 2013 (POPIA). This policy
           explains what we collect, why, and your rights.
         </p>
@@ -39,7 +39,7 @@ const Privacy = () => {
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">3. Sharing</h2>
           <p>
-            We share information only with the service providers needed to run Quicksell — payment
+            We share information only with the service providers needed to run VeriSpine — payment
             gateways, courier/shipping partners, and our hosting and email providers — and where required
             by law. These parties may only use it to provide their service to us.
           </p>
@@ -48,7 +48,7 @@ const Privacy = () => {
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">4. Payment & card data</h2>
           <p>
-            Card details are entered on our payment provider's secure, 3-D Secure hosted page. Quicksell
+            Card details are entered on our payment provider's secure, 3-D Secure hosted page. VeriSpine
             does not store your full card number.
           </p>
         </section>
@@ -66,7 +66,7 @@ const Privacy = () => {
           <p>
             Under POPIA you may request access to, correction of, or deletion of your personal
             information, and you may object to certain processing. To exercise these rights, contact us at{' '}
-            <a href="mailto:info@quicksellsa.co.za" className="text-primary-600 hover:underline">info@quicksellsa.co.za</a>.
+            <a href="mailto:info@verispinejointcenters.com" className="text-primary-600 hover:underline">info@verispinejointcenters.com</a>.
           </p>
         </section>
 

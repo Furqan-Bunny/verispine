@@ -243,13 +243,13 @@ async function seedDatabase() {
     console.log('Creating admin user...');
     let adminUser;
     try {
-      adminUser = await auth.getUserByEmail('admin@quicksell.com');
+      adminUser = await auth.getUserByEmail('admin@verispinejointcenters.com');
       console.log('Admin user already exists');
     } catch (error) {
       adminUser = await auth.createUser({
-        email: 'admin@quicksell.com',
+        email: 'admin@verispinejointcenters.com',
         password: 'Admin@123456',
-        displayName: 'Quicksell Admin',
+        displayName: 'VeriSpine Admin',
         emailVerified: true
       });
       console.log('✅ Admin user created');
@@ -298,7 +298,7 @@ async function seedDatabase() {
       productBatch.set(productRef, {
         ...product,
         sellerId: adminUser.uid,
-        sellerName: 'Quicksell Official',
+        sellerName: 'VeriSpine Official',
         verified: true,
         averageRating: 4.8,
         reviewCount: Math.floor(Math.random() * 50) + 10,
@@ -384,7 +384,7 @@ async function seedDatabase() {
 
     console.log('\n🎉 Database seeding completed successfully!');
     console.log('\n📝 Test Accounts:');
-    console.log('Admin: admin@quicksell.com / Admin@123456');
+    console.log('Admin: admin@verispinejointcenters.com / Admin@123456');
     console.log('Buyer: john.buyer@example.com / Test@123456');
     console.log('Seller: jane.seller@example.com / Test@123456');
     

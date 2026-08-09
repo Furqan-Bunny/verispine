@@ -51,9 +51,9 @@ const testSMTP = async () => {
     // Send test email
     console.log('Sending test email...');
     const info = await transporter.sendMail({
-      from: `"${process.env.BREVO_SENDER_NAME || 'Quicksell'}" <${process.env.BREVO_SENDER_EMAIL || 'noreply@quicksell.co.za'}>`,
+      from: `"${process.env.BREVO_SENDER_NAME || 'VeriSpine'}" <${process.env.BREVO_SENDER_EMAIL || 'noreply@verispinejointcenters.com'}>`,
       to: testRecipient,
-      subject: '🚀 Brevo SMTP Test - Quicksell',
+      subject: '🚀 Brevo SMTP Test - VeriSpine',
       text: 'This is a test email sent via Brevo SMTP.',
       html: `
         <!DOCTYPE html>
@@ -73,7 +73,7 @@ const testSMTP = async () => {
               padding: 30px;
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #1A8C7A 0%, #0B2A45 100%);
               color: white;
               padding: 20px;
               text-align: center;
@@ -118,15 +118,15 @@ const testSMTP = async () => {
                 <li><strong>SMTP Server:</strong> smtp-relay.brevo.com</li>
                 <li><strong>Port:</strong> 587</li>
                 <li><strong>Authentication:</strong> Successful</li>
-                <li><strong>Sender:</strong> ${process.env.BREVO_SENDER_EMAIL || 'noreply@quicksell.co.za'}</li>
+                <li><strong>Sender:</strong> ${process.env.BREVO_SENDER_EMAIL || 'noreply@verispinejointcenters.com'}</li>
               </ul>
             </div>
             
-            <p>Your Quicksell email system is ready to send transactional emails!</p>
+            <p>Your VeriSpine email system is ready to send transactional emails!</p>
             
             <div class="footer">
-              <p>This is a test email from Quicksell</p>
-              <p>© 2024 Quicksell. All rights reserved.</p>
+              <p>This is a test email from VeriSpine</p>
+              <p>© 2024 VeriSpine. All rights reserved.</p>
             </div>
           </div>
         </body>

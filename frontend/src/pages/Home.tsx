@@ -92,7 +92,7 @@ const Home = () => {
             className="max-w-4xl mx-auto text-center text-white"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Welcome to Quicksell Auctions
+              Welcome to VeriSpine Joint Centers
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white/90">
               South Africa's Premier Online Auction Platform
@@ -105,7 +105,7 @@ const Home = () => {
                 Register Now
               </Link>
               <a
-                href="https://quicksellsurvey.lovable.app"
+                href="https://verispinesurvey.lovable.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary bg-white/15 backdrop-blur text-white border border-white/40 hover:bg-white/25 px-8 py-3 text-lg inline-flex items-center justify-center gap-2"
@@ -290,7 +290,7 @@ const Home = () => {
             Ready to Start Bidding?
           </h2>
           <p className="text-xl text-gray-700 mb-8">
-            Join thousands of buyers and find amazing deals on Quicksell
+            Join thousands of buyers and find amazing deals on VeriSpine
           </p>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
             <p className="text-yellow-800 font-semibold">

@@ -1,7 +1,7 @@
 {
-  "name": "quicksell-backend",
+  "name": "verispine-backend",
   "version": "1.0.0",
-  "description": "Backend for Quicksell Auction Platform",
+  "description": "Backend for VeriSpine Auction Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

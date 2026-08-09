@@ -1,6 +1,6 @@
 const path = require('path');
 
-// Data extracted from RTT's official "Quick Sell Rate Calculator - June 2026" (Door-to-Door / CTC).
+// Data extracted from RTT's official "VeriSpine Rate Calculator - June 2026" (Door-to-Door / CTC).
 //  - rtt-area-table.json : { postalCode: { h: costingHubCode, r: route(MAIN|D OUTL|F OUTL), x: highRisk(0/1), z: SANRAL zone } }
 //  - rtt-rate-card.json  : matrix rates, minimums, surcharges, fuel %, VAT, SANRAL zone rates
 const area = require(path.join(__dirname, '..', 'data', 'rtt-area-table.json'));

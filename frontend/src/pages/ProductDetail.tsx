@@ -402,7 +402,7 @@ const ProductDetail = () => {
   const handleShare = async () => {
     const url = window.location.href
     const title = product?.title || 'Check out this product'
-    const text = product?.description?.slice(0, 100) || 'Check out this product on QuickSell'
+    const text = product?.description?.slice(0, 100) || 'Check out this product on VeriSpine'
 
     try {
       if (navigator.share) {

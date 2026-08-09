@@ -14,7 +14,7 @@ async function createIndexes() {
   // Note: Indexes can't be created programmatically via Admin SDK
   // They must be created via Firebase Console or deployed via Firebase CLI
   
-  console.log('\n📌 Required indexes for Quicksell:\n');
+  console.log('\n📌 Required indexes for VeriSpine:\n');
   
   const indexes = [
     {

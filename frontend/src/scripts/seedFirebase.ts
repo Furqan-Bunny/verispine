@@ -15,7 +15,7 @@ import { auth, db } from '../config/firebase';
 // Sample users
 const sampleUsers = [
   {
-    email: 'admin@quicksell.com',
+    email: 'admin@verispinejointcenters.com',
     password: 'Admin123!',
     username: 'admin',
     firstName: 'Admin',
@@ -411,7 +411,7 @@ async function seedFirebase() {
   console.log(`- Users created: ${createdUsers.length}`);
   console.log(`- Products created: ${createdProducts.length}`);
   console.log('\n🔑 Login credentials:');
-  console.log('Admin: admin@quicksell.com / Admin123!');
+  console.log('Admin: admin@verispinejointcenters.com / Admin123!');
   console.log('User 1: john.doe@example.com / Password123!');
   console.log('User 2: jane.smith@example.com / Password123!');
 }

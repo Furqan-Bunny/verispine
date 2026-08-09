@@ -22,7 +22,7 @@ const db = admin.firestore();
 
 async function main() {
   // Args
-  const email = process.argv[2] || 'sellertest@quicksell.co.za';
+  const email = process.argv[2] || 'sellertest@verispinejointcenters.com';
   const password = process.argv[3] || 'SellerTest123!';
   const firstName = 'Seller';
   const lastName = 'Tester';

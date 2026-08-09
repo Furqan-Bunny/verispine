@@ -39,13 +39,13 @@ class AddPayService {
       const reference = this.generateReference();
       const headers = this.getHeaders();
 
-      const serverUrl = (process.env.SERVER_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '');
-      const frontendUrl = (process.env.FRONTEND_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '');
+      const serverUrl = (process.env.SERVER_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
+      const frontendUrl = (process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
 
       // Step 1: Create transaction
       const txPayload = {
         reference: reference,
-        description: data.description || 'Quicksell Purchase',
+        description: data.description || 'VeriSpine Purchase',
         amount: {
           value: parseFloat(data.amount),
           currency_code: data.currency || 'ZAR'

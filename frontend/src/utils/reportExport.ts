@@ -60,7 +60,7 @@ export function exportReportPDF(
   // Header
   doc.setFontSize(20)
   doc.setTextColor(249, 115, 22) // orange-500
-  doc.text('Quicksell', 14, y)
+  doc.text('VeriSpine', 14, y)
   y += 10
 
   doc.setFontSize(14)
@@ -277,7 +277,7 @@ export function exportReportPDF(
     }
   }
 
-  doc.save(`quicksell-${reportType}-report-${todayStr()}.pdf`)
+  doc.save(`verispine-${reportType}-report-${todayStr()}.pdf`)
 }
 
 // ─── Excel Export ────────────────────────────────────────────────────────────
@@ -434,5 +434,5 @@ export function exportReportExcel(
     }
   }
 
-  XLSX.writeFile(wb, `quicksell-${reportType}-report-${todayStr()}.xlsx`)
+  XLSX.writeFile(wb, `verispine-${reportType}-report-${todayStr()}.xlsx`)
 }

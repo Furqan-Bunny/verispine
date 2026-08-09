@@ -230,7 +230,7 @@ const AdminLayout = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">Admin Panel</h2>
-                <p className="text-primary-100 text-sm">Quicksell Management</p>
+                <p className="text-primary-100 text-sm">VeriSpine Management</p>
               </div>
             </div>
             {/* Close button */}
@@ -358,7 +358,7 @@ const AdminLayout = () => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-900">Administrator</p>
-              <p className="text-xs text-gray-500">info@quicksellsa.co.za</p>
+              <p className="text-xs text-gray-500">info@verispinejointcenters.com</p>
             </div>
           </div>
         </div>

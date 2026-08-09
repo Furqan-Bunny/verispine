@@ -10,7 +10,13 @@
   }
 
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased text-gray-900;
+  }
+
+  /* Serif display face for headings — mirrors the VeriSpine brand voice,
+     where key words are set in an italic serif for emphasis. */
+  h1, h2, h3 {
+    @apply font-display;
   }
 }
 
@@ -21,6 +27,11 @@
 
   .btn-secondary {
     @apply bg-secondary-600 text-white px-4 py-2 rounded-lg hover:bg-secondary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Gold CTA — used for high-intent actions (Place Bid, Buy Now). */
+  .btn-accent {
+    @apply bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-outline {
@@ -49,20 +60,31 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 
+  /* Navy -> teal, matching the brand gradient on the client's site. */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-800 to-secondary-600;
   }
 
   .bg-gradient-primary {
-    @apply bg-gradient-to-br from-primary-500 to-primary-700;
+    @apply bg-gradient-to-br from-primary-700 to-primary-900;
   }
 
   .bg-gradient-secondary {
     @apply bg-gradient-to-br from-secondary-500 to-secondary-700;
+  }
+
+  /* The signature brand gradient: teal into deep navy. */
+  .bg-gradient-brand {
+    @apply bg-gradient-to-br from-secondary-600 to-primary-800;
+  }
+
+  /* Warm neutral section background. */
+  .bg-surface {
+    @apply bg-cream;
   }
 }

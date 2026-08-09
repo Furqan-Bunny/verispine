@@ -21,7 +21,7 @@ const testEmail = async () => {
     console.log('Please add the following to your .env file:');
     console.log('RESEND_API_KEY=your_resend_api_key');
     console.log('RESEND_FROM_EMAIL=noreply@yourdomain.com');
-    console.log('RESEND_FROM_NAME=Quicksell\n');
+    console.log('RESEND_FROM_NAME=VeriSpine\n');
     process.exit(1);
   }
 
@@ -118,7 +118,7 @@ const testEmail = async () => {
 
 // Run test
 console.log('═══════════════════════════════════════');
-console.log('  Quicksell Email Service Test Suite');
+console.log('  VeriSpine Email Service Test Suite');
 console.log('        (Powered by Resend)');
 console.log('═══════════════════════════════════════\n');
 

@@ -24,9 +24,9 @@ class PargoShippingService {
     this.username = process.env.PARGO_USERNAME || '';
     this.password = process.env.PARGO_PASSWORD || '';
     this.mapToken = process.env.PARGO_MAP_TOKEN || '';
-    this.supportName = process.env.PARGO_SUPPORT_NAME || 'Quicksell';
+    this.supportName = process.env.PARGO_SUPPORT_NAME || 'VeriSpine';
     this.supportPhone = process.env.PARGO_SUPPORT_PHONE || '0000000000';
-    this.supportEmail = process.env.PARGO_SUPPORT_EMAIL || 'info@quicksellsa.co.za';
+    this.supportEmail = process.env.PARGO_SUPPORT_EMAIL || 'info@verispinejointcenters.com';
     this.client = axios.create({ baseURL: this.baseUrl, headers: { 'Content-Type': 'application/json' }, timeout: 30000 });
     this._token = null;      // { access, refresh, exp(ms) }
   }
@@ -177,7 +177,7 @@ class PargoShippingService {
     const { product, seller } = await this.loadContext(order);
     const pk = (product.shipping) || order.pickup || {};
     const sellerName = seller.businessName || seller.sellerProfile?.businessName
-      || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.username || 'Quicksell Seller';
+      || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.username || 'VeriSpine Seller';
     const { firstName, lastName } = this.splitName(shipping.fullName);
     const { deadWeight, cubicWeight } = this.weights(order, product);
 

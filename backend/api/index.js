@@ -5,7 +5,7 @@ const app = require('../server');
 module.exports = (req, res) => {
   // Set CORS headers for all requests
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', 'https://quick-sell-rosy.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://verispine-rosy.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',

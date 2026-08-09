@@ -1,7 +1,7 @@
 /**
  * City-based purchase restriction (TEMPORARY — stopgap until DHL/nationwide courier).
  *
- * Quicksell currently only fulfils orders within its operating cities. Each product
+ * VeriSpine currently only fulfils orders within its operating cities. Each product
  * is tied to one supported city (product.pickupCity); only buyers in that same city
  * may bid or buy. This whole module is meant to be deleted once nationwide delivery
  * is integrated — disable instantly with CITY_RESTRICTION_ENABLED=false.

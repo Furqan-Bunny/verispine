@@ -18,8 +18,8 @@ export const useAuthPersistence = () => {
     // Handle browser refresh - restore from sessionStorage as backup
     const handleBeforeUnload = () => {
       if (user && token) {
-        sessionStorage.setItem('quicksell_token', token)
-        sessionStorage.setItem('quicksell_user', JSON.stringify(user))
+        sessionStorage.setItem('verispine_token', token)
+        sessionStorage.setItem('verispine_user', JSON.stringify(user))
       }
     }
 
@@ -27,16 +27,16 @@ export const useAuthPersistence = () => {
       // Try to restore from sessionStorage if localStorage is empty
       const localToken = localStorage.getItem('token')
       if (!localToken) {
-        const sessionToken = sessionStorage.getItem('quicksell_token')
-        const sessionUser = sessionStorage.getItem('quicksell_user')
+        const sessionToken = sessionStorage.getItem('verispine_token')
+        const sessionUser = sessionStorage.getItem('verispine_user')
         
         if (sessionToken && sessionUser) {
           localStorage.setItem('token', sessionToken)
           localStorage.setItem('user', sessionUser)
           
           // Clear session storage after restoring
-          sessionStorage.removeItem('quicksell_token')
-          sessionStorage.removeItem('quicksell_user')
+          sessionStorage.removeItem('verispine_token')
+          sessionStorage.removeItem('verispine_user')
           
           // Reload to reinitialize auth
           window.location.reload()

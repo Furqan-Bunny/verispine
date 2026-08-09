@@ -163,7 +163,7 @@ const Affiliate: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Join the Affiliate Program</h1>
           <p className="text-lg text-gray-600 mb-8">
-            Earn 5% commission on every purchase made by people you refer to Quicksell!
+            Earn 5% commission on every purchase made by people you refer to VeriSpine!
           </p>
         </div>
 
@@ -221,7 +221,7 @@ const Affiliate: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Affiliate Program</h1>
         <p className="mt-2 text-gray-600">
-          Invite friends to join Quicksell and earn 5% commission on their purchases!
+          Invite friends to join VeriSpine and earn 5% commission on their purchases!
         </p>
       </div>
 

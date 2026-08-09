@@ -193,8 +193,8 @@ const SellerDashboard = () => {
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#ea580c" strokeWidth={2} dot={false} name="Revenue (R)" />
-                <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#0284c7" strokeWidth={2} dot={false} name="Orders" />
+                <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#1A8C7A" strokeWidth={2} dot={false} name="Revenue (R)" />
+                <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#1E4F7A" strokeWidth={2} dot={false} name="Orders" />
               </LineChart>
             </ResponsiveContainer>
           )}

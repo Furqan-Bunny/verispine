@@ -1,10 +1,10 @@
 /**
- * One-time migration: move all admin-created products under a "Quicksell Official" seller.
+ * One-time migration: move all admin-created products under a "VeriSpine Official" seller.
  *
  * Steps:
- *   1. Ensure user doc 'quicksell-official' exists (role=seller, sellerProfile populated, verifiedSeller=true).
+ *   1. Ensure user doc 'verispine-official' exists (role=seller, sellerProfile populated, verifiedSeller=true).
  *   2. Find all products whose sellerId belongs to a user with role='admin'.
- *   3. Reassign those products to sellerId='quicksell-official' (and update sellerName).
+ *   3. Reassign those products to sellerId='verispine-official' (and update sellerName).
  *
  * Idempotent — safe to re-run.
  *
@@ -22,12 +22,12 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-const OFFICIAL_USER_ID = 'quicksell-official';
-const OFFICIAL_BUSINESS_NAME = 'Quicksell Official';
-const OFFICIAL_SLUG = 'quicksell-official';
+const OFFICIAL_USER_ID = 'verispine-official';
+const OFFICIAL_BUSINESS_NAME = 'VeriSpine Official';
+const OFFICIAL_SLUG = 'verispine-official';
 
 async function ensureOfficialSeller() {
-  console.log('=== Ensuring Quicksell Official seller exists ===');
+  console.log('=== Ensuring VeriSpine Official seller exists ===');
   const userRef = db.collection('users').doc(OFFICIAL_USER_ID);
   const userDoc = await userRef.get();
   const ts = admin.firestore.FieldValue.serverTimestamp();
@@ -35,9 +35,9 @@ async function ensureOfficialSeller() {
   if (!userDoc.exists) {
     await userRef.set({
       uid: OFFICIAL_USER_ID,
-      username: 'quicksell',
-      email: 'official@quicksell.co.za',
-      firstName: 'Quicksell',
+      username: 'verispine',
+      email: 'official@verispinejointcenters.com',
+      firstName: 'VeriSpine',
       lastName: 'Official',
       role: 'seller',
       balance: 0,
@@ -47,12 +47,12 @@ async function ensureOfficialSeller() {
       sellerProfile: {
         businessName: OFFICIAL_BUSINESS_NAME,
         slug: OFFICIAL_SLUG,
-        description: 'Official Quicksell-curated listings.',
+        description: 'Official VeriSpine-curated listings.',
         logoUrl: null,
         bannerUrl: null,
-        contactEmail: 'info@quicksellsa.co.za',
-        returnPolicy: 'Returns handled per Quicksell platform terms.',
-        shippingPolicy: 'Ships via SAPO from Quicksell hubs.',
+        contactEmail: 'info@verispinejointcenters.com',
+        returnPolicy: 'Returns handled per VeriSpine platform terms.',
+        shippingPolicy: 'Ships via SAPO from VeriSpine hubs.',
         verifiedSeller: true,
         memberSinceAsSeller: ts,
         totalSales: 0,
@@ -64,7 +64,7 @@ async function ensureOfficialSeller() {
       createdAt: ts,
       updatedAt: ts
     });
-    console.log('  ✓ Created Quicksell Official seller');
+    console.log('  ✓ Created VeriSpine Official seller');
   } else {
     // Ensure required fields are present (idempotent top-up)
     const data = userDoc.data();
@@ -76,15 +76,15 @@ async function ensureOfficialSeller() {
     if (Object.keys(updates).length > 0) {
       updates.updatedAt = ts;
       await userRef.update(updates);
-      console.log('  ✓ Updated Quicksell Official seller fields:', Object.keys(updates).join(', '));
+      console.log('  ✓ Updated VeriSpine Official seller fields:', Object.keys(updates).join(', '));
     } else {
-      console.log('  • Quicksell Official seller already configured');
+      console.log('  • VeriSpine Official seller already configured');
     }
   }
 }
 
 async function migrateProducts() {
-  console.log('\n=== Migrating admin-owned products to Quicksell Official ===');
+  console.log('\n=== Migrating admin-owned products to VeriSpine Official ===');
 
   // 1. Find all admin user IDs
   const adminsSnap = await db.collection('users').where('role', '==', 'admin').get();
@@ -131,7 +131,7 @@ async function migrateProducts() {
 }
 
 async function main() {
-  console.log('Starting Quicksell Official migration...\n');
+  console.log('Starting VeriSpine Official migration...\n');
   try {
     await ensureOfficialSeller();
     await migrateProducts();

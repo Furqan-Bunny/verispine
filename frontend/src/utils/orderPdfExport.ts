@@ -57,7 +57,7 @@ export function exportOrderPDF(order: any) {
   // ─── Header ─────────────────────────────────────────────────────────────
   doc.setFontSize(20)
   doc.setTextColor(234, 88, 12) // primary-600 orange
-  doc.text('Quicksell', left, y)
+  doc.text('VeriSpine', left, y)
 
   doc.setFontSize(10)
   doc.setTextColor(100, 100, 100)
@@ -248,7 +248,7 @@ export function exportOrderPDF(order: any) {
     const ph = doc.internal.pageSize.getHeight()
     doc.setFontSize(8)
     doc.setTextColor(150, 150, 150)
-    doc.text('Quicksell — quicksell.co.za', left, ph - 10)
+    doc.text('VeriSpine — verispinejointcenters.com', left, ph - 10)
     doc.text(`Page ${i} of ${pageCount}`, pageWidth - left, ph - 10, { align: 'right' })
   }
 

@@ -23,7 +23,7 @@ class SocketService {
           "http://localhost:3010",
           "http://localhost:5173",
           "https://quicksell-80aad.web.app",
-          "https://quicksell-80aad--quicksell-5ar9e0y8.web.app",
+          "https://quicksell-80aad--verispine-5ar9e0y8.web.app",
           "https://quicksell-80aad.firebaseapp.com"
         ],
         methods: ["GET", "POST"],

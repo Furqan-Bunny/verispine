@@ -84,7 +84,7 @@ function App() {
   // Only show loading spinner if we don't have auth from localStorage
   // and Firebase hasn't initialized yet
   if (!isFirebaseInitialized && isLoading && !isAuthenticated) {
-    return <LoadingSpinner message="Initializing Quicksell..." />
+    return <LoadingSpinner message="Initializing VeriSpine..." />
   }
 
   return (

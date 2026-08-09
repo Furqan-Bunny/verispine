@@ -27,9 +27,9 @@ const AdminSettings = () => {
   
   // Settings state
   const [settings, setSettings] = useState({
-    platformName: 'Quicksell',
-    platformUrl: 'https://www.quicksellsa.co.za',
-    supportEmail: 'info@quicksellsa.co.za',
+    platformName: 'VeriSpine',
+    platformUrl: 'https://www.verispinejointcenters.com',
+    supportEmail: 'info@verispinejointcenters.com',
     platformFeePercentage: 10,
     minBidIncrement: 100,
     maxAuctionDuration: 30,
@@ -363,7 +363,7 @@ const AdminSettings = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Username</label>
-                <input type="email" defaultValue="info@quicksellsa.co.za" className="input-field" />
+                <input type="email" defaultValue="info@verispinejointcenters.com" className="input-field" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Password</label>

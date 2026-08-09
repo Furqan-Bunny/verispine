@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="VeriSpine">
+  <title>VeriSpine</title>
+  <!-- Brand mark: a stylised spinal column. Four vertebral segments set on a
+       gentle S-curve, descending navy -> teal -> gold to echo the palette. -->
+  <rect width="48" height="48" rx="11" fill="#0B2A45"/>
+  <rect x="17"   y="9"    width="14" height="6" rx="3" fill="#F7F4EF"/>
+  <rect x="15.5" y="17.5" width="14" height="6" rx="3" fill="#F7F4EF"/>
+  <rect x="16.5" y="26"   width="15" height="6" rx="3" fill="#22B89E"/>
+  <rect x="19"   y="34.5" width="13" height="6" rx="3" fill="#C9973A"/>
+</svg>

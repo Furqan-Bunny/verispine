@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { 
-  ShoppingBagIcon,
+import {
   EnvelopeIcon,
   PhoneIcon,
   MapPinIcon
@@ -15,11 +14,12 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <ShoppingBagIcon className="h-8 w-8 text-primary-400" />
-              <span className="text-2xl font-bold">Quicksell</span>
+              <img src="/logo-light.svg" alt="" className="h-9 w-9" />
+              <span className="text-2xl font-bold font-display">VeriSpine</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Your premier online auction platform. Buy and sell with confidence.
+              Medical equipment and machinery marketplace. Buy, sell and bid on
+              imaging, surgical, rehab and diagnostic equipment from verified sellers.
             </p>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/people/Minz/100091212656085/" target="_blank" rel="noopener noreferrer" className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors">
@@ -69,23 +69,23 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Popular Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/products?category=electronics" className="text-gray-400 hover:text-white transition-colors">
-                  Electronics
+                <Link to="/products?category=imaging-equipment" className="text-gray-400 hover:text-white transition-colors">
+                  Imaging Equipment
                 </Link>
               </li>
               <li>
-                <Link to="/products?category=fashion" className="text-gray-400 hover:text-white transition-colors">
-                  Fashion
+                <Link to="/products?category=surgical-instruments" className="text-gray-400 hover:text-white transition-colors">
+                  Surgical Instruments
                 </Link>
               </li>
               <li>
-                <Link to="/products?category=home" className="text-gray-400 hover:text-white transition-colors">
-                  Home & Garden
+                <Link to="/products?category=patient-monitoring" className="text-gray-400 hover:text-white transition-colors">
+                  Patient Monitoring
                 </Link>
               </li>
               <li>
-                <Link to="/products?category=sports" className="text-gray-400 hover:text-white transition-colors">
-                  Sports & Outdoors
+                <Link to="/products?category=rehab-physical-therapy" className="text-gray-400 hover:text-white transition-colors">
+                  Rehab &amp; Physical Therapy
                 </Link>
               </li>
             </ul>
@@ -97,15 +97,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
                 <MapPinIcon className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-400">Cape Town, South Africa</span>
+                <span className="text-gray-400">Decatur, Georgia, USA</span>
               </li>
               <li className="flex items-center space-x-2">
                 <PhoneIcon className="h-5 w-5 text-gray-400" />
-                <a href="tel:+27213002030" className="text-gray-400 hover:text-white transition-colors">+27 21 300 2030</a>
+                <a href="tel:+14045001675" className="text-gray-400 hover:text-white transition-colors">(404) 500-1675</a>
               </li>
               <li className="flex items-center space-x-2">
                 <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-                <a href="mailto:info@quicksellsa.co.za" className="text-gray-400 hover:text-white transition-colors">info@quicksellsa.co.za</a>
+                <a href="mailto:info@verispinejointcenters.com" className="text-gray-400 hover:text-white transition-colors">info@verispinejointcenters.com</a>
               </li>
             </ul>
           </div>
@@ -114,7 +114,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 Quicksell. All rights reserved.
+            © {new Date().getFullYear()} VeriSpine Joint Centers. All rights reserved.
           </p>
           <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
             <Link to="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">

@@ -10,7 +10,7 @@ const sapoShippingService = require('../services/shippingService'); // provider 
 const emailService = require('../services/resendEmailService');
 
 const frontendBaseUrl = () => {
-  let url = (process.env.FRONTEND_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '');
+  let url = (process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
   if (!/^https?:\/\//.test(url)) url = 'https://' + url;
   return url;
 };
@@ -66,7 +66,7 @@ router.post('/add-funds', authMiddleware, async (req, res) => {
       firstName,
       lastName,
       phone: userData.phone || userData.phoneNumber,
-      description: 'Quicksell Wallet Top-up',
+      description: 'VeriSpine Wallet Top-up',
       returnUrl: `${frontendUrl}/wallet?topup=verify&topup_id=${topupId}`,
       cancelUrl: `${frontendUrl}/wallet?topup=cancelled`
     });

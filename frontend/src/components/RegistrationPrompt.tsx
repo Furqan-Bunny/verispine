@@ -72,7 +72,7 @@ export default function RegistrationPrompt({ isOpen, onClose, action = 'place a 
                   </div>
 
                   <p className="text-sm text-gray-600 text-center mb-6">
-                    You need to be registered and logged in to {action} on Quicksell.
+                    You need to be registered and logged in to {action} on VeriSpine.
                   </p>
 
                   <div className="bg-gray-50 rounded-lg p-4 mb-6">

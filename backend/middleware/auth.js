@@ -56,7 +56,7 @@ const authMiddleware = async (req, res, next) => {
       const firebaseUser = await auth.getUser(decodedToken.uid);
 
       // Check if admin email
-      const isAdmin = firebaseUser.email === 'admin@quicksell.com' ||
+      const isAdmin = firebaseUser.email === 'admin@verispinejointcenters.com' ||
                       decodedToken.admin === true;
 
       // Create user in Firestore

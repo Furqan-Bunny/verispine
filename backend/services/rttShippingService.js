@@ -84,7 +84,7 @@ class RTTShippingService {
   buildAddress({ company, street, suburb, city, postalCode, contactName, phone, email }) {
     const cell = String(phone || '').replace(/\s+/g, '');
     return {
-      strCompanyName: (company || contactName || 'Quicksell').slice(0, 100),
+      strCompanyName: (company || contactName || 'VeriSpine').slice(0, 100),
       strAddressNo: 0,
       intAddressNoType: 'Street',
       strComplexName: '',
@@ -177,7 +177,7 @@ class RTTShippingService {
     const { product, seller } = await this.loadContext(order);
     const pk = (product.shipping) || order.pickup || {};
     const sellerName = seller.businessName || seller.sellerProfile?.businessName
-      || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.username || 'Quicksell Seller';
+      || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.username || 'VeriSpine Seller';
 
     const objPickupAddress = this.buildAddress({
       company: sellerName,
@@ -271,8 +271,8 @@ class RTTShippingService {
           status: 'Order Shipped',
           description: 'Consignment created with RTT',
           timestamp: this.nowIso(),
-          office: 'Quicksell',
-          officeName: 'Quicksell',
+          office: 'VeriSpine',
+          officeName: 'VeriSpine',
         }],
         isMock: this.mock,
       });

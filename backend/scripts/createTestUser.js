@@ -8,7 +8,7 @@ async function createTestUser() {
     console.log('Creating test user...');
     
     // Check if test user already exists
-    const existingUser = await userUtils.findByEmail('test@quicksell.com');
+    const existingUser = await userUtils.findByEmail('test@verispinejointcenters.com');
     if (existingUser) {
       console.log('Test user already exists');
       return;
@@ -17,7 +17,7 @@ async function createTestUser() {
     // Create test user
     const testUser = await userUtils.create({
       username: 'testuser',
-      email: 'test@quicksell.com',
+      email: 'test@verispinejointcenters.com',
       password: 'Test123!', // Will be hashed automatically
       firstName: 'Test',
       lastName: 'User',
@@ -43,7 +43,7 @@ async function createTestUser() {
     });
     
     console.log('Test user created successfully!');
-    console.log('Email: test@quicksell.com');
+    console.log('Email: test@verispinejointcenters.com');
     console.log('Password: Test123!');
     console.log('User ID:', testUser.id);
     

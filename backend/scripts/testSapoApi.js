@@ -62,14 +62,14 @@ const pretty = (label, ok, detail = '') => {
       shippingCost: 60,
       express: false,
       sender: {
-        name: 'Quicksell Seller',
-        firstName: 'Quicksell',
+        name: 'VeriSpine Seller',
+        firstName: 'VeriSpine',
         address: '123 Main Street',
         city: 'Pretoria',
         postalCode: '0001',
         province: 'Gauteng',
         phone: '+27123456789',
-        email: 'sender@quicksell.co.za'
+        email: 'sender@verispinejointcenters.com'
       },
       recipient: {
         name: 'Test Buyer',

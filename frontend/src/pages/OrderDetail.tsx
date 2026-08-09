@@ -289,7 +289,7 @@ const OrderDetail = () => {
       </head>
       <body>
         <div class="header">
-          <h1>Quicksell</h1>
+          <h1>VeriSpine</h1>
           <p>Invoice</p>
         </div>
 
@@ -345,8 +345,8 @@ const OrderDetail = () => {
         </table>
 
         <div class="footer">
-          <p>Thank you for shopping with Quicksell!</p>
-          <p>www.quicksell.co.za | info@quicksellsa.co.za</p>
+          <p>Thank you for shopping with VeriSpine!</p>
+          <p>www.verispinejointcenters.com | info@verispinejointcenters.com</p>
         </div>
 
         <script>
@@ -760,15 +760,15 @@ const OrderDetail = () => {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Seller Information</h2>
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-medium text-gray-900">QuickSell Platform</h3>
+                <h3 className="font-medium text-gray-900">VeriSpine Platform</h3>
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <EnvelopeIcon className="h-4 w-4" />
-                    info@quicksellsa.co.za
+                    info@verispinejointcenters.com
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  All products are sold directly by QuickSell
+                  All products are sold directly by VeriSpine
                 </p>
               </div>
               <button className="btn-outline flex items-center gap-2">

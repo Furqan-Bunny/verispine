@@ -8,7 +8,7 @@ const WALLET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // DNS namespac
 /**
  * Traderoot e-Commerce Payment Gateway (PA0063 v2.16).
  *
- * Quicksell is a website, so it uses the e-Commerce *Immediate Payment* flow:
+ * VeriSpine is a website, so it uses the e-Commerce *Immediate Payment* flow:
  * a single POST /initiateimmediatepayment returns one hosted-page initiationUrl
  * that performs card entry + 3-D Secure + settlement in one journey. The outcome
  * arrives via a server-to-server notification (authoritative) and a browser

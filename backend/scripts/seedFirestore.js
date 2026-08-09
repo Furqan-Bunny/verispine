@@ -43,7 +43,7 @@ const categories = [
 // Sample admin user
 const adminUser = {
   username: 'admin',
-  email: 'admin@quicksell.com',
+  email: 'admin@verispinejointcenters.com',
   firstName: 'Admin',
   lastName: 'User',
   role: 'admin',
@@ -72,7 +72,7 @@ const adminUser = {
 // Sample seller user
 const sellerUser = {
   username: 'seller1',
-  email: 'seller@quicksell.com',
+  email: 'seller@verispinejointcenters.com',
   firstName: 'John',
   lastName: 'Seller',
   role: 'seller',
@@ -101,7 +101,7 @@ const sellerUser = {
 // Sample buyer user
 const buyerUser = {
   username: 'buyer1',
-  email: 'buyer@quicksell.com',
+  email: 'buyer@verispinejointcenters.com',
   firstName: 'Jane',
   lastName: 'Buyer',
   role: 'user',

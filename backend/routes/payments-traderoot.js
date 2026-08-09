@@ -10,8 +10,8 @@ const { finalizeProductAfterPurchase } = require('../utils/productPurchase');
 const { creditWalletTopup } = require('../utils/walletTopup');
 const { v4: uuidv4 } = require('uuid');
 
-const serverUrl = () => (process.env.SERVER_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '');
-const frontendUrl = () => (process.env.FRONTEND_URL || 'https://www.quicksellsa.co.za').replace(/\/+$/, '');
+const serverUrl = () => (process.env.SERVER_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
+const frontendUrl = () => (process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com').replace(/\/+$/, '');
 
 // Log Traderoot's raw response on initiate calls (success AND failure) so the hosted-page flow is
 // visible in logs. Returns the responseCode for a caller-side guard. NOTE: traderootService._post

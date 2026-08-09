@@ -47,7 +47,7 @@ const Login = () => {
         <div className="card">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to continue to Quicksell</p>
+            <p className="text-gray-600">Sign in to continue to VeriSpine</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

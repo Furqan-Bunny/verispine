@@ -1,7 +1,7 @@
 # Brevo Email Integration Setup Guide
 
 ## Overview
-This guide will help you set up Brevo (formerly Sendinblue) for sending transactional emails in Quicksell.
+This guide will help you set up Brevo (formerly Sendinblue) for sending transactional emails in VeriSpine.
 
 ## Why Brevo?
 - **Free tier**: 300 emails/day free forever
@@ -23,14 +23,14 @@ This guide will help you set up Brevo (formerly Sendinblue) for sending transact
 1. Log in to your Brevo dashboard
 2. Navigate to **Settings** → **API Keys**
 3. Click "Generate a new API key"
-4. Name it (e.g., "Quicksell Production")
+4. Name it (e.g., "VeriSpine Production")
 5. Copy the API key - you'll need it for the `.env` file
 
 ### 3. Configure Sender Identity
 1. Go to **Senders & IP** → **Senders**
 2. Click "Add a sender"
 3. Fill in:
-   - **From Name**: Quicksell
+   - **From Name**: VeriSpine
    - **From Email**: noreply@yourdomain.com
    - **Reply-to Email**: support@yourdomain.com
 4. Verify the domain if required
@@ -50,7 +50,7 @@ Add to your `.env` file:
 # Brevo Configuration
 BREVO_API_KEY=xkeysib-YOUR_API_KEY_HERE
 BREVO_SENDER_EMAIL=noreply@yourdomain.com
-BREVO_SENDER_NAME=Quicksell
+BREVO_SENDER_NAME=VeriSpine
 ```
 
 ### 6. Test Email Sending

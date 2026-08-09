@@ -25,7 +25,7 @@ const order = {
   productId: 'uat-product',
   quantity: 1,
   weight: 2,
-  productTitle: 'Quicksell UAT Test Parcel',
+  productTitle: 'VeriSpine UAT Test Parcel',
   amount: 500,
   totalAmount: 550,
   shippingInfo: {
@@ -41,7 +41,7 @@ const order = {
 };
 const product = { weight: 2, dimensions: { length: 30, width: 20, height: 10 } };
 const seller = {
-  businessName: 'Quicksell Test Seller',
+  businessName: 'VeriSpine Test Seller',
   phone: '0210000000',
   email: 'seller@example.com',
 };

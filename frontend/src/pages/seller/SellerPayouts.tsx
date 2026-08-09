@@ -162,7 +162,7 @@ const SellerPayouts = () => {
           <div className="text-sm text-blue-800">
             <p className="font-medium mb-1">Fee Transparency</p>
             <ul className="space-y-1 text-blue-700">
-              <li>• Quicksell takes a <strong>10% platform fee</strong> on each completed sale (you receive 90%)</li>
+              <li>• VeriSpine takes a <strong>10% platform fee</strong> on each completed sale (you receive 90%)</li>
               <li>• Funds become available after the buyer marks the order as delivered</li>
               <li>• You're responsible for any applicable taxes on your earnings</li>
             </ul>

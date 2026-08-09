@@ -1,6 +1,6 @@
-# Quicksell - Online Auction Platform
+# VeriSpine - Online Auction Platform
 
-A modern, real-time online auction platform built with React, Node.js, Firebase, and Socket.io. Quicksell provides a comprehensive solution for online auctions with features like real-time bidding, user management, payment integration, and admin controls.
+A modern, real-time online auction platform built with React, Node.js, Firebase, and Socket.io. VeriSpine provides a comprehensive solution for online auctions with features like real-time bidding, user management, payment integration, and admin controls.
 
 ## 🚀 Features
 
@@ -44,8 +44,8 @@ A modern, real-time online auction platform built with React, Node.js, Firebase,
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/quicksell.git
-cd quicksell
+git clone https://github.com/yourusername/verispine.git
+cd verispine
 ```
 
 2. **Install dependencies**

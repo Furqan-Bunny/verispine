@@ -47,7 +47,7 @@ router.post('/initialize', authMiddleware, async (req, res) => {
       name: customerDetails?.name || userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
       firstName: customerDetails?.name?.split(' ')[0] || userData.firstName || '',
       lastName: customerDetails?.name?.split(' ').slice(1).join(' ') || userData.lastName || '',
-      description: metadata?.productTitle ? `Payment for ${metadata.productTitle}` : 'Quicksell Purchase',
+      description: metadata?.productTitle ? `Payment for ${metadata.productTitle}` : 'VeriSpine Purchase',
       orderId: metadata?.orderId,
       productId: metadata?.productId,
       userId

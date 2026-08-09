@@ -205,7 +205,7 @@ const BecomeSeller = () => {
             <BuildingStorefrontIcon className="h-8 w-8 text-primary-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Become a Seller</h1>
-          <p className="text-gray-600 mt-2">Sell on Quicksell — list auctions, ship orders, get paid.</p>
+          <p className="text-gray-600 mt-2">Sell on VeriSpine — list auctions, ship orders, get paid.</p>
         </div>
 
         <div className="card bg-amber-50 border-amber-200">
@@ -325,7 +325,7 @@ const BecomeSeller = () => {
         <div className="card bg-green-50 border-green-200 text-center py-8">
           <CheckCircleIcon className="h-12 w-12 text-green-500 mx-auto mb-3" />
           <h3 className="text-xl font-semibold text-green-800 mb-2">You're approved!</h3>
-          <p className="text-green-700 mb-4">Welcome to Quicksell sellers.</p>
+          <p className="text-green-700 mb-4">Welcome to VeriSpine sellers.</p>
           <Link to="/seller/dashboard" className="btn-primary inline-flex items-center gap-2">
             Go to Seller Dashboard <ArrowRightIcon className="h-4 w-4" />
           </Link>
@@ -509,10 +509,10 @@ const BecomeSeller = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-800 mb-2">Seller Terms Summary:</h4>
             <ul className="text-sm text-blue-700 space-y-1 mb-3">
-              <li>• Quicksell takes a <strong>10% platform fee</strong> on each completed sale</li>
+              <li>• VeriSpine takes a <strong>10% platform fee</strong> on each completed sale</li>
               <li>• You're responsible for product accuracy, shipping, and customer service</li>
               <li>• Funds become available once orders are marked delivered</li>
-              <li>• Quicksell may suspend accounts that violate platform policies</li>
+              <li>• VeriSpine may suspend accounts that violate platform policies</li>
             </ul>
             <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">
               Read full terms
@@ -527,7 +527,7 @@ const BecomeSeller = () => {
               className="mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
             />
             <span className="text-sm text-gray-700">
-              I agree to the Quicksell <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">Seller Terms & Conditions</Link>.
+              I agree to the VeriSpine <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">Seller Terms & Conditions</Link>.
             </span>
           </label>
 

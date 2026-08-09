@@ -149,12 +149,12 @@ const allowedOrigins = [
   'http://localhost:8081',
   'http://localhost:8082',
   'http://localhost:8083',
-  'https://quick-sell-rosy.vercel.app',
+  'https://verispine-rosy.vercel.app',
   'https://quicksell-80aad.web.app',
-  'https://quicksell-80aad--quicksell-5ar9e0y8.web.app',
+  'https://quicksell-80aad--verispine-5ar9e0y8.web.app',
   'https://quicksell-80aad.firebaseapp.com',
-  'https://www.quicksellsa.co.za',
-  'https://quicksellsa.co.za'
+  'https://www.verispinejointcenters.com',
+  'https://verispinejointcenters.com'
 ];
 
 // CORS middleware - restrict to allowed origins

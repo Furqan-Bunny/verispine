@@ -184,7 +184,7 @@ router.post('/', authMiddleware, async (req, res) => {
       } : null,
       // Seller contact info for SAPO sender
       seller: seller ? {
-        name: seller.businessName || seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'Quicksell Seller',
+        name: seller.businessName || seller.name || `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || 'VeriSpine Seller',
         firstName: seller.firstName || '',
         lastName: seller.lastName || '',
         email: seller.email || '',

@@ -27,9 +27,9 @@ class ResendEmailService {
       console.log('Resend service not initialized - missing RESEND_API_KEY');
     }
 
-    this.senderEmail = process.env.RESEND_SENDER_EMAIL || 'noreply@quicksellsa.co.za';
-    this.senderName = process.env.RESEND_SENDER_NAME || 'Quicksell Auctions';
-    this.frontendUrl = process.env.FRONTEND_URL || 'https://www.quicksellsa.co.za';
+    this.senderEmail = process.env.RESEND_SENDER_EMAIL || 'noreply@verispinejointcenters.com';
+    this.senderName = process.env.RESEND_SENDER_NAME || 'VeriSpine Joint Centers';
+    this.frontendUrl = process.env.FRONTEND_URL || 'https://www.verispinejointcenters.com';
   }
 
   // Core send email function
@@ -62,7 +62,7 @@ class ResendEmailService {
   }
 
   // Get email header HTML (mobile responsive)
-  getHeader(title, bgColor = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)') {
+  getHeader(title, bgColor = 'linear-gradient(135deg, #1A8C7A 0%, #0B2A45 100%)') {
     return `
       <div class="email-header" style="background: ${bgColor}; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 22px; word-break: break-word;">${title}</h1>
@@ -74,8 +74,8 @@ class ResendEmailService {
   getFooter() {
     return `
       <div class="email-footer" style="padding: 20px; background: #333; color: #999; text-align: center; font-size: 12px; border-radius: 0 0 10px 10px;">
-        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Quicksell Auctions. All rights reserved.</p>
-        <p style="margin: 5px 0 0;"><a href="${this.frontendUrl}" style="color: #999;">www.quicksellsa.co.za</a></p>
+        <p style="margin: 0;">&copy; ${new Date().getFullYear()} VeriSpine Joint Centers. All rights reserved.</p>
+        <p style="margin: 5px 0 0;"><a href="${this.frontendUrl}" style="color: #999;">www.verispinejointcenters.com</a></p>
       </div>
     `;
   }
@@ -119,10 +119,10 @@ class ResendEmailService {
         ${this.getHeader('Verify Your Email')}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${firstName || 'there'}!</h2>
-          <p style="color: #666; line-height: 1.6;">Thank you for signing up for Quicksell! Please use the following verification code to complete your registration.</p>
+          <p style="color: #666; line-height: 1.6;">Thank you for signing up for VeriSpine! Please use the following verification code to complete your registration.</p>
 
           <div style="text-align: center; margin: 30px 0;">
-            <div style="display: inline-block; background: #f8f9fa; border: 2px dashed #667eea; border-radius: 10px; padding: 20px 40px;">
+            <div style="display: inline-block; background: #f8f9fa; border: 2px dashed #1E4F7A; border-radius: 10px; padding: 20px 40px;">
               <p style="margin: 0 0 5px; font-size: 14px; color: #666;">Your verification code</p>
               <p style="margin: 0; font-size: 36px; font-family: 'Courier New', monospace; letter-spacing: 8px; color: #333; font-weight: bold;">${otp}</p>
             </div>
@@ -137,7 +137,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: email, subject: 'Your Verification Code - Quicksell', html });
+      await this.sendEmail({ to: email, subject: 'Your Verification Code - VeriSpine', html });
       await this.logEmailSent('otp_verification', email);
       return true;
     } catch (error) {
@@ -150,10 +150,10 @@ class ResendEmailService {
   async sendWelcomeEmail(user) {
     try {
       const html = this.wrapEmail(`
-        ${this.getHeader('Welcome to Quicksell!')}
+        ${this.getHeader('Welcome to VeriSpine!')}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || 'there'}!</h2>
-          <p style="color: #666; line-height: 1.6;">Thank you for joining Quicksell Auctions, South Africa's premier online auction platform.</p>
+          <p style="color: #666; line-height: 1.6;">Thank you for joining VeriSpine Joint Centers.</p>
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Get Started:</h3>
@@ -167,7 +167,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.frontendUrl}/products"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px; font-weight: bold;">
               Start Bidding Now
             </a>
@@ -180,7 +180,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: user.email, subject: 'Welcome to Quicksell Auctions!', html });
+      await this.sendEmail({ to: user.email, subject: 'Welcome to VeriSpine Joint Centers!', html });
       await this.logEmailSent('welcome', user.email, user.uid);
       return true;
     } catch (error) {
@@ -198,7 +198,7 @@ class ResendEmailService {
         ${this.getHeader('🔐 Password Reset Request', '#dc3545')}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || 'there'}!</h2>
-          <p style="color: #666; line-height: 1.6;">We received a request to reset your password for your Quicksell account.</p>
+          <p style="color: #666; line-height: 1.6;">We received a request to reset your password for your VeriSpine account.</p>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}"
@@ -222,7 +222,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: user.email, subject: 'Reset Your Password - Quicksell', html });
+      await this.sendEmail({ to: user.email, subject: 'Reset Your Password - VeriSpine', html });
       await this.logEmailSent('password_reset', user.email, user.uid);
       return true;
     } catch (error) {
@@ -255,7 +255,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${this.frontendUrl}/login"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px;">
               Login to Your Account
             </a>
@@ -264,7 +264,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: user.email, subject: 'Your Password Has Been Changed - Quicksell', html });
+      await this.sendEmail({ to: user.email, subject: 'Your Password Has Been Changed - VeriSpine', html });
       await this.logEmailSent('password_changed', user.email, user.uid);
       return true;
     } catch (error) {
@@ -290,7 +290,7 @@ class ResendEmailService {
             </p>
           </div>
 
-          <p style="color: #666; line-height: 1.6;">You now have full access to all Quicksell features, including:</p>
+          <p style="color: #666; line-height: 1.6;">You now have full access to all VeriSpine features, including:</p>
           <ul style="color: #666; line-height: 1.8;">
             <li>Higher transaction limits</li>
             <li>Affiliate program access</li>
@@ -299,7 +299,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.frontendUrl}/dashboard" class="email-btn"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px; font-weight: bold;">
               Go to Dashboard
             </a>
@@ -308,7 +308,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: email, subject: 'KYC Verified - Quicksell', html });
+      await this.sendEmail({ to: email, subject: 'KYC Verified - VeriSpine', html });
       await this.logEmailSent('kyc_approved', email);
       return true;
     } catch (error) {
@@ -349,7 +349,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: email, subject: 'KYC Verification Update - Quicksell', html });
+      await this.sendEmail({ to: email, subject: 'KYC Verification Update - VeriSpine', html });
       await this.logEmailSent('kyc_rejected', email);
       return true;
     } catch (error) {
@@ -364,12 +364,12 @@ class ResendEmailService {
   async sendSellerApplicationApprovedEmail({ email, firstName, businessName }) {
     try {
       const html = this.wrapEmail(`
-        ${this.getHeader('You\'re a Quicksell Seller!', '#28a745')}
+        ${this.getHeader('You\'re a VeriSpine Seller!', '#28a745')}
         <div class="email-body" style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Welcome aboard, ${firstName || 'there'}!</h2>
           <p style="color: #666; line-height: 1.6;">
             Great news — your seller application for <strong>${businessName || 'your business'}</strong> has been approved.
-            You can now list products and start earning on Quicksell.
+            You can now list products and start earning on VeriSpine.
           </p>
 
           <div style="background: #d4edda; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
@@ -388,20 +388,20 @@ class ResendEmailService {
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.frontendUrl}/seller/dashboard" class="email-btn"
-               style="display: inline-block; background: #ea580c; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px; font-weight: bold;">
               Go to Seller Dashboard
             </a>
           </div>
 
           <p style="color: #999; font-size: 13px; line-height: 1.6; margin-top: 24px;">
-            Quicksell takes a 10% platform fee on each sale. Funds become available once orders are marked delivered.
+            VeriSpine takes a 10% platform fee on each sale. Funds become available once orders are marked delivered.
           </p>
         </div>
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: email, subject: 'You\'re a Quicksell Seller! - Application Approved', html });
+      await this.sendEmail({ to: email, subject: 'You\'re a VeriSpine Seller! - Application Approved', html });
       await this.logEmailSent('seller_application_approved', email);
       return true;
     } catch (error) {
@@ -418,7 +418,7 @@ class ResendEmailService {
         <div class="email-body" style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${firstName || 'there'},</h2>
           <p style="color: #666; line-height: 1.6;">
-            Thanks for applying to sell on Quicksell. Unfortunately, your seller application could not be approved at this time.
+            Thanks for applying to sell on VeriSpine. Unfortunately, your seller application could not be approved at this time.
           </p>
 
           <div style="background: #f8d7da; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #dc3545;">
@@ -444,7 +444,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: email, subject: 'Seller Application Update - Quicksell', html });
+      await this.sendEmail({ to: email, subject: 'Seller Application Update - VeriSpine', html });
       await this.logEmailSent('seller_application_rejected', email);
       return true;
     } catch (error) {
@@ -500,7 +500,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${productUrl}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px;">
               View Auction
             </a>
@@ -651,7 +651,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${orderUrl}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px;">
               View Order
             </a>
@@ -702,7 +702,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${orderUrl}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px;">
               View Order Details
             </a>
@@ -849,7 +849,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${trackingUrlFor(shippingInfo?.trackingNumber, shippingInfo?.carrier || order.carrier, orderUrl)}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 40px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 40px;
                       text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">
               Track Your Order
             </a>
@@ -863,8 +863,8 @@ class ResendEmailService {
 
           <!-- Company Details for Invoice -->
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; font-size: 12px; color: #666;">
-            <p style="margin: 0;"><strong>Quicksell Auctions (Pty) Ltd</strong></p>
-            <p style="margin: 5px 0;">South Africa | www.quicksellsa.co.za</p>
+            <p style="margin: 0;"><strong>VeriSpine Joint Centers</strong></p>
+            <p style="margin: 5px 0;"> United States | www.verispinejointcenters.com</p>
             <p style="margin: 5px 0;">This invoice serves as proof of purchase.</p>
           </div>
         </div>
@@ -932,7 +932,7 @@ class ResendEmailService {
 
           <div style="text-align: center;">
             <a href="${trackingUrlFor(trackingNumber, order.carrier, orderUrl)}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px;">
               Track Your Order
             </a>
@@ -1177,7 +1177,7 @@ class ResendEmailService {
             <p><strong>Reason:</strong> ${reason}</p>
           </div>
 
-          <p style="color: #666;">The amount has been refunded to your Quicksell balance.</p>
+          <p style="color: #666;">The amount has been refunded to your VeriSpine balance.</p>
           <p style="color: #666;">You may submit a new withdrawal request at any time.</p>
           <p style="color: #666;">If you have questions about this decision, please contact support.</p>
         </div>
@@ -1202,20 +1202,20 @@ class ResendEmailService {
       const recipientName = data.inviteeName || data.name || 'there';
 
       const html = this.wrapEmail(`
-        ${this.getHeader("🎉 You're Invited to Quicksell!")}
+        ${this.getHeader("🎉 You're Invited to VeriSpine!")}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${recipientName}!</h2>
-          <p style="color: #666; line-height: 1.6;"><strong>${data.inviterName}</strong> has invited you to join Quicksell, South Africa's premier online auction marketplace.</p>
+          <p style="color: #666; line-height: 1.6;"><strong>${data.inviterName}</strong> has invited you to join VeriSpine.</p>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${data.inviteLink}"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 40px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 40px;
                       text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">
               Accept Invitation
             </a>
           </div>
 
-          <h3 style="color: #333;">Why Join Quicksell?</h3>
+          <h3 style="color: #333;">Why Join VeriSpine?</h3>
           <ul style="color: #666; line-height: 1.8;">
             <li>🏆 Bid on exclusive items and great deals</li>
             <li>💰 Sell your items to thousands of buyers</li>
@@ -1233,7 +1233,7 @@ class ResendEmailService {
         ${this.getFooter()}
       `);
 
-      await this.sendEmail({ to: recipientEmail, subject: `${data.inviterName} invited you to join Quicksell`, html });
+      await this.sendEmail({ to: recipientEmail, subject: `${data.inviterName} invited you to join VeriSpine`, html });
       return true;
     } catch (error) {
       console.error('Error sending invitation email:', error);
@@ -1340,7 +1340,7 @@ class ResendEmailService {
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.frontendUrl}/products"
-               style="display: inline-block; background: #667eea; color: white; padding: 15px 30px;
+               style="display: inline-block; background: #1E4F7A; color: white; padding: 15px 30px;
                       text-decoration: none; border-radius: 5px; font-weight: bold;">
               Browse Auctions
             </a>
@@ -1414,7 +1414,7 @@ class ResendEmailService {
         ${this.getHeader('New Auction is Live!', 'linear-gradient(135deg, #28a745 0%, #20c997 100%)')}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || 'there'}!</h2>
-          <p style="color: #666; line-height: 1.6;">A new auction has just gone live on Quicksell. Don't miss your chance to bid!</p>
+          <p style="color: #666; line-height: 1.6;">A new auction has just gone live on VeriSpine. Don't miss your chance to bid!</p>
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.title}" style="width: 100%; max-width: 400px; border-radius: 10px; margin: 0 auto 15px; display: block;">` : ''}
@@ -1509,7 +1509,7 @@ class ResendEmailService {
         ${this.getHeader('New Auction Coming Soon!', 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)')}
         <div style="padding: 30px;">
           <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || 'there'}!</h2>
-          <p style="color: #666; line-height: 1.6;">A new auction has been scheduled on Quicksell. Mark your calendar!</p>
+          <p style="color: #666; line-height: 1.6;">A new auction has been scheduled on VeriSpine. Mark your calendar!</p>
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
             ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.title || ''}" style="width: 100%; max-width: 400px; border-radius: 10px; margin: 0 auto 15px; display: block;">` : ''}

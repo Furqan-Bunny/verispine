@@ -152,7 +152,7 @@ async function retryShipment(orderDoc) {
 }
 
 async function main() {
-  console.log('Quicksell stuck-shipment recovery script');
+  console.log('VeriSpine stuck-shipment recovery script');
   console.log(`Mode: ${isDryRun ? 'DRY RUN (no writes)' : 'LIVE'}`);
   if (singleOrderId) {
     console.log(`Targeting single order: ${singleOrderId}`);

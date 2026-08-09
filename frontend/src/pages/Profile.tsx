@@ -1089,7 +1089,7 @@ const Profile = () => {
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Card Payments</h3>
                 <p className="text-sm text-gray-500">
-                  Card details are entered securely on Traderoot's 3D Secure page each time you pay or top up — nothing is stored on Quicksell.
+                  Card details are entered securely on Traderoot's 3D Secure page each time you pay or top up — nothing is stored on VeriSpine.
                 </p>
               </div>
 

@@ -15,7 +15,7 @@ const auth = admin.auth();
 async function setupAdmin() {
   try {
     // Admin email to set up
-    const adminEmail = 'admin@quicksell.com'; // Change this to your admin email
+    const adminEmail = 'admin@verispinejointcenters.com'; // Change this to your admin email
     
     console.log('Setting up admin user for:', adminEmail);
     

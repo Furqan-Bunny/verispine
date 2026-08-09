@@ -46,8 +46,8 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <ShoppingBagIcon className="h-8 w-8 text-primary-600" />
-            <span className="text-2xl font-bold text-gradient">Quicksell</span>
+            <img src="/logo.svg" alt="" className="h-9 w-9" />
+            <span className="text-2xl font-bold text-gradient font-display">VeriSpine</span>
           </Link>
 
           {/* Spacer */}
