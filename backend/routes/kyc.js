@@ -14,7 +14,15 @@ const KYC_STATUS = {
   REJECTED: 'REJECTED'
 };
 
-// Helper function to upload base64 image to Firebase Storage
+/**
+ * Upload a base64 identity document to Storage and return its STORAGE PATH.
+ *
+ * Deliberately not a public URL. These are government ID scans and selfies; a
+ * public object URL is unguessable but permanent and unauthenticated, so once it
+ * leaks — a support ticket, a screenshot, a log line — it is exposed forever with
+ * no way to revoke it. The path is stored instead, and readers ask for a
+ * short-lived signed URL when they actually need to look (see signedUrlFor).
+ */
 const uploadToStorage = async (base64Data, folder, fileName) => {
   try {
     if (!storage) {
@@ -45,16 +53,54 @@ const uploadToStorage = async (base64Data, folder, fileName) => {
       }
     });
 
-    // Make file public
-    await file.makePublic();
-
-    // Return public URL
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-    return publicUrl;
+    return filePath;
   } catch (error) {
     console.error('Error uploading to storage:', error);
     throw error;
   }
+};
+
+/**
+ * Mint a short-lived read URL for a stored KYC object.
+ *
+ * Tolerates a legacy full URL in place of a path so that documents uploaded
+ * before this change still render; those are already public and cannot be made
+ * private retroactively, but new uploads are path-only.
+ */
+const SIGNED_URL_TTL_MS = 15 * 60 * 1000;
+
+const signedUrlFor = async (pathOrUrl) => {
+  if (!pathOrUrl) return null;
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // legacy public URL
+
+  try {
+    const bucket = admin.storage().bucket();
+    const [url] = await bucket.file(pathOrUrl).getSignedUrl({
+      action: 'read',
+      expires: Date.now() + SIGNED_URL_TTL_MS,
+    });
+    return url;
+  } catch (error) {
+    // A failure here must not break the review screen — the reviewer sees the
+    // record without the image rather than an error page.
+    console.error('Failed to sign KYC document URL:', error.message);
+    return null;
+  }
+};
+
+/**
+ * Replace stored document paths with signed URLs on a `kycDocuments` block before
+ * it goes out over the API. Every response that carries KYC images must go
+ * through this — returning the raw path leaks the object name and renders as a
+ * broken image, while returning nothing leaves admins unable to review.
+ */
+const withSignedDocuments = async (kycDocuments) => {
+  if (!kycDocuments) return kycDocuments;
+  const [idDocument, selfie] = await Promise.all([
+    signedUrlFor(kycDocuments.idDocument),
+    signedUrlFor(kycDocuments.selfie),
+  ]);
+  return { ...kycDocuments, idDocument, selfie };
 };
 
 // POST /api/kyc/submit - Submit KYC documents
@@ -319,3 +365,8 @@ router.put('/resubmit', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+// Exported so the admin review endpoint signs the same way this route does —
+// two implementations of "how do we expose an ID scan" is how one of them ends
+// up leaking.
+module.exports.withSignedDocuments = withSignedDocuments;
+module.exports.signedUrlFor = signedUrlFor;

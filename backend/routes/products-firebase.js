@@ -4,9 +4,47 @@ const { admin, db, storage } = require('../config/firebase');
 const { authMiddleware, sellerMiddleware } = require('../middleware/auth');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const { SANE_MAX_DIM_IN } = require('../utils/parcelDimensions');
 
 // Get bucket only if storage is available
 const bucket = storage ? storage.bucket() : null;
+
+/**
+ * Condition grades for used medical equipment.
+ *
+ * A free-text condition field is unusable for a buyer comparing three used
+ * C-arms, so grades are a closed set. "For Parts" is separate from "Used" on
+ * purpose: it is the difference between a device that treats patients and one
+ * that legally cannot.
+ */
+const CONDITION_GRADES = ['new', 'refurbished', 'used-working', 'for-parts'];
+
+/**
+ * Normalize the equipment-provenance block. Every field is optional — a seller
+ * listing consumables has no serial number — but anything supplied is trimmed
+ * and length-capped so it can't be used to smuggle a payload into the listing.
+ */
+function buildEquipmentDetails(input = {}) {
+  const text = (v, max) => {
+    const s = String(v == null ? '' : v).trim();
+    return s ? s.slice(0, max) : null;
+  };
+
+  const grade = String(input.conditionGrade || '').trim().toLowerCase();
+  const year = parseInt(input.yearManufactured, 10);
+  const currentYear = new Date().getFullYear();
+
+  return {
+    manufacturer: text(input.manufacturer, 120),
+    modelNumber: text(input.modelNumber, 80),
+    // Reject impossible years rather than storing them; a bad year misleads on
+    // the one axis buyers of used equipment care most about.
+    yearManufactured: Number.isFinite(year) && year >= 1950 && year <= currentYear + 1 ? year : null,
+    conditionGrade: CONDITION_GRADES.includes(grade) ? grade : null,
+    serialNumber: text(input.serialNumber, 80),
+    complianceNotes: text(input.complianceNotes, 2000),
+  };
+}
 
 // Configure multer for memory storage
 const upload = multer({
@@ -291,41 +329,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Test endpoint to check Firestore connection
-router.get('/test-firestore', async (req, res) => {
-  try {
-    // Try to get products collection
-    const snapshot = await db.collection('products').limit(5).get();
-    const products = [];
-
-    snapshot.forEach(doc => {
-      products.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
-
-    // Also check what collections exist
-    const collections = await db.listCollections();
-    const collectionNames = collections.map(col => col.id);
-
-    res.json({
-      success: true,
-      message: 'Firestore connected',
-      productsFound: snapshot.size,
-      sampleProducts: products,
-      collections: collectionNames,
-      projectId: process.env.FIREBASE_PROJECT_ID || 'quicksell-80aad'
-    });
-  } catch (error) {
-    console.error('Firestore test error:', error);
-    res.status(500).json({
-      error: error.message,
-      stack: error.stack
-    });
-  }
-});
-
 // Get single product
 router.get('/:id', async (req, res) => {
   try {
@@ -440,20 +443,36 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       price,
       quantity,
       stockType,
-      dimensions
+      dimensions,
+      manufacturer,
+      modelNumber,
+      yearManufactured,
+      conditionGrade,
+      serialNumber,
+      complianceNotes
     } = req.body;
 
     // Optional parcel dimensions (inches) for carrier rating. Accept a JSON
-    // string or object; store only if all three are valid positive numbers (<=200cm).
+    // string or object; store only if all three are valid positive numbers.
+    // The ceiling is generous because machinery is genuinely large — an
+    // out-of-range value here would be silently replaced by a small default and
+    // the item would be booked as a parcel it can never fit in.
     const parseDimensions = (raw) => {
       if (!raw) return null;
       let d = raw;
       if (typeof raw === 'string') { try { d = JSON.parse(raw); } catch { return null; } }
       const l = Number(d.length), w = Number(d.width), h = Number(d.height);
-      const ok = [l, w, h].every(v => isFinite(v) && v > 0 && v <= 200);
+      const ok = [l, w, h].every(v => isFinite(v) && v > 0 && v <= SANE_MAX_DIM_IN);
       return ok ? { length: l, width: w, height: h } : null;
     };
     const parcelDimensions = parseDimensions(dimensions);
+
+    // Equipment provenance. Buyers of used medical equipment need these to
+    // decide at all, so they are first-class fields rather than free text buried
+    // in the description.
+    const equipmentDetails = buildEquipmentDetails({
+      manufacturer, modelNumber, yearManufactured, conditionGrade, serialNumber, complianceNotes,
+    });
 
     // Listing type: 'auction' (default, current behaviour) or 'sale' (fixed-price,
     // multi-quantity stock, no bidding/end date). Anything unrecognised falls back to auction.
@@ -524,7 +543,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
     // Parse shipping data once
     const shippingData = shipping ? JSON.parse(shipping) : {
       cost: 0,
-      location: 'South Africa',
+      location: 'United States',
       methods: ['Standard Shipping']
     };
 
@@ -563,6 +582,8 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       quantity: isSale ? saleQuantity : null, // null when unlimited ("always available")
       soldQuantity: isSale ? 0 : null,
       condition,
+      // Equipment provenance — manufacturer, model, year, grade, serial, compliance.
+      ...equipmentDetails,
       status: productStatus,
       scheduledStartTime: isScheduled ? new Date(scheduledStartTime) : null,
       isScheduled: !!isScheduled,
@@ -582,7 +603,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
       // "City, Province" string for backward compat display (ProductCard/ProductDetail)
       location: shippingData.pickupCity && shippingData.pickupProvince
         ? `${shippingData.pickupCity}, ${shippingData.pickupProvince}`
-        : (shippingData.location || 'South Africa'),
+        : (shippingData.location || 'United States'),
       views: 0,
       bidsCount: 0,
       watchers: 0,
@@ -654,7 +675,35 @@ router.put('/:id', authMiddleware, upload.array('images', 5), async (req, res) =
       return res.status(403).json({ error: 'You can only update your own products' });
     }
 
-    const updates = { ...req.body };
+    /**
+     * Whitelist, not blacklist.
+     *
+     * This route previously spread req.body wholesale and deleted a couple of
+     * known-bad keys. That meant a seller editing their own listing could also
+     * set sellerId, status, winnerId, soldQuantity or featured — i.e. hand the
+     * product to someone else, mark it sold, or promote it to the homepage.
+     * Anything not named here is dropped.
+     */
+    const EDITABLE_FIELDS = [
+      // content
+      'title', 'description', 'category', 'categoryId', 'condition', 'specifications',
+      // equipment provenance
+      'manufacturer', 'modelNumber', 'yearManufactured', 'conditionGrade',
+      'serialNumber', 'complianceNotes',
+      // pricing (validated further below per listing type)
+      'startingPrice', 'incrementAmount', 'buyNowPrice', 'price', 'quantity',
+      // logistics
+      'shipping', 'shippingCost', 'freeShipping', 'weight', 'dimensions',
+      // scheduling (only applied to a still-scheduled auction, see below)
+      'scheduledStartTime', 'duration', 'endDate',
+      // media
+      'images',
+    ];
+
+    const updates = {};
+    for (const field of EDITABLE_FIELDS) {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
 
     // If weight is being updated, validate against the shipping bounds
     if (updates.weight !== undefined && updates.weight !== '') {
@@ -711,19 +760,26 @@ router.put('/:id', authMiddleware, upload.array('images', 5), async (req, res) =
       let d = updates.dimensions;
       if (typeof d === 'string') { try { d = JSON.parse(d); } catch { d = null; } }
       const l = Number(d && d.length), w = Number(d && d.width), h = Number(d && d.height);
-      if ([l, w, h].every(v => isFinite(v) && v > 0 && v <= 200)) {
+      if ([l, w, h].every(v => isFinite(v) && v > 0 && v <= SANE_MAX_DIM_IN)) {
         updates.dimensions = { length: l, width: w, height: h };
       } else {
         delete updates.dimensions;
       }
     }
     
-    // listingType is immutable after creation — never let an edit flip a product
-    // between auction and sale (would orphan bids / stock). Ignore any incoming value.
-    delete updates.listingType;
-    // stockType (limited vs unlimited) is likewise fixed at creation. The in/out-of-stock
-    // state is controlled via `status` ('active' <-> 'sold'), not by switching stockType.
-    delete updates.stockType;
+    // listingType and stockType are absent from EDITABLE_FIELDS on purpose:
+    // flipping a product between auction and sale would orphan its bids or its
+    // stock, and in/out-of-stock is driven by `status`, not by stockType.
+
+    // Normalize the equipment block so an emptied field clears rather than
+    // storing an empty string, and an invalid year is rejected rather than shown.
+    if (EDITABLE_FIELDS.some(f => ['manufacturer', 'modelNumber', 'yearManufactured',
+      'conditionGrade', 'serialNumber', 'complianceNotes'].includes(f) && updates[f] !== undefined)) {
+      const normalized = buildEquipmentDetails(updates);
+      for (const [key, value] of Object.entries(normalized)) {
+        if (updates[key] !== undefined) updates[key] = value;
+      }
+    }
 
     // Fixed-price edits: price + quantity. Keep currentPrice/startingPrice mirrored to
     // price, and never let stock drop below what's already been sold.

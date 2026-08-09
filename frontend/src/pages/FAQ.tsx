@@ -144,7 +144,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'How is my personal information protected?',
-        answer: 'VeriSpine processes all personal data in accordance with the Protection of Personal Information Act (POPIA). We collect only the information necessary to operate the platform, and we never sell your personal data to third parties. Passwords are securely hashed and cannot be recovered by anyone, including VeriSpine staff.'
+        answer: 'VeriSpine processes all personal data in accordance with applicable United States federal and state privacy law. We collect only the information necessary to operate the platform, and we never sell your personal data to third parties. Passwords are securely hashed and cannot be recovered by anyone, including VeriSpine staff.'
       },
       {
         question: 'How do I report a problem?',

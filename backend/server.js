@@ -143,29 +143,20 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// CORS configuration - allow specific origins including Vercel deployments
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:3010',
-  'http://localhost:5173',
-  'http://localhost:8081',
-  'http://localhost:8082',
-  'http://localhost:8083',
-  'https://verispine-rosy.vercel.app',
-  'https://quicksell-80aad.web.app',
-  'https://quicksell-80aad--verispine-5ar9e0y8.web.app',
-  'https://quicksell-80aad.firebaseapp.com',
-  'https://www.verispinejointcenters.com',
-  'https://verispinejointcenters.com'
-];
+// CORS allowlist — shared with Socket.IO via config/corsOrigins.js so the two
+// can never drift apart (see that file for why that matters).
+const { buildAllowedOrigins, isAllowedOrigin } = require('./config/corsOrigins');
+const allowedOrigins = buildAllowedOrigins();
+console.log('CORS allowlist:', allowedOrigins.join(', ') || '(none configured)');
 
 // CORS middleware - restrict to allowed origins
 app.use(cors({
   origin: function(origin, callback) {
+    // No Origin header = same-origin or a non-browser client (curl, the mobile
+    // app, health checks). CORS is not the control for those.
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    console.warn('CORS rejected origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

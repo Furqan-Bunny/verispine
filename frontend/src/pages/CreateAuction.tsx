@@ -27,12 +27,46 @@ interface Category {
 
 type ListingType = '' | 'auction' | 'sale'
 
+/**
+ * Condition grades for used medical equipment. These mirror CONDITION_GRADES in
+ * backend/routes/products-firebase.js — a value the backend doesn't recognise is
+ * dropped silently, so the two lists must agree.
+ *
+ * "For Parts" is deliberately separate from "Used, Working": it is the difference
+ * between a device that can treat patients and one that cannot.
+ */
+const CONDITION_GRADES = [
+  { value: 'new', label: 'New — unused, in original packaging' },
+  { value: 'refurbished', label: 'Refurbished — professionally restored and tested' },
+  { value: 'used-working', label: 'Used, Working — functional, normal wear' },
+  { value: 'for-parts', label: 'For Parts / Not Working — not for clinical use' },
+] as const
+
+type ConditionGrade = '' | typeof CONDITION_GRADES[number]['value']
+
+// The provenance fields, listed once so the form and the submit stay in step.
+const EQUIPMENT_FIELDS = [
+  'manufacturer',
+  'modelNumber',
+  'yearManufactured',
+  'conditionGrade',
+  'serialNumber',
+  'complianceNotes',
+] as const
+
 interface AuctionFormData {
   listingType: ListingType
   title: string
   description: string
   category: string
   condition: 'new' | 'like-new' | 'excellent' | 'good' | 'fair' | 'poor'
+  // Equipment provenance — what a buyer of used medical equipment actually needs
+  manufacturer: string
+  modelNumber: string
+  yearManufactured: string
+  conditionGrade: ConditionGrade
+  serialNumber: string
+  complianceNotes: string
   startingPrice: string
   reservePrice: string
   buyNowPrice: string
@@ -70,6 +104,12 @@ const CreateAuction = () => {
     description: '',
     category: '',
     condition: 'excellent',
+    manufacturer: '',
+    modelNumber: '',
+    yearManufactured: '',
+    conditionGrade: '',
+    serialNumber: '',
+    complianceNotes: '',
     startingPrice: '',
     reservePrice: '',
     buyNowPrice: '',
@@ -292,6 +332,14 @@ const CreateAuction = () => {
       formDataToSend.append('condition', formData.condition)
       formDataToSend.append('weight', formData.weight)
 
+      // Equipment provenance. Only send what the seller filled in — the backend
+      // stores null for anything absent, so a blank field doesn't render as an
+      // empty row on the listing.
+      for (const field of EQUIPMENT_FIELDS) {
+        const value = String(formData[field] || '').trim()
+        if (value) formDataToSend.append(field, value)
+      }
+
       // Optional parcel dimensions (cm) — only sent when all three are provided
       if (formData.length && formData.width && formData.height) {
         formDataToSend.append('dimensions', JSON.stringify({
@@ -371,6 +419,12 @@ const CreateAuction = () => {
         description: '',
         category: '',
         condition: 'excellent',
+        manufacturer: '',
+        modelNumber: '',
+        yearManufactured: '',
+        conditionGrade: '',
+        serialNumber: '',
+        complianceNotes: '',
         startingPrice: '',
         reservePrice: '',
         buyNowPrice: '',
@@ -496,6 +550,98 @@ const CreateAuction = () => {
                 <option value="fair">Fair</option>
                 <option value="poor">Poor</option>
               </select>
+            </div>
+
+            {/* Equipment provenance. Optional as a group — consumables have no
+                serial number — but these are the first things a buyer of used
+                medical equipment looks for, so they get their own section rather
+                than being buried in the description. */}
+            <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+              <h3 className="font-semibold text-gray-900 mb-1">Equipment Details</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Optional, but listings with these filled in sell considerably better.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturer</label>
+                  <input
+                    type="text"
+                    name="manufacturer"
+                    value={formData.manufacturer}
+                    onChange={handleInputChange}
+                    placeholder="e.g. GE Healthcare"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Model Number</label>
+                  <input
+                    type="text"
+                    name="modelNumber"
+                    value={formData.modelNumber}
+                    onChange={handleInputChange}
+                    placeholder="e.g. OEC 9900 Elite"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Year Manufactured</label>
+                  <input
+                    type="number"
+                    name="yearManufactured"
+                    value={formData.yearManufactured}
+                    onChange={handleInputChange}
+                    min={1950}
+                    max={new Date().getFullYear() + 1}
+                    placeholder="e.g. 2018"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Serial Number</label>
+                  <input
+                    type="text"
+                    name="serialNumber"
+                    value={formData.serialNumber}
+                    onChange={handleInputChange}
+                    placeholder="Optional"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Condition Grade</label>
+                  <select
+                    name="conditionGrade"
+                    value={formData.conditionGrade}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">Not specified</option>
+                    {CONDITION_GRADES.map(grade => (
+                      <option key={grade.value} value={grade.value}>{grade.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Compliance &amp; Certification Notes
+                  </label>
+                  <textarea
+                    name="complianceNotes"
+                    value={formData.complianceNotes}
+                    onChange={handleInputChange}
+                    rows={3}
+                    placeholder="Service history, calibration records, FDA/registration status, or any restrictions on resale or clinical use."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>

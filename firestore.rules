@@ -1,95 +1,225 @@
 rules_version = '2';
+
+/**
+ * VeriSpine Firestore rules.
+ *
+ * The backend uses the Admin SDK, which bypasses these rules entirely — so this
+ * file governs the browser SDK only. Its job is to make sure that a client which
+ * talks to Firestore directly can never do more than the API would let it.
+ *
+ * Guiding rule: money, order state and moderation flags are server-owned. A
+ * client may read what belongs to it and may not write anything that decides a
+ * balance, a price, a status, or someone else's data.
+ */
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read products
+
+    // ---- helpers ----------------------------------------------------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // True when the write leaves every listed field exactly as it was. Used to
+    // stop a client editing its own document from also editing its role or balance.
+    function unchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ---- catalog ----------------------------------------------------------
+
+    // Products are public to read. Writes go through the API (which enforces
+    // ownership, stock and auction rules), so direct client writes are admin-only.
     match /products/{document} {
       allow read: if true;
-      allow write: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if isAdmin();
     }
-    
-    // Allow authenticated users to manage their own bids
-    match /bids/{document} {
-      allow read: if true;
-      allow create: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
-      allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
-    }
-    
-    // Allow authenticated users to manage their own orders
-    match /orders/{document} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == resource.data.buyerId || 
-         request.auth.uid == resource.data.sellerId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        (request.auth.uid == resource.data.buyerId || 
-         request.auth.uid == resource.data.sellerId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-    }
-    
-    // Allow authenticated users to read and manage their own watchlist
-    match /watchlist/{document} {
-      allow read: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
-    }
-    
-    // Allow authenticated users to read categories
+
     match /categories/{document} {
       allow read: if true;
-      allow write: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if isAdmin();
     }
-    
-    // Allow authenticated users to manage their own profile
+
+    // ---- bidding ----------------------------------------------------------
+
+    // Bids are readable so the bid history renders. They are NEVER client-writable:
+    // a bid changes a product's price, and that must happen inside the server's
+    // transaction or the highest bid can be overwritten.
+    match /bids/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /auctionRegistrations/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ---- orders and money -------------------------------------------------
+
+    // Buyers and sellers read their own orders; nobody writes them from the
+    // client. Order status drives payouts, so it is server-owned end to end.
+    match /orders/{document} {
+      allow read: if signedIn()
+        && (isUser(resource.data.buyerId) || isUser(resource.data.sellerId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /payments/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /transactions/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /walletTransactions/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /walletTopups/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /withdrawals/{document} {
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /payouts/{document} {
+      allow read: if signedIn() && (isUser(resource.data.sellerId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /affiliateCommissions/{document} {
+      allow read: if signedIn()
+        && (isUser(resource.data.referrerId) || isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ---- shipping ---------------------------------------------------------
+
+    match /shipments/{document} {
+      allow read: if signedIn()
+        && (isUser(resource.data.buyerId) || isUser(resource.data.sellerId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ---- users ------------------------------------------------------------
+
+    /**
+     * A user may edit their own profile but must not be able to promote
+     * themselves or move their own money. Those fields are pinned here because
+     * the browser SDK can write this document directly, bypassing the API's
+     * validation. Without the unchanged() guard, `role: 'admin'` is one console
+     * command away.
+     */
     match /users/{userId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == userId || 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow update: if request.auth != null && 
-        request.auth.uid == userId;
-      allow create: if request.auth != null;
-    }
-    
-    // Email logs - admin only
-    match /email_logs/{document} {
-      allow read, write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if isUser(userId) || isAdmin();
+      allow create: if isUser(userId);
+      allow update: if isAdmin() || (isUser(userId) && unchanged([
+        'role', 'isAdmin', 'isSeller', 'sellerStatus', 'isAffiliate',
+        'balance', 'pendingBalance', 'heldBalance', 'owedFromReversals',
+        'kycStatus', 'isVerified', 'emailVerified', 'suspended', 'banned',
+        'sellerRating', 'totalSales', 'referredBy'
+      ]));
+      allow delete: if isAdmin();
     }
 
-    // Notifications - users can read/update/delete their own, admin can manage all
+    // Public seller storefront data, if mirrored out of users. Read-only.
+    match /sellers/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- content ----------------------------------------------------------
+
+    match /reviews/{document} {
+      allow read: if true;
+      // Reviews are gated on a delivered order, which only the server can verify.
+      allow write: if isAdmin();
+    }
+
+    match /questions/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /watchlist/{document} {
+      allow read: if signedIn() && isUser(resource.data.userId);
+      allow create: if signedIn() && isUser(request.resource.data.userId);
+      allow update, delete: if signedIn() && isUser(resource.data.userId);
+    }
+
+    // ---- notifications ----------------------------------------------------
+
+    /**
+     * Create is admin-only. Letting any signed-in user create a notification
+     * means letting them write to any other user's inbox — a phishing surface,
+     * since notifications render as trusted platform messages.
+     */
     match /notifications/{document} {
-      allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.userId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null &&
-        (request.auth.uid == resource.data.userId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow create: if isAdmin();
+      // The one field a recipient legitimately owns is whether they have read it.
+      allow update: if isAdmin()
+        || (isUser(resource.data.userId) && unchanged([
+          'userId', 'type', 'title', 'message', 'link', 'createdAt'
+        ]));
+      allow delete: if signedIn() && (isUser(resource.data.userId) || isAdmin());
     }
 
-    // Notification templates - admin only
     match /notification_templates/{document} {
-      allow read, write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read, write: if isAdmin();
     }
 
-    // KYC documents - users can read/create their own, admin can manage all
+    // ---- identity / compliance --------------------------------------------
+
+    /**
+     * KYC holds government ID references. Read is owner-or-admin and writes are
+     * admin-only: a client that could update its own KYC row could set
+     * status:'approved' and unlock selling without review.
+     */
     match /kyc/{document} {
-      allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.userId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow create: if request.auth != null &&
-        request.auth.uid == request.resource.data.userId;
-      allow update: if request.auth != null &&
-        (request.auth.uid == resource.data.userId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow read: if signedIn() && (isUser(resource.data.userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /invitations/{document} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---- admin-only -------------------------------------------------------
+
+    match /settings/{document} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /email_logs/{document} {
+      allow read, write: if isAdmin();
+    }
+
+    /**
+     * Anything not named above is denied. New collections must be granted access
+     * deliberately — a default-allow catch-all is how private collections leak.
+     */
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

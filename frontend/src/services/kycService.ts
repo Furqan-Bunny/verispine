@@ -17,7 +17,7 @@ export type KYCStatus = 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 export type IDType = 'id_card' | 'passport' | 'drivers_license';
 
 export const ID_TYPE_LABELS: Record<IDType, string> = {
-  id_card: 'South African ID Card',
+  id_card: 'State ID Card',
   passport: 'Passport',
   drivers_license: "Driver's License"
 };

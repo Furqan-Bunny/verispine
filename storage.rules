@@ -1,23 +1,75 @@
 rules_version = '2';
+
+/**
+ * VeriSpine Storage rules.
+ *
+ * The backend uploads via the Admin SDK and bypasses these rules; this file
+ * governs direct browser uploads only.
+ *
+ * The important distinction is public vs private objects. Product photos and
+ * avatars are meant to be world-readable. KYC identity documents are not — and
+ * because Storage has no "owner" concept for an object, private paths are
+ * readable by nobody from the client. The API serves them through short-lived
+ * signed URLs instead.
+ */
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow users to upload their own avatars
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Reject anything that isn't a reasonably-sized image, so the bucket can't be
+    // used as free file hosting or to serve HTML from our own origin.
+    function isImageUnder(mb) {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < mb * 1024 * 1024;
+    }
+
+    // ---- public objects ---------------------------------------------------
+
     match /avatars/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if signedIn() && isImageUnder(5);
     }
-    
-    // Allow admins to upload product images
-    match /products/{fileName} {
+
+    // Sellers upload their own listing photos, so this cannot be admin-only.
+    match /products/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if signedIn() && isImageUnder(10);
     }
-    
-    // Allow any authenticated user to read uploaded files
-    match /uploads/{allPaths=**} {
+
+    match /categories/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ---- private objects --------------------------------------------------
+
+    /**
+     * Identity documents and selfies. No client read at all — not even by the
+     * uploader, because an object URL that works for the owner also works for
+     * anyone who obtains the link. Admin review fetches these through the API,
+     * which issues a signed URL that expires.
+     */
+    match /kyc/{allPaths=**} {
+      allow read: if false;
+      allow write: if signedIn() && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    match /documents/{allPaths=**} {
+      allow read: if false;
+      allow write: if signedIn() && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    // Everything else is denied; new paths must be granted deliberately.
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
