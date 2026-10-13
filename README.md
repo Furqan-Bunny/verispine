@@ -1,133 +1,87 @@
-# VeriSpine - Online Auction Platform
+# VeriSpine
 
-A modern, real-time online auction platform built with React, Node.js, Firebase, and Socket.io. VeriSpine provides a comprehensive solution for online auctions with features like real-time bidding, user management, payment integration, and admin controls.
+An online auction and marketplace platform for medical equipment, with live bidding, seller
+onboarding, KYC and an affiliate programme.
 
-## 🚀 Features
+## What it does
 
-- **Real-time Auctions**: Live bidding with Socket.io
-- **User Authentication**: Secure Firebase authentication
-- **Affiliate Program**: Earn R5 for each successful referral
-- **Payment Integration**: Ready for PayFast and AddPay
-- **Email Notifications**: Automated emails via Brevo
-- **Mobile App**: React Native application
-- **Admin Dashboard**: Manage auctions, users, and transactions
+- **Live auctions.** Bids go over Socket.io, so every watcher sees the same price at the same
+  time without refreshing.
+- **Sellers, not just listings.** A seller applies, gets verified through KYC, then creates
+  auctions and manages their own catalogue.
+- **Checkout and payouts** through Stripe.
+- **An affiliate programme** with referral tracking and commission.
+- **An admin side** for approving sellers, moderating auctions and handling disputes.
+- **Transactional email** through Brevo.
 
-## 🛠️ Tech Stack
+## Stack
 
-### Frontend
-- React 18 with TypeScript
-- Vite for fast development
-- Tailwind CSS for styling
-- Zustand for state management
-- Firebase for authentication
+| Layer | Choice |
+|---|---|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| Backend | Node.js, Express, Socket.io |
+| Auth and data | Firebase (Auth, Firestore, Admin SDK) |
+| Payments | Stripe |
+| Email | Nodemailer with Brevo |
+| Hardening | express-rate-limit, express-validator |
 
-### Backend
-- Node.js & Express
-- Firebase Admin SDK
-- Socket.io for real-time features
-- Nodemailer with Brevo
+## Layout
 
-### Mobile
-- React Native with Expo
-- Firebase integration
-- Native features support
-
-## 📦 Installation
-
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
-- Firebase account
-- Brevo account (for emails)
-
-### Setup Instructions
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/verispine.git
-cd verispine
+```
+frontend/
+  src/
+    pages/        55 routes: auctions, checkout, dashboard, KYC, affiliate, admin
+    components/   Shared UI
+    services/     API and Firebase clients
+    config/       Environment and Firebase setup
+backend/
+  routes/         24 route modules
+  services/       Auctions, payments, email, notifications
+  middleware/     Auth and validation
+  scripts/        Seed and maintenance tasks
+scripts/          One-off data and migration helpers
 ```
 
-2. **Install dependencies**
+## Running it
+
+Needs Node 18+, a Firebase project, a Stripe account and a Brevo account.
+
 ```bash
 # Backend
 cd backend
 npm install
+npm run dev
 
-# Frontend
-cd ../frontend
+# Frontend, in another terminal
+cd frontend
 npm install
-
-# Mobile (optional)
-cd ../mobile
-npm install
+npm run dev
 ```
 
-3. **Environment Variables**
+Both directories take their own `.env`. The backend reads:
 
-Create `.env` files in both backend and frontend directories:
-
-Backend `.env`:
 ```
 PORT=5000
-FIREBASE_SERVICE_ACCOUNT=your_service_account_json
+FIREBASE_SERVICE_ACCOUNT=
 FRONTEND_URL=http://localhost:3000
-BREVO_API_KEY=your_brevo_api_key
-BREVO_SMTP_LOGIN=your_smtp_login
-BREVO_SMTP_PASSWORD=your_smtp_password
+STRIPE_SECRET_KEY=
+BREVO_API_KEY=
+BREVO_SMTP_LOGIN=
+BREVO_SMTP_PASSWORD=
 ```
 
-4. **Run the application**
+The frontend needs `VITE_API_URL` pointing at the backend, **including the `/api` suffix**.
+Leaving the suffix off is the single most common setup mistake here.
 
-Backend:
-```bash
-cd backend
-npm run dev
-```
+## Notes on the design
 
-Frontend:
-```bash
-cd frontend
-npm run dev
-```
+**Bidding is settled server side.** The client sends an intent, the server decides the
+outcome against the current state and broadcasts it. A bid is never trusted because it
+arrived with a higher number attached.
 
-## 🚀 Deployment
+**Verification gates the money, not the browsing.** Anyone can look. KYC is required before
+a seller can take payment, which keeps the signup funnel open without carrying the risk.
 
-### Frontend (Firebase Hosting)
-```bash
-cd frontend
-npm run deploy
-```
+## License
 
-### Backend (Render/Railway/Heroku)
-- Push to GitHub
-- Connect repository to your hosting service
-- Deploy automatically
-
-## 📱 Mobile App
-
-```bash
-cd mobile
-npm start
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👤 Author
-
-Minzolor
-
-## 🌐 Live Demo
-
-- Frontend: https://quicksell-80aad.web.app
-- API: (Deploy backend to get URL)
-
----
-
-Built with ❤️ for South Africa's online marketplace
+MIT.
